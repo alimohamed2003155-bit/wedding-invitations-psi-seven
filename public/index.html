@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>استوديو الدعوات — Blossom &amp; Oud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1b1410;
+    --ink-soft:#2a2019;
+    --parchment:#ede3d3;
+    --parchment-dim:#c9bda9;
+    --brass:#c9a227;
+    --brass-dim:#8c7238;
+    --blossom:#c98a93;
+    --error:#d97757; /* استخدام محدود جدًا: رسائل الخطأ فقط */
+    --ok:#8fae82;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--parchment);
+    font-family:'Cairo',sans-serif;
+    min-height:100vh;
+    line-height:1.6;
+  }
+  a{color:inherit;}
+  .layout{
+    display:grid;
+    grid-template-columns:minmax(0,480px) minmax(0,560px);
+    min-height:100vh;
+  }
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  /* ===== لوحة المعاينة الحية ===== */
+  .preview-panel{
+    background:
+      radial-gradient(circle at 30% 20%, rgba(201,162,39,0.10), transparent 55%),
+      radial-gradient(circle at 80% 80%, rgba(201,138,147,0.08), transparent 50%),
+      var(--ink-soft);
+    padding:56px 40px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:sticky;
+    top:0;
+    height:100vh;
+    border-inline-end:1px solid rgba(201,162,39,0.18);
+  }
+  @media (max-width:900px){
+    .preview-panel{position:relative; height:auto; padding:36px 20px;}
+  }
+  .invite-card{
+    width:100%;
+    max-width:380px;
+    aspect-ratio:5/7;
+    border:1px solid var(--brass-dim);
+    position:relative;
+    padding:34px 26px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:18px;
+    background:rgba(237,227,211,0.02);
+  }
+  .invite-card::before,.invite-card::after{
+    content:'';
+    position:absolute;
+    inset:8px;
+    border:1px solid rgba(201,162,39,0.35);
+    pointer-events:none;
+  }
+  .invite-eyebrow{
+    font-size:11px;
+    letter-spacing:0.35em;
+    text-transform:uppercase;
+    color:var(--brass);
+    font-family:'Cairo',sans-serif;
+  }
+  .invite-names{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:clamp(28px,6vw,40px);
+    font-weight:600;
+    color:var(--parchment);
+    line-height:1.25;
+    word-break:break-word;
+  }
+  .invite-amp{color:var(--blossom);}
+  .invite-rule{width:60px;height:1px;background:var(--brass-dim);}
+  .invite-datetime{font-size:15px;color:var(--parchment-dim);}
+  .invite-venue{font-size:14px;color:var(--parchment);}
+  .invite-city{font-size:12px;color:var(--parchment-dim);letter-spacing:0.05em;}
+  .invite-placeholder{color:var(--parchment-dim); opacity:0.55;}
+
+  /* ===== لوحة الفورم ===== */
+  .form-panel{padding:56px 44px 80px;}
+  @media (max-width:900px){.form-panel{padding:36px 20px 60px;}}
+  @media (max-width:480px){.form-panel{padding:28px 16px 56px;}}
+
+  .brand{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:22px;
+    color:var(--brass);
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:600;
+    font-size:clamp(28px,4vw,36px);
+    margin:0 0 8px;
+  }
+  .subtitle{
+    color:var(--parchment-dim);
+    font-size:15px;
+    margin:0 0 40px;
+    max-width:46ch;
+  }
+
+  fieldset{border:0;padding:0;margin:0 0 32px;}
+  legend{
+    font-size:12px;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    color:var(--brass);
+    margin-bottom:16px;
+    padding:0;
+  }
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  @media (max-width:560px){.row{grid-template-columns:1fr;}}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+  label{font-size:13px;color:var(--parchment-dim);}
+  input{
+    background:transparent;
+    border:0;
+    border-bottom:1px solid var(--brass-dim);
+    color:var(--parchment);
+    font-family:'Cairo',sans-serif;
+    font-size:16px;
+    padding:10px 2px;
+    border-radius:0;
+  }
+  input::placeholder{color:rgba(201,189,169,0.4);}
+  input:focus{
+    outline:none;
+    border-bottom-color:var(--brass);
+    box-shadow:0 1px 0 0 var(--brass);
+  }
+  input:focus-visible{outline:2px solid var(--brass);outline-offset:4px;}
+  .hint{font-size:12px;color:var(--parchment-dim);opacity:0.75;margin-top:-4px;}
+
+  button.primary{
+    width:100%;
+    background:var(--brass);
+    color:var(--ink);
+    border:0;
+    font-family:'Cairo',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    padding:16px;
+    cursor:pointer;
+    letter-spacing:0.02em;
+    transition:background 0.15s ease;
+  }
+  button.primary:hover{background:#dcb64a;}
+  button.primary:focus-visible{outline:2px solid var(--parchment);outline-offset:3px;}
+  button.primary:disabled{background:var(--brass-dim); cursor:progress;}
+
+  .status{
+    margin-top:16px;
+    font-size:14px;
+    display:none;
+  }
+  .status.show{display:block;}
+  .status.error{color:var(--error);}
+
+  .result{
+    display:none;
+    margin-top:28px;
+    border:1px solid var(--brass-dim);
+    padding:24px;
+  }
+  .result.show{display:block;}
+  .result h2{
+    font-family:'Cormorant Garamond',serif;
+    font-size:22px;
+    margin:0 0 12px;
+    color:var(--ok);
+  }
+  .link-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .link-row input{
+    flex:1;
+    border:1px solid var(--brass-dim);
+    border-bottom:1px solid var(--brass-dim);
+    padding:10px 12px;
+    font-size:14px;
+    direction:ltr;
+    text-align:left;
+  }
+  .link-row button{
+    background:transparent;
+    border:1px solid var(--brass);
+    color:var(--brass);
+    font-family:'Cairo',sans-serif;
+    padding:0 18px;
+    cursor:pointer;
+    font-size:14px;
+    white-space:nowrap;
+  }
+  .link-row button:hover{background:rgba(201,162,39,0.12);}
+  .result-actions{display:flex;gap:16px;font-size:14px;flex-wrap:wrap;}
+  .result-actions a{color:var(--blossom); text-decoration:underline;}
+  .result-actions button.linklike{
+    background:none;border:0;color:var(--parchment-dim);text-decoration:underline;
+    cursor:pointer;font-family:'Cairo',sans-serif;font-size:14px;padding:0;
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- المعاينة الحية -->
+  <div class="preview-panel">
+    <div class="invite-card" id="previewCard" aria-hidden="true">
+      <div class="invite-eyebrow">دعوة زفاف</div>
+      <div class="invite-names" id="pvNames">
+        <span class="invite-placeholder">العروسة</span>
+        <span class="invite-amp"> &amp; </span>
+        <span class="invite-placeholder">العريس</span>
+      </div>
+      <div class="invite-rule"></div>
+      <div class="invite-datetime" id="pvDateTime"><span class="invite-placeholder">التاريخ والوقت هيظهروا هنا</span></div>
+      <div class="invite-venue" id="pvVenue"><span class="invite-placeholder">اسم القاعة</span></div>
+      <div class="invite-city" id="pvCity"><span class="invite-placeholder">المدينة</span></div>
+    </div>
+  </div>
+
+  <!-- الفورم -->
+  <div class="form-panel">
+    <div class="brand">Blossom &amp; Oud — استوديو الدعوات</div>
+    <h1>اعمل دعوة زفاف بلينك خاص بيك</h1>
+    <p class="subtitle">إملا بيانات العروسين، وهيتولّدلك لينك فريد تقدر تبعته لأي حد، ويشوف الدعوة بتصميمها الكامل.</p>
+
+    <form id="inviteForm" novalidate>
+      <fieldset>
+        <legend>أسماء العروسين</legend>
+        <div class="row">
+          <div class="field">
+            <label for="brideName">اسم العروسة (بالحروف اللاتينية)</label>
+            <input id="brideName" name="brideName" type="text" placeholder="Amira" required maxlength="60" />
+          </div>
+          <div class="field">
+            <label for="groomName">اسم العريس (بالحروف اللاتينية)</label>
+            <input id="groomName" name="groomName" type="text" placeholder="Yusuf" required maxlength="60" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="brideNameAr">اسم العروسة بالعربي</label>
+            <input id="brideNameAr" name="brideNameAr" type="text" placeholder="أميرة" required maxlength="60" />
+          </div>
+          <div class="field">
+            <label for="groomNameAr">اسم العريس بالعربي</label>
+            <input id="groomNameAr" name="groomNameAr" type="text" placeholder="يوسف" required maxlength="60" />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>المكان والمعاد</legend>
+        <div class="field">
+          <label for="venueName">اسم القاعة / المكان</label>
+          <input id="venueName" name="venueName" type="text" placeholder="Beldi Country Club" required maxlength="100" />
+        </div>
+        <div class="field">
+          <label for="venueCity">المدينة</label>
+          <input id="venueCity" name="venueCity" type="text" placeholder="Marrakech, Morocco" required maxlength="100" />
+        </div>
+        <div class="field">
+          <label for="weddingDateTime">تاريخ ووقت الفرح</label>
+          <input id="weddingDateTime" name="weddingDateTime" type="datetime-local" required />
+          <div class="hint">هنولّد منه تلقائيًا كل الأشكال (فرنساوي، عربي، والعداد التنازلي) — مفيش داعي تكتبهم يدويًا.</div>
+        </div>
+        <div class="field">
+          <label for="venueMapQuery">عنوان دقيق لخرائط جوجل (اختياري)</label>
+          <input id="venueMapQuery" name="venueMapQuery" type="text" placeholder="لو سبته فاضي هنستخدم اسم القاعة + المدينة" maxlength="140" />
+        </div>
+      </fieldset>
+
+      <button type="submit" class="primary" id="submitBtn">إنشاء الدعوة</button>
+      <div class="status" id="statusMsg" role="status" aria-live="polite"></div>
+    </form>
+
+    <div class="result" id="resultBox">
+      <h2>الدعوة اتعملت 🎉</h2>
+      <div class="link-row">
+        <input type="text" id="resultLink" readonly />
+        <button type="button" id="copyBtn">نسخ اللينك</button>
+      </div>
+      <div class="result-actions">
+        <a id="previewLink" href="#" target="_blank" rel="noopener">افتح الدعوة في تاب جديد</a>
+        <button type="button" class="linklike" id="resetBtn">اعمل دعوة تانية</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var form = document.getElementById('inviteForm');
+  var submitBtn = document.getElementById('submitBtn');
+  var statusMsg = document.getElementById('statusMsg');
+  var resultBox = document.getElementById('resultBox');
+  var resultLink = document.getElementById('resultLink');
+  var previewLink = document.getElementById('previewLink');
+  var copyBtn = document.getElementById('copyBtn');
+  var resetBtn = document.getElementById('resetBtn');
+
+  var pvNames = document.getElementById('pvNames');
+  var pvDateTime = document.getElementById('pvDateTime');
+  var pvVenue = document.getElementById('pvVenue');
+  var pvCity = document.getElementById('pvCity');
+
+  var FRENCH_MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+  function esc(s){
+    var div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  function updatePreview(){
+    var bride = form.brideNameAr.value.trim() || form.brideName.value.trim();
+    var groom = form.groomNameAr.value.trim() || form.groomName.value.trim();
+    pvNames.innerHTML =
+      (bride ? esc(bride) : '<span class="invite-placeholder">العروسة</span>') +
+      '<span class="invite-amp"> &amp; </span>' +
+      (groom ? esc(groom) : '<span class="invite-placeholder">العريس</span>');
+
+    var dtVal = form.weddingDateTime.value;
+    if (dtVal){
+      var d = new Date(dtVal);
+      if (!isNaN(d.getTime())){
+        var dateStr = d.getDate() + ' ' + FRENCH_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+        var h = d.getHours(), m = d.getMinutes();
+        var timeStr = m === 0 ? (h + 'h') : (h + 'h' + String(m).padStart(2,'0'));
+        pvDateTime.textContent = dateStr + ' — ' + timeStr;
+      }
+    } else {
+      pvDateTime.innerHTML = '<span class="invite-placeholder">التاريخ والوقت هيظهروا هنا</span>';
+    }
+
+    var venue = form.venueName.value.trim();
+    pvVenue.innerHTML = venue ? esc(venue) : '<span class="invite-placeholder">اسم القاعة</span>';
+    var city = form.venueCity.value.trim();
+    pvCity.innerHTML = city ? esc(city) : '<span class="invite-placeholder">المدينة</span>';
+  }
+
+  ['brideName','groomName','brideNameAr','groomNameAr','venueName','venueCity','weddingDateTime'].forEach(function(name){
+    form[name].addEventListener('input', updatePreview);
+  });
+
+  function setStatus(msg, isError){
+    statusMsg.textContent = msg;
+    statusMsg.className = 'status show' + (isError ? ' error' : '');
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    setStatus('', false);
+    statusMsg.className = 'status';
+
+    var payload = {
+      brideName: form.brideName.value.trim(),
+      groomName: form.groomName.value.trim(),
+      brideNameAr: form.brideNameAr.value.trim(),
+      groomNameAr: form.groomNameAr.value.trim(),
+      venueName: form.venueName.value.trim(),
+      venueCity: form.venueCity.value.trim(),
+      venueMapQuery: form.venueMapQuery.value.trim(),
+      weddingDateTime: form.weddingDateTime.value,
+    };
+
+    for (var key in payload){
+      if (key !== 'venueMapQuery' && !payload[key]){
+        setStatus('من فضلك املا كل الحقول المطلوبة قبل ما تكمل.', true);
+        return;
+      }
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'جاري الإنشاء...';
+
+    fetch('/api/invitations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then(function(r){ return r.json().then(function(data){ return { ok: r.ok, data: data }; }); })
+      .then(function(res){
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'إنشاء الدعوة';
+        if (!res.ok){
+          setStatus(res.data.error || 'حصل خطأ، حاول تاني.', true);
+          return;
+        }
+        var fullUrl = window.location.origin + res.data.path;
+        resultLink.value = fullUrl;
+        previewLink.href = fullUrl;
+        resultBox.className = 'result show';
+        form.style.display = 'none';
+        statusMsg.className = 'status';
+      })
+      .catch(function(){
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'إنشاء الدعوة';
+        setStatus('السيرفر مش راضي يرد، تأكد من الاتصال وحاول تاني.', true);
+      });
+  });
+
+  copyBtn.addEventListener('click', function(){
+    resultLink.select();
+    navigator.clipboard.writeText(resultLink.value).then(function(){
+      copyBtn.textContent = 'اتنسخ ✓';
+      setTimeout(function(){ copyBtn.textContent = 'نسخ اللينك'; }, 1800);
+    });
+  });
+
+  resetBtn.addEventListener('click', function(){
+    form.reset();
+    updatePreview();
+    resultBox.className = 'result';
+    form.style.display = 'block';
+  });
+
+  updatePreview();
+})();
+</script>
+</body>
+</html>
