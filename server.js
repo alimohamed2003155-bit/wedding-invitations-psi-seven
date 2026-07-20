@@ -23,9 +23,10 @@ app.use(cors());
 app.use(express.json({ limit: '20kb' }));
 app.use(cookieParser());
 
-// بنتأكد إن قاعدة البيانات متصلة قبل أي طلب (الاتصال متكاش، فده سريع
-// في أغلب الأحيان — الاتصال الفعلي بيحصل مرة واحدة بس)
-app.use(async (req, res, next) => {
+// بنتأكد إن قاعدة البيانات متصلة قبل أي طلب يحتاجها فعليًا (إنشاء/عرض دعوة).
+// المعاينة الحية وقائمة القوالب (/api/preview, /api/templates) مايحتاجوش
+// قاعدة بيانات أصلًا، فبيفضلوا شغالين حتى لو حصلت مشكلة مؤقتة في الاتصال.
+const requireDB = async (req, res, next) => {
   try {
     await connectDB();
     next();
@@ -33,7 +34,9 @@ app.use(async (req, res, next) => {
     console.error('DB connection error:', err.message);
     res.status(503).json({ error: 'السيرفر مش قادر يوصل لقاعدة البيانات دلوقتي.' });
   }
-});
+};
+app.use('/api/invitations', requireDB);
+app.use('/i', requireDB);
 
 // صفحة إنشاء الدعوة + أي ملفات ثابتة تانية
 // (ملحوظة: لو استضفت المشروع على Vercel، فولدر public بيتقدّم من الـ CDN
@@ -55,6 +58,17 @@ const ipLimiter = rateLimit({
 // 2) خط الدفاع الأساسي والدقيق: حد لكل جهاز (متخزن في قاعدة البيانات، فبيشتغل
 //    صح حتى لو السيرفر شغال على منصة سيرفرلس زي Vercel أو خلف أكتر من نسخة)
 app.use('/api/invitations', ipLimiter, ensureDeviceId, deviceInvitationLimiter);
+
+// المعاينة الحية بتتنادى كل شوية وهو بيكتب في الفورم، فمحتاجة سقف أعلى
+// بكتير من إنشاء الدعوة الفعلي (مفيش حفظ في قاعدة البيانات هنا أصلًا)
+const previewLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'استنى شوية وجرب تاني.' },
+});
+app.use('/api/preview', previewLimiter);
 
 app.use('/', invitationsRouter);
 

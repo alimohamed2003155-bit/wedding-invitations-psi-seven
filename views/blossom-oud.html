@@ -149,6 +149,8 @@
         <script>
             // القيم دي بتتحقن من السيرفر وقت ما أي حد يفتح لينك الدعوة —
             // كل دعوة ليها بياناتها الخاصة المحفوظة في قاعدة البيانات.
+            // كل النصوص الثابتة (عناوين الأقسام، تسميات الجدول الزمني...) جاهية
+            // جاهزة اللغة والمناسبة من السيرفر جوه C نفسه، الملف ده مش بيقرر لغة.
             window.WEDDING_CONFIG = __INVITATION_CONFIG_JSON__;
 
             document.addEventListener('DOMContentLoaded', function () {
@@ -157,32 +159,91 @@
                     var el = document.querySelector(sel);
                     if (el) el.innerHTML = html;
                 }
+                function hideRec(recId) {
+                    var el = document.getElementById(recId);
+                    if (el) el.style.display = 'none';
+                }
+                var hidden = C.hiddenSections || [];
 
-                // الشاشة الرئيسية: اسم العروسة والعريس + التاريخ + الوقت
+                // ===== الشاشة الرئيسية: اسم العروسة والعريس + التاريخ + الوقت =====
                 setHTML('#rec2339662063 [field="tn_text_1779566247730000001"]', C.brideName + '<br><br><br>' + C.groomName);
-                setHTML('#rec2339662063 [field="tn_text_1779566247730000003"]', C.dateDisplay);
-                setHTML('#rec2339662063 [field="tn_text_1779626065755000001"]', C.timeDisplay);
+                setHTML('#rec2339662063 [field="tn_text_1779566247730000003"]', C.heroDateDisplay);
+                setHTML('#rec2339662063 [field="tn_text_1779626065755000001"]', C.heroTimeDisplay);
+                setHTML('#rec2339662043 [field="tn_text_1777183175514000001"]', C.tapToOpen);
 
-                // فقرة الدعوة بالعربي + اسم القاعة تحتها
-                setHTML('#rec2339662083 [field="tn_text_1779624381838000001"]',
-                    'الانسة ' + C.brideNameAr + ' السيد ' + C.groomNameAr + '<br><br>' +
-                    'يسعدهما ويشرفهما أن يدعوا حضرتكم الكريمة<br>' +
-                    'لمشاركتهما فرحة حفل زفافهما<br><br>' +
-                    'وذلك بمشيئة الله تعالى يوم ' + C.dayNameAr + ' ' + C.dateArabicDisplay + ' <br>' +
-                    'على الساعة ' + C.hourArabicDisplay + '<br><br>' +
-                    'بقاعة <br><br>'
-                );
+                // ===== فقرة الدعوة (جاهزة بالكامل من السيرفر حسب اللغة والمناسبة) =====
+                setHTML('#rec2339662083 [field="tn_text_1779624381838000001"]', C.mainParagraphHtml);
                 setHTML('#rec2339662083 [field="tn_text_1779472210551000005"]', C.venueName);
 
-                // قسم "Lieu" (الموقع)
+                // ===== قسم الموقع (Lieu / Venue / المكان) =====
+                setHTML('#rec2339662113 [field="tn_text_1771277026942000001"]', C.venueTitle);
                 setHTML('#rec2339662113 [field="tn_text_1779544773135"]', C.venueName);
                 setHTML('#rec2339662113 [field="tn_text_1779545032699000001"]', C.venueCity);
-
-                // خريطة جوجل embed — بتتظبط تلقائي على اسم القاعة اللي فوق
                 var mapFrame = document.getElementById('venueMapFrame');
                 if (mapFrame) {
                     mapFrame.src = 'https://www.google.com/maps?q=' + encodeURIComponent(C.venueMapQuery) + '&output=embed';
                 }
+
+                // ===== العداد التنازلي =====
+                if (hidden.indexOf('countdown') === -1) {
+                    setHTML('#rec2339662093 [field="tn_text_1771277026942000001"]', C.celebrationBegins);
+                    ['days', 'hours', 'minutes', 'seconds'].forEach(function (key) {
+                        var numEl = document.getElementById(key);
+                        if (numEl && numEl.nextElementSibling) {
+                            numEl.nextElementSibling.textContent = C.countdownLabels[key];
+                        }
+                    });
+                } else {
+                    hideRec('rec2339662093');
+                }
+
+                // ===== جدول أوقات الحفلة (٤ مراحل: استقبال/عقد قران/عشاء/حفلة) =====
+                if (hidden.indexOf('timeline') === -1) {
+                    setHTML('#rec2355511493 [field="tn_text_1771277026942000001"]', C.timelineTitle);
+                    var stageFieldMap = [
+                        { labelField: 'tn_text_1780760554667000001', timeField: 'tn_text_1780760554667000002' },
+                        { labelField: 'tn_text_1780760554667000003', timeField: 'tn_text_1780760554668000004' },
+                        { labelField: 'tn_text_1780760554668000005', timeField: 'tn_text_1780760554668000006' },
+                        { labelField: 'tn_text_1780760554668000007', timeField: 'tn_text_1780760554668000008' },
+                    ];
+                    (C.timelineStages || []).forEach(function (stage, i) {
+                        if (!stageFieldMap[i]) return;
+                        setHTML('#rec2355511493 [field="' + stageFieldMap[i].labelField + '"]', stage.label);
+                        setHTML('#rec2355511493 [field="' + stageFieldMap[i].timeField + '"]', stage.time);
+                    });
+                } else {
+                    hideRec('rec2355511493');
+                }
+
+                // ===== الزي المقترح (Dress Code) =====
+                if (hidden.indexOf('dressCode') === -1) {
+                    setHTML('#rec2355542373 [field="tn_text_1771277026942000001"]', C.dressCodeTitle);
+                    setHTML('#rec2355542373 [field="tn_text_1780768374065000001"]', C.colorPalette);
+                    setHTML('#rec2355574603 [field="tn_text_1780767478919000003"]', C.ladiesLabel);
+                    setHTML('#rec2355574603 [field="tn_text_1780767518772000004"]', C.gentlemenLabel);
+                    setHTML('#rec2355574603 [field="tn_text_1780767449362000001"]', C.ladiesDesc);
+                    setHTML('#rec2355574603 [field="tn_text_1780767518772000005"]', C.gentlemenDesc);
+                } else {
+                    hideRec('rec2355542373');
+                    hideRec('rec2355574603');
+                }
+
+                // ===== تأكيد الحضور (RSVP) =====
+                if (hidden.indexOf('rsvp') === -1) {
+                    setHTML('#rec2339662123 [field="tn_text_1771277026942000001"]', C.rsvpTitle);
+                } else {
+                    hideRec('rec2339662123');
+                }
+
+                // ===== رابط خرائط جوجل =====
+                if (hidden.indexOf('map') === -1) {
+                    setHTML('#rec2339662133 [field="tn_text_1771277026942000001"]', C.mapTitle);
+                } else {
+                    hideRec('rec2339662133');
+                }
+
+                // ===== سطر الختام =====
+                setHTML('#rec2339662163 [field="tn_text_1763405219328"]', C.closingLine);
 
                 // عنوان تبويب المتصفح
                 document.title = C.brideName + ' & ' + C.groomName;

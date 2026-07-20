@@ -23,6 +23,34 @@ const ARABIC_HOURS = [
   'السادسة', 'السابعة', 'الثامنة', 'التاسعة', 'العاشرة', 'الحادية عشر',
 ];
 
+const ENGLISH_MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+const ENGLISH_DAYS = [
+  'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+];
+
+/**
+ * تنسيق أي ساعة مفردة (0-23) لصيغة "12 ساعة" مقروءة — مستخدمة في عرض
+ * أوقات مراحل الحفلة (استقبال/عقد قران/عشاء/حفلة) بلغات مختلفة.
+ * @param {number} hour24 - 0..23
+ * @param {'ar'|'en'|'fr'} language
+ * @returns {string}
+ */
+function formatHour(hour24, language) {
+  const period12 = hour24 < 12 ? 'AM' : 'PM';
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+
+  if (language === 'ar') {
+    const period = hour24 < 12 ? 'صباحًا' : 'مساءً';
+    return `${hour12}:00 ${period}`;
+  }
+  // en / fr: نفس الصيغة الرقمية الشائعة
+  return `${hour12}:00 ${period12}`;
+}
+
 /**
  * @param {Date} date - معاد الفرح (بتوقيت محلي)
  * @returns {object} كل الحقول اللي التصميم بيحتاجها
@@ -45,6 +73,11 @@ function buildDisplayFields(date) {
   const dayNameAr = ARABIC_DAYS[date.getDay()];
   const dateArabicDisplay = `${day} ${ARABIC_MONTHS[monthIndex]} ${year}`;
 
+  // الشكل الإنجليزي: "20 May 2027" + اسم اليوم
+  const dayNameEn = ENGLISH_DAYS[date.getDay()];
+  const dateDisplayEn = `${day} ${ENGLISH_MONTHS[monthIndex]} ${year}`;
+  const timeDisplayEn = `Starting at ${formatHour(hour24, 'en')}`;
+
   // صياغة الوقت بالعربي بشكل طبيعي: "الرابعة مساءً" / "الرابعة والنصف مساءً" / "الرابعة إلا ربع مساءً"
   const period = hour24 < 12 ? 'صباحًا' : 'مساءً';
   const hour12 = hour24 % 12; // 0..11 (0 يعني 12)
@@ -63,7 +96,7 @@ function buildDisplayFields(date) {
   // نفس المعاد بالظبط بصيغة رقمية عشان العداد التنازلي في الصفحة
   const countdown = { year, monthIndex, day, hour: hour24, minute };
 
-  return { dateDisplay, timeDisplay, dayNameAr, dateArabicDisplay, hourArabicDisplay, countdown };
+  return { dateDisplay, timeDisplay, dayNameAr, dateArabicDisplay, hourArabicDisplay, dayNameEn, dateDisplayEn, timeDisplayEn, countdown };
 }
 
-module.exports = { buildDisplayFields };
+module.exports = { buildDisplayFields, formatHour };

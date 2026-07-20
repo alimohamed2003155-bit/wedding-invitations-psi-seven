@@ -16,9 +16,8 @@
     --brass:#c9a227;
     --brass-dim:#8c7238;
     --blossom:#c98a93;
-    --error:#d97757; /* استخدام محدود جدًا: رسائل الخطأ فقط */
+    --error:#d97757;
     --ok:#8fae82;
-    --radius:2px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -32,10 +31,10 @@
   a{color:inherit;}
   .layout{
     display:grid;
-    grid-template-columns:minmax(0,480px) minmax(0,560px);
+    grid-template-columns:minmax(0,560px) minmax(0,480px);
     min-height:100vh;
   }
-  @media (max-width:900px){
+  @media (max-width:960px){
     .layout{grid-template-columns:1fr;}
   }
 
@@ -45,67 +44,56 @@
       radial-gradient(circle at 30% 20%, rgba(201,162,39,0.10), transparent 55%),
       radial-gradient(circle at 80% 80%, rgba(201,138,147,0.08), transparent 50%),
       var(--ink-soft);
-    padding:56px 40px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    position:sticky;
-    top:0;
-    height:100vh;
-    border-inline-end:1px solid rgba(201,162,39,0.18);
-  }
-  @media (max-width:900px){
-    .preview-panel{position:relative; height:auto; padding:36px 20px;}
-  }
-  .invite-card{
-    width:100%;
-    max-width:380px;
-    aspect-ratio:5/7;
-    border:1px solid var(--brass-dim);
-    position:relative;
-    padding:34px 26px;
+    padding:32px;
     display:flex;
     flex-direction:column;
     align-items:center;
-    justify-content:center;
-    text-align:center;
-    gap:18px;
-    background:rgba(237,227,211,0.02);
+    position:sticky;
+    top:0;
+    height:100vh;
+    border-inline-start:1px solid rgba(201,162,39,0.18);
   }
-  .invite-card::before,.invite-card::after{
-    content:'';
-    position:absolute;
-    inset:8px;
-    border:1px solid rgba(201,162,39,0.35);
-    pointer-events:none;
+  @media (max-width:960px){
+    .preview-panel{position:relative; height:auto; padding:20px;}
   }
-  .invite-eyebrow{
-    font-size:11px;
-    letter-spacing:0.35em;
+  .preview-label{
+    font-size:12px;
+    letter-spacing:0.15em;
     text-transform:uppercase;
     color:var(--brass);
-    font-family:'Cairo',sans-serif;
+    margin-bottom:10px;
+    align-self:flex-start;
   }
-  .invite-names{
-    font-family:'Cormorant Garamond',serif;
-    font-style:italic;
-    font-size:clamp(28px,6vw,40px);
-    font-weight:600;
-    color:var(--parchment);
-    line-height:1.25;
-    word-break:break-word;
+  .preview-frame-wrap{
+    width:100%;
+    max-width:390px;
+    height:640px;
+    border:1px solid var(--brass-dim);
+    border-radius:2px;
+    overflow:hidden;
+    background:#000;
+    position:relative;
   }
-  .invite-amp{color:var(--blossom);}
-  .invite-rule{width:60px;height:1px;background:var(--brass-dim);}
-  .invite-datetime{font-size:15px;color:var(--parchment-dim);}
-  .invite-venue{font-size:14px;color:var(--parchment);}
-  .invite-city{font-size:12px;color:var(--parchment-dim);letter-spacing:0.05em;}
-  .invite-placeholder{color:var(--parchment-dim); opacity:0.55;}
+  @media (max-height:760px){ .preview-frame-wrap{ height:520px; } }
+  .preview-frame-wrap iframe{
+    width:100%;
+    height:100%;
+    border:0;
+    display:block;
+  }
+  .preview-note{
+    font-size:12px;
+    color:var(--parchment-dim);
+    margin-top:12px;
+    max-width:390px;
+    text-align:center;
+    opacity:0.8;
+  }
 
   /* ===== لوحة الفورم ===== */
-  .form-panel{padding:56px 44px 80px;}
-  @media (max-width:900px){.form-panel{padding:36px 20px 60px;}}
-  @media (max-width:480px){.form-panel{padding:28px 16px 56px;}}
+  .form-panel{padding:48px 44px 90px;}
+  @media (max-width:960px){.form-panel{padding:32px 20px 60px;}}
+  @media (max-width:480px){.form-panel{padding:24px 16px 56px;}}
 
   .brand{
     font-family:'Cormorant Garamond',serif;
@@ -117,30 +105,30 @@
   h1{
     font-family:'Cormorant Garamond',serif;
     font-weight:600;
-    font-size:clamp(28px,4vw,36px);
+    font-size:clamp(26px,3.6vw,34px);
     margin:0 0 8px;
   }
   .subtitle{
     color:var(--parchment-dim);
     font-size:15px;
-    margin:0 0 40px;
-    max-width:46ch;
+    margin:0 0 32px;
+    max-width:52ch;
   }
 
-  fieldset{border:0;padding:0;margin:0 0 32px;}
+  fieldset{border:0;padding:0;margin:0 0 30px;}
   legend{
     font-size:12px;
     letter-spacing:0.15em;
     text-transform:uppercase;
     color:var(--brass);
-    margin-bottom:16px;
+    margin-bottom:14px;
     padding:0;
   }
   .row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
   @media (max-width:560px){.row{grid-template-columns:1fr;}}
   .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
   label{font-size:13px;color:var(--parchment-dim);}
-  input{
+  input,select{
     background:transparent;
     border:0;
     border-bottom:1px solid var(--brass-dim);
@@ -150,14 +138,39 @@
     padding:10px 2px;
     border-radius:0;
   }
+  select{cursor:pointer;}
+  select option{background:var(--ink-soft); color:var(--parchment);}
   input::placeholder{color:rgba(201,189,169,0.4);}
-  input:focus{
+  input:focus,select:focus{
     outline:none;
     border-bottom-color:var(--brass);
     box-shadow:0 1px 0 0 var(--brass);
   }
-  input:focus-visible{outline:2px solid var(--brass);outline-offset:4px;}
   .hint{font-size:12px;color:var(--parchment-dim);opacity:0.75;margin-top:-4px;}
+
+  /* بطاقات الاختيار (قالب / نوع مناسبة / لغة) */
+  .choice-cards{display:flex;flex-wrap:wrap;gap:10px;}
+  .choice-card{
+    border:1px solid var(--brass-dim);
+    padding:10px 18px;
+    cursor:pointer;
+    font-size:14px;
+    user-select:none;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .choice-card.active{
+    border-color:var(--brass);
+    background:rgba(201,162,39,0.12);
+    color:var(--brass);
+  }
+  .choice-card input{display:none;}
+
+  .section-toggle-list{display:flex; flex-direction:column; gap:12px;}
+  .section-toggle{
+    display:flex; align-items:center; gap:10px;
+    font-size:14px; cursor:pointer; user-select:none;
+  }
+  .section-toggle input{width:16px; height:16px; accent-color:var(--brass); padding:0;}
 
   button.primary{
     width:100%;
@@ -173,56 +186,26 @@
     transition:background 0.15s ease;
   }
   button.primary:hover{background:#dcb64a;}
-  button.primary:focus-visible{outline:2px solid var(--parchment);outline-offset:3px;}
   button.primary:disabled{background:var(--brass-dim); cursor:progress;}
 
-  .status{
-    margin-top:16px;
-    font-size:14px;
-    display:none;
-  }
+  .status{margin-top:16px; font-size:14px; display:none;}
   .status.show{display:block;}
   .status.error{color:var(--error);}
 
-  .result{
-    display:none;
-    margin-top:28px;
-    border:1px solid var(--brass-dim);
-    padding:24px;
-  }
+  .result{display:none; margin-top:28px; border:1px solid var(--brass-dim); padding:24px;}
   .result.show{display:block;}
-  .result h2{
-    font-family:'Cormorant Garamond',serif;
-    font-size:22px;
-    margin:0 0 12px;
-    color:var(--ok);
-  }
-  .link-row{
-    display:flex;
-    gap:8px;
-    margin-bottom:14px;
-  }
+  .result h2{font-family:'Cormorant Garamond',serif; font-size:22px; margin:0 0 12px; color:var(--ok);}
+  .link-row{display:flex; gap:8px; margin-bottom:14px;}
   .link-row input{
-    flex:1;
-    border:1px solid var(--brass-dim);
-    border-bottom:1px solid var(--brass-dim);
-    padding:10px 12px;
-    font-size:14px;
-    direction:ltr;
-    text-align:left;
+    flex:1; border:1px solid var(--brass-dim); padding:10px 12px;
+    font-size:14px; direction:ltr; text-align:left;
   }
   .link-row button{
-    background:transparent;
-    border:1px solid var(--brass);
-    color:var(--brass);
-    font-family:'Cairo',sans-serif;
-    padding:0 18px;
-    cursor:pointer;
-    font-size:14px;
-    white-space:nowrap;
+    background:transparent; border:1px solid var(--brass); color:var(--brass);
+    font-family:'Cairo',sans-serif; padding:0 18px; cursor:pointer; font-size:14px; white-space:nowrap;
   }
   .link-row button:hover{background:rgba(201,162,39,0.12);}
-  .result-actions{display:flex;gap:16px;font-size:14px;flex-wrap:wrap;}
+  .result-actions{display:flex; gap:16px; font-size:14px; flex-wrap:wrap;}
   .result-actions a{color:var(--blossom); text-decoration:underline;}
   .result-actions button.linklike{
     background:none;border:0;color:var(--parchment-dim);text-decoration:underline;
@@ -233,29 +216,28 @@
 <body>
 <div class="layout">
 
-  <!-- المعاينة الحية -->
-  <div class="preview-panel">
-    <div class="invite-card" id="previewCard" aria-hidden="true">
-      <div class="invite-eyebrow">دعوة زفاف</div>
-      <div class="invite-names" id="pvNames">
-        <span class="invite-placeholder">العروسة</span>
-        <span class="invite-amp"> &amp; </span>
-        <span class="invite-placeholder">العريس</span>
-      </div>
-      <div class="invite-rule"></div>
-      <div class="invite-datetime" id="pvDateTime"><span class="invite-placeholder">التاريخ والوقت هيظهروا هنا</span></div>
-      <div class="invite-venue" id="pvVenue"><span class="invite-placeholder">اسم القاعة</span></div>
-      <div class="invite-city" id="pvCity"><span class="invite-placeholder">المدينة</span></div>
-    </div>
-  </div>
-
-  <!-- الفورم -->
   <div class="form-panel">
     <div class="brand">Blossom &amp; Oud — استوديو الدعوات</div>
-    <h1>اعمل دعوة زفاف بلينك خاص بيك</h1>
-    <p class="subtitle">إملا بيانات العروسين، وهيتولّدلك لينك فريد تقدر تبعته لأي حد، ويشوف الدعوة بتصميمها الكامل.</p>
+    <h1>اعمل دعوة زفاف أو خطوبة بلينك خاص بيك</h1>
+    <p class="subtitle">إملا البيانات، شوف الدعوة بتصميمها الحقيقي وهي بتتبني قصادك على اليمين، وبعدين اضغط إنشاء.</p>
 
     <form id="inviteForm" novalidate>
+
+      <fieldset>
+        <legend>القالب</legend>
+        <div class="choice-cards" id="templateCards"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>نوع المناسبة</legend>
+        <div class="choice-cards" id="occasionCards"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>لغة الدعوة</legend>
+        <div class="choice-cards" id="languageCards"></div>
+      </fieldset>
+
       <fieldset>
         <legend>أسماء العروسين</legend>
         <div class="row">
@@ -281,7 +263,7 @@
       </fieldset>
 
       <fieldset>
-        <legend>المكان والمعاد</legend>
+        <legend>المكان والتاريخ</legend>
         <div class="field">
           <label for="venueName">اسم القاعة / المكان</label>
           <input id="venueName" name="venueName" type="text" placeholder="Beldi Country Club" required maxlength="100" />
@@ -291,14 +273,23 @@
           <input id="venueCity" name="venueCity" type="text" placeholder="Marrakech, Morocco" required maxlength="100" />
         </div>
         <div class="field">
-          <label for="weddingDateTime">تاريخ ووقت الفرح</label>
-          <input id="weddingDateTime" name="weddingDateTime" type="datetime-local" required />
-          <div class="hint">هنولّد منه تلقائيًا كل الأشكال (فرنساوي، عربي، والعداد التنازلي) — مفيش داعي تكتبهم يدويًا.</div>
+          <label for="weddingDate">تاريخ الحفلة</label>
+          <input id="weddingDate" name="weddingDate" type="date" required />
         </div>
         <div class="field">
           <label for="venueMapQuery">عنوان دقيق لخرائط جوجل (اختياري)</label>
           <input id="venueMapQuery" name="venueMapQuery" type="text" placeholder="لو سبته فاضي هنستخدم اسم القاعة + المدينة" maxlength="140" />
         </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>جدول أوقات الحفلة (ساعة بس، من غير دقايق)</legend>
+        <div class="row" id="timelineFields"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>أقسام تقدر تشيلها من الدعوة لو مش عايزها</legend>
+        <div class="section-toggle-list" id="sectionToggles"></div>
       </fieldset>
 
       <button type="submit" class="primary" id="submitBtn">إنشاء الدعوة</button>
@@ -318,6 +309,14 @@
     </div>
   </div>
 
+  <div class="preview-panel">
+    <div class="preview-label">معاينة حية للتصميم الحقيقي</div>
+    <div class="preview-frame-wrap">
+      <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin" title="معاينة الدعوة"></iframe>
+    </div>
+    <div class="preview-note">المعاينة دي نفس التصميم اللي صحابك هيشوفوه بالظبط — من غير ما نحفظ حاجة لحد ما تضغط "إنشاء الدعوة".</div>
+  </div>
+
 </div>
 
 <script>
@@ -330,49 +329,166 @@
   var previewLink = document.getElementById('previewLink');
   var copyBtn = document.getElementById('copyBtn');
   var resetBtn = document.getElementById('resetBtn');
+  var previewFrame = document.getElementById('previewFrame');
 
-  var pvNames = document.getElementById('pvNames');
-  var pvDateTime = document.getElementById('pvDateTime');
-  var pvVenue = document.getElementById('pvVenue');
-  var pvCity = document.getElementById('pvCity');
+  var templateCardsEl = document.getElementById('templateCards');
+  var occasionCardsEl = document.getElementById('occasionCards');
+  var languageCardsEl = document.getElementById('languageCards');
+  var timelineFieldsEl = document.getElementById('timelineFields');
+  var sectionTogglesEl = document.getElementById('sectionToggles');
 
-  var FRENCH_MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  var OCCASION_LABELS = { wedding: 'فرح', engagement: 'خطوبة' };
+  var LANGUAGE_LABELS = { ar: 'عربي', en: 'English', fr: 'Français' };
+  var STAGE_LABELS = {
+    reception: 'وقت الاستقبال',
+    ceremony: 'وقت عقد القران / الخطوبة',
+    dinner: 'وقت العشاء',
+    party: 'وقت الحفلة',
+  };
+  var STAGE_DEFAULT_HOURS = { reception: 16, ceremony: 17, dinner: 19, party: 20 };
 
-  function esc(s){
-    var div = document.createElement('div');
-    div.textContent = s;
-    return div.innerHTML;
+  var templates = [];
+  var currentTemplate = null;
+  var state = { templateId: null, occasionType: 'wedding', language: 'ar' };
+
+  function hourOptionsHTML(selectedHour){
+    var opts = '';
+    for (var h = 0; h < 24; h++){
+      var period = h < 12 ? 'صباحًا' : 'مساءً';
+      var h12 = h % 12 === 0 ? 12 : h % 12;
+      var label = h12 + ':00 ' + period;
+      opts += '<option value="' + h + '"' + (h === selectedHour ? ' selected' : '') + '>' + label + '</option>';
+    }
+    return opts;
   }
 
-  function updatePreview(){
-    var bride = form.brideNameAr.value.trim() || form.brideName.value.trim();
-    var groom = form.groomNameAr.value.trim() || form.groomName.value.trim();
-    pvNames.innerHTML =
-      (bride ? esc(bride) : '<span class="invite-placeholder">العروسة</span>') +
-      '<span class="invite-amp"> &amp; </span>' +
-      (groom ? esc(groom) : '<span class="invite-placeholder">العريس</span>');
+  function renderChoiceCards(container, items, groupName, currentValue, onPick){
+    container.innerHTML = items.map(function(item){
+      var active = item.value === currentValue ? ' active' : '';
+      return '<label class="choice-card' + active + '">' +
+        '<input type="radio" name="' + groupName + '" value="' + item.value + '"' + (item.value === currentValue ? ' checked' : '') + ' />' +
+        item.label + '</label>';
+    }).join('');
+    Array.prototype.forEach.call(container.querySelectorAll('input'), function(input){
+      input.addEventListener('change', function(){
+        onPick(input.value);
+        renderChoiceCards(container, items, groupName, input.value, onPick);
+      });
+    });
+  }
 
-    var dtVal = form.weddingDateTime.value;
-    if (dtVal){
-      var d = new Date(dtVal);
-      if (!isNaN(d.getTime())){
-        var dateStr = d.getDate() + ' ' + FRENCH_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
-        var h = d.getHours(), m = d.getMinutes();
-        var timeStr = m === 0 ? (h + 'h') : (h + 'h' + String(m).padStart(2,'0'));
-        pvDateTime.textContent = dateStr + ' — ' + timeStr;
-      }
-    } else {
-      pvDateTime.innerHTML = '<span class="invite-placeholder">التاريخ والوقت هيظهروا هنا</span>';
+  function renderTimelineFields(){
+    if (!currentTemplate) return;
+    timelineFieldsEl.innerHTML = currentTemplate.timelineStages.map(function(key){
+      var id = 'stage_' + key;
+      return '<div class="field">' +
+        '<label for="' + id + '">' + (STAGE_LABELS[key] || key) + '</label>' +
+        '<select id="' + id + '" data-stage-key="' + key + '">' + hourOptionsHTML(STAGE_DEFAULT_HOURS[key] || 18) + '</select>' +
+        '</div>';
+    }).join('');
+    Array.prototype.forEach.call(timelineFieldsEl.querySelectorAll('select'), function(sel){
+      sel.addEventListener('change', schedulePreview);
+    });
+  }
+
+  function renderSectionToggles(){
+    if (!currentTemplate) return;
+    sectionTogglesEl.innerHTML = currentTemplate.optionalSections.map(function(s){
+      var id = 'section_' + s.key;
+      return '<label class="section-toggle">' +
+        '<input type="checkbox" id="' + id + '" data-section-key="' + s.key + '" checked />' +
+        s.label + '</label>';
+    }).join('');
+    Array.prototype.forEach.call(sectionTogglesEl.querySelectorAll('input'), function(cb){
+      cb.addEventListener('change', schedulePreview);
+    });
+  }
+
+  function applyTemplate(templateId){
+    currentTemplate = templates.find(function(t){ return t.id === templateId; }) || templates[0];
+    state.templateId = currentTemplate.id;
+
+    if (currentTemplate.occasionTypes.indexOf(state.occasionType) === -1){
+      state.occasionType = currentTemplate.occasionTypes[0];
+    }
+    if (currentTemplate.languages.indexOf(state.language) === -1){
+      state.language = currentTemplate.languages[0];
     }
 
-    var venue = form.venueName.value.trim();
-    pvVenue.innerHTML = venue ? esc(venue) : '<span class="invite-placeholder">اسم القاعة</span>';
-    var city = form.venueCity.value.trim();
-    pvCity.innerHTML = city ? esc(city) : '<span class="invite-placeholder">المدينة</span>';
+    renderChoiceCards(occasionCardsEl, currentTemplate.occasionTypes.map(function(o){
+      return { value: o, label: OCCASION_LABELS[o] || o };
+    }), 'occasionType', state.occasionType, function(v){ state.occasionType = v; schedulePreview(); });
+
+    renderChoiceCards(languageCardsEl, currentTemplate.languages.map(function(l){
+      return { value: l, label: LANGUAGE_LABELS[l] || l };
+    }), 'language', state.language, function(v){ state.language = v; schedulePreview(); });
+
+    renderTimelineFields();
+    renderSectionToggles();
+    schedulePreview();
   }
 
-  ['brideName','groomName','brideNameAr','groomNameAr','venueName','venueCity','weddingDateTime'].forEach(function(name){
-    form[name].addEventListener('input', updatePreview);
+  function loadTemplates(){
+    fetch('/api/templates').then(function(r){ return r.json(); }).then(function(list){
+      templates = list;
+      if (!templates.length) return;
+      renderChoiceCards(templateCardsEl, templates.map(function(t){
+        return { value: t.id, label: t.name };
+      }), 'templateId', templates[0].id, function(v){ applyTemplate(v); });
+      applyTemplate(templates[0].id);
+    }).catch(function(){
+      templateCardsEl.innerHTML = '<span style="color:var(--error)">تعذر تحميل القوالب — تأكد إن السيرفر شغال.</span>';
+    });
+  }
+
+  function collectPayload(){
+    var timeline = [];
+    Array.prototype.forEach.call(timelineFieldsEl.querySelectorAll('select'), function(sel){
+      timeline.push({ key: sel.getAttribute('data-stage-key'), hour: parseInt(sel.value, 10) });
+    });
+    var hiddenSections = [];
+    Array.prototype.forEach.call(sectionTogglesEl.querySelectorAll('input'), function(cb){
+      if (!cb.checked) hiddenSections.push(cb.getAttribute('data-section-key'));
+    });
+
+    return {
+      templateId: state.templateId,
+      occasionType: state.occasionType,
+      language: state.language,
+      brideName: form.brideName.value.trim(),
+      groomName: form.groomName.value.trim(),
+      brideNameAr: form.brideNameAr.value.trim(),
+      groomNameAr: form.groomNameAr.value.trim(),
+      venueName: form.venueName.value.trim(),
+      venueCity: form.venueCity.value.trim(),
+      venueMapQuery: form.venueMapQuery.value.trim(),
+      weddingDate: form.weddingDate.value,
+      timeline: timeline,
+      hiddenSections: hiddenSections,
+    };
+  }
+
+  var previewTimer = null;
+  function schedulePreview(){
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(runPreview, 500);
+  }
+
+  function runPreview(){
+    if (!state.templateId) return;
+    var payload = collectPayload();
+    if (!payload.weddingDate) payload.weddingDate = new Date().toISOString().slice(0, 10);
+    fetch('/api/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).then(function(r){ return r.text(); }).then(function(html){
+      previewFrame.srcdoc = html;
+    }).catch(function(){ /* المعاينة اختيارية، مش بنوقف المستخدم لو فشلت */ });
+  }
+
+  ['brideName','groomName','brideNameAr','groomNameAr','venueName','venueCity','venueMapQuery','weddingDate'].forEach(function(name){
+    form[name].addEventListener('input', schedulePreview);
   });
 
   function setStatus(msg, isError){
@@ -382,22 +498,12 @@
 
   form.addEventListener('submit', function(e){
     e.preventDefault();
-    setStatus('', false);
     statusMsg.className = 'status';
 
-    var payload = {
-      brideName: form.brideName.value.trim(),
-      groomName: form.groomName.value.trim(),
-      brideNameAr: form.brideNameAr.value.trim(),
-      groomNameAr: form.groomNameAr.value.trim(),
-      venueName: form.venueName.value.trim(),
-      venueCity: form.venueCity.value.trim(),
-      venueMapQuery: form.venueMapQuery.value.trim(),
-      weddingDateTime: form.weddingDateTime.value,
-    };
-
-    for (var key in payload){
-      if (key !== 'venueMapQuery' && !payload[key]){
+    var payload = collectPayload();
+    var requiredCheck = ['brideName','groomName','brideNameAr','groomNameAr','venueName','venueCity','weddingDate'];
+    for (var i = 0; i < requiredCheck.length; i++){
+      if (!payload[requiredCheck[i]]){
         setStatus('من فضلك املا كل الحقول المطلوبة قبل ما تكمل.', true);
         return;
       }
@@ -443,12 +549,12 @@
 
   resetBtn.addEventListener('click', function(){
     form.reset();
-    updatePreview();
     resultBox.className = 'result';
     form.style.display = 'block';
+    schedulePreview();
   });
 
-  updatePreview();
+  loadTemplates();
 })();
 </script>
 </body>

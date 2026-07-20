@@ -1,0 +1,110 @@
+// utils/renderInvitation.js
+// الدالة دي بتبني صفحة الدعوة الكاملة (HTML) من بيانات خام، من غير ما تحتاج
+// حفظ في قاعدة البيانات. مستخدمة في مكانين:
+//   1) POST /api/preview   — معاينة حية وهي بتتكتب في الفورم (بدون حفظ)
+//   2) GET  /i/:shortId     — العرض النهائي بعد ما الدعوة اتحفظت فعلاً
+// كده الاتنين شغالين بنفس المنطق بالظبط، ومفيش احتمال يحصل فرق بينهم بمرور الوقت.
+
+const fs = require('fs');
+const path = require('path');
+
+const { buildDisplayFields, formatHour } = require('./dateFormatter');
+const { getStrings } = require('../i18n/strings');
+const { buildMainParagraph } = require('../i18n/invitationText');
+const { getTemplate, getDefaultTemplate } = require('../templates/registry');
+
+const VIEWS_DIR = path.join(__dirname, '..', 'views');
+const templateFileCache = {};
+
+function readTemplateFile(fileName) {
+  if (!templateFileCache[fileName]) {
+    templateFileCache[fileName] = fs.readFileSync(path.join(VIEWS_DIR, fileName), 'utf8');
+  }
+  return templateFileCache[fileName];
+}
+
+/**
+ * @param {object} data - بيانات الدعوة (نفس شكل مستند MongoDB أو مدخلات خام مؤقتة)
+ * @returns {string} HTML كامل جاهز للعرض
+ */
+function renderNewPathHtml(data) {
+  const template = getTemplate(data.templateId) || getDefaultTemplate();
+  const display = buildDisplayFields(data.weddingDateTime);
+  const strings = getStrings(data.language, data.occasionType);
+
+  const heroDateDisplay = data.language === 'en' ? display.dateDisplayEn
+    : data.language === 'fr' ? display.dateDisplay
+    : display.dateArabicDisplay;
+  const heroTimeDisplay = data.language === 'en' ? display.timeDisplayEn
+    : data.language === 'fr' ? display.timeDisplay
+    : display.hourArabicDisplay;
+
+  const mainParagraphHtml = buildMainParagraph({
+    language: data.language,
+    occasionType: data.occasionType,
+    brideName: data.brideName,
+    groomName: data.groomName,
+    brideNameAr: data.brideNameAr,
+    groomNameAr: data.groomNameAr,
+    venueName: data.venueName,
+    display,
+  });
+
+  const timelineStages = (data.timeline || []).map((stage) => ({
+    label: strings.timelineStages[stage.key] || stage.key,
+    time: formatHour(stage.hour, data.language),
+  }));
+
+  const config = {
+    brideName: data.brideName,
+    groomName: data.groomName,
+    heroDateDisplay,
+    heroTimeDisplay,
+    mainParagraphHtml,
+    venueName: data.venueName,
+    venueCity: data.venueCity,
+    venueMapQuery: data.venueMapQuery,
+    venueTitle: strings.venueTitle,
+    tapToOpen: strings.tapToOpen,
+    celebrationBegins: strings.celebrationBegins,
+    countdownLabels: strings.countdown,
+    countdown: display.countdown,
+    timelineTitle: strings.timelineTitle,
+    timelineStages,
+    dressCodeTitle: strings.dressCodeTitle,
+    colorPalette: strings.colorPalette,
+    ladiesLabel: strings.ladies,
+    gentlemenLabel: strings.gentlemen,
+    ladiesDesc: strings.ladiesDesc,
+    gentlemenDesc: strings.gentlemenDesc,
+    rsvpTitle: strings.rsvpTitle,
+    mapTitle: strings.mapTitle,
+    closingLine: strings.closingLine,
+    hiddenSections: data.hiddenSections || [],
+  };
+
+  return readTemplateFile(template.file).replace(
+    '__INVITATION_CONFIG_JSON__',
+    JSON.stringify(config)
+  );
+}
+
+function renderLegacyHtml(invitation) {
+  const display = buildDisplayFields(invitation.weddingDateTime);
+  const config = {
+    brideName: invitation.brideName,
+    groomName: invitation.groomName,
+    brideNameAr: invitation.brideNameAr,
+    groomNameAr: invitation.groomNameAr,
+    venueName: invitation.venueName,
+    venueCity: invitation.venueCity,
+    venueMapQuery: invitation.venueMapQuery,
+    ...display,
+  };
+  return readTemplateFile('blossom-oud-legacy.html').replace(
+    '__INVITATION_CONFIG_JSON__',
+    JSON.stringify(config)
+  );
+}
+
+module.exports = { renderNewPathHtml, renderLegacyHtml };

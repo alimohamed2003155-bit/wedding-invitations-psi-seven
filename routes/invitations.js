@@ -1,74 +1,119 @@
 // routes/invitations.js
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
 
 const Invitation = require('../models/Invitation');
 const { sanitizeText } = require('../utils/sanitize');
 const { generateShortId } = require('../utils/idGenerator');
-const { buildDisplayFields } = require('../utils/dateFormatter');
+const { renderNewPathHtml, renderLegacyHtml } = require('../utils/renderInvitation');
+const { getTemplate, getDefaultTemplate, TEMPLATES } = require('../templates/registry');
 
 const router = express.Router();
 
-const TEMPLATE_PATH = path.join(__dirname, '..', 'views', 'template.html');
-
-// بنقرأ ملف التصميم مرة واحدة ونحتفظ بيه في الميموري (بدل ما نقرا من القرص
-// في كل زيارة)، عشان الأداء يبقى أسرع مع آلاف الزيارات.
-let templateCache = null;
-function getTemplate() {
-  if (!templateCache) {
-    templateCache = fs.readFileSync(TEMPLATE_PATH, 'utf8');
-  }
-  return templateCache;
-}
-
 const REQUIRED_FIELDS = [
   'brideName', 'groomName', 'brideNameAr', 'groomNameAr',
-  'venueName', 'venueCity', 'weddingDateTime',
+  'venueName', 'venueCity', 'weddingDate',
 ];
 
-// POST /api/invitations — إنشاء دعوة جديدة
+/**
+ * بيتحقق من مدخلات الفورم ويبني كائن بيانات نضيف وجاهز، سواء للمعاينة
+ * المؤقتة أو للحفظ الفعلي — نفس التحقق يتطبق في الحالتين.
+ */
+function buildInvitationDataFromRequest(body) {
+  for (const field of REQUIRED_FIELDS) {
+    if (!body[field] || String(body[field]).trim() === '') {
+      throw Object.assign(new Error('من فضلك املأ كل الحقول المطلوبة.'), { status: 400 });
+    }
+  }
+
+  const template = getTemplate(body.templateId) || getDefaultTemplate();
+  const language = template.languages.includes(body.language) ? body.language : 'ar';
+  const occasionType = template.occasionTypes.includes(body.occasionType) ? body.occasionType : 'wedding';
+
+  const weddingDateOnly = new Date(body.weddingDate);
+  if (Number.isNaN(weddingDateOnly.getTime())) {
+    throw Object.assign(new Error('تاريخ الحفلة غير صحيح.'), { status: 400 });
+  }
+
+  const submittedTimeline = Array.isArray(body.timeline) ? body.timeline : [];
+  const timeline = template.timelineStages.map((key, i) => {
+    const found = submittedTimeline.find((t) => t && t.key === key) || submittedTimeline[i] || {};
+    let hour = parseInt(found.hour, 10);
+    if (Number.isNaN(hour) || hour < 0 || hour > 23) hour = 18;
+    return { key, hour };
+  });
+
+  const baseHour = timeline[0] ? timeline[0].hour : 18;
+  const weddingDateTime = new Date(
+    weddingDateOnly.getFullYear(), weddingDateOnly.getMonth(), weddingDateOnly.getDate(),
+    baseHour, 0, 0
+  );
+
+  const allowedSectionKeys = template.optionalSections.map((s) => s.key);
+  const hiddenSections = Array.isArray(body.hiddenSections)
+    ? body.hiddenSections.filter((k) => allowedSectionKeys.includes(k))
+    : [];
+
+  const brideName = sanitizeText(body.brideName, 60);
+  const groomName = sanitizeText(body.groomName, 60);
+  const brideNameAr = sanitizeText(body.brideNameAr, 60);
+  const groomNameAr = sanitizeText(body.groomNameAr, 60);
+  const venueName = sanitizeText(body.venueName, 100);
+  const venueCity = sanitizeText(body.venueCity, 100);
+  const venueMapQuery = sanitizeText(body.venueMapQuery, 140) || `${venueName}, ${venueCity}`;
+
+  if (!brideName || !groomName || !brideNameAr || !groomNameAr || !venueName || !venueCity) {
+    throw Object.assign(new Error('من فضلك تأكد إن كل الحقول متكتوبة بشكل صحيح.'), { status: 400 });
+  }
+
+  return {
+    templateId: template.id, language, occasionType, hiddenSections, timeline,
+    brideName, groomName, brideNameAr, groomNameAr,
+    venueName, venueCity, venueMapQuery, weddingDateTime,
+  };
+}
+
+// GET /api/templates — القوالب المتاحة (الفورم بيبني نفسه منها تلقائيًا)
+router.get('/api/templates', (req, res) => {
+  const publicList = TEMPLATES.map((t) => ({
+    id: t.id,
+    name: t.name,
+    description: t.description,
+    languages: t.languages,
+    occasionTypes: t.occasionTypes,
+    optionalSections: t.optionalSections,
+    timelineStages: t.timelineStages,
+  }));
+  res.json(publicList);
+});
+
+// POST /api/preview — معاينة حية للتصميم الحقيقي، من غير أي حفظ في قاعدة البيانات
+router.post('/api/preview', (req, res) => {
+  try {
+    const data = buildInvitationDataFromRequest(req.body || {});
+    const html = renderNewPathHtml(data);
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    return res.send(html);
+  } catch (err) {
+    if (err.status) return res.status(err.status).send('');
+    console.error('Error building preview:', err);
+    return res.status(500).send('');
+  }
+});
+
+// POST /api/invitations — إنشاء دعوة فعلية (بتتحفظ في قاعدة البيانات)
 router.post('/api/invitations', async (req, res) => {
   try {
-    const body = req.body || {};
+    const data = buildInvitationDataFromRequest(req.body || {});
 
-    for (const field of REQUIRED_FIELDS) {
-      if (!body[field] || String(body[field]).trim() === '') {
-        return res.status(400).json({ error: 'من فضلك املأ كل الحقول المطلوبة.' });
-      }
-    }
-
-    const weddingDateTime = new Date(body.weddingDateTime);
-    if (Number.isNaN(weddingDateTime.getTime())) {
-      return res.status(400).json({ error: 'تاريخ ووقت الفرح غير صحيح.' });
-    }
-
-    const brideName = sanitizeText(body.brideName, 60);
-    const groomName = sanitizeText(body.groomName, 60);
-    const brideNameAr = sanitizeText(body.brideNameAr, 60);
-    const groomNameAr = sanitizeText(body.groomNameAr, 60);
-    const venueName = sanitizeText(body.venueName, 100);
-    const venueCity = sanitizeText(body.venueCity, 100);
-    const venueMapQuery = sanitizeText(body.venueMapQuery, 140) || `${venueName}, ${venueCity}`;
-
-    if (!brideName || !groomName || !brideNameAr || !groomNameAr || !venueName || !venueCity) {
-      return res.status(400).json({ error: 'من فضلك تأكد إن كل الحقول متكتوبة بشكل صحيح.' });
-    }
-
-    // بنحاول نولّد كود فريد، ولو حصل تعارض نادر جدًا مع كود موجود بالفعل
-    // (مستبعد جدًا بس ممكن) بنعيد المحاولة كذا مرة.
     let invitation = null;
     let attempts = 0;
     while (!invitation && attempts < 5) {
       attempts += 1;
       const shortId = generateShortId(7);
       try {
-        invitation = await Invitation.create({
-          shortId, brideName, groomName, brideNameAr, groomNameAr,
-          venueName, venueCity, venueMapQuery, weddingDateTime,
-        });
+        invitation = await Invitation.create({ shortId, ...data });
       } catch (err) {
-        if (err.code === 11000) continue; // تعارض في الكود — جرب تاني
+        if (err.code === 11000) continue;
         throw err;
       }
     }
@@ -79,12 +124,14 @@ router.post('/api/invitations', async (req, res) => {
 
     return res.status(201).json({ id: invitation.shortId, path: `/i/${invitation.shortId}` });
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ error: err.message });
     console.error('Error creating invitation:', err);
     return res.status(500).json({ error: 'حصل خطأ في السيرفر، حاول تاني بعد شوية.' });
   }
 });
 
-// GET /i/:shortId — عرض دعوة معينة
+// GET /i/:shortId — عرض دعوة (دعوات قديمة بدون templateId بتتعرض بالتصميم
+// الأصلي حرفيًا، من غير أي تغيير)
 router.get('/i/:shortId', async (req, res) => {
   try {
     const invitation = await Invitation.findOneAndUpdate(
@@ -103,22 +150,9 @@ router.get('/i/:shortId', async (req, res) => {
         );
     }
 
-    const display = buildDisplayFields(invitation.weddingDateTime);
-    const config = {
-      brideName: invitation.brideName,
-      groomName: invitation.groomName,
-      brideNameAr: invitation.brideNameAr,
-      groomNameAr: invitation.groomNameAr,
-      venueName: invitation.venueName,
-      venueCity: invitation.venueCity,
-      venueMapQuery: invitation.venueMapQuery,
-      ...display,
-    };
-
-    const html = getTemplate().replace(
-      '__INVITATION_CONFIG_JSON__',
-      JSON.stringify(config)
-    );
+    const html = invitation.templateId
+      ? renderNewPathHtml(invitation)
+      : renderLegacyHtml(invitation);
 
     res.set('Content-Type', 'text/html; charset=utf-8');
     return res.send(html);
