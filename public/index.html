@@ -304,6 +304,7 @@
       </div>
       <div class="result-actions">
         <a id="previewLink" href="#" target="_blank" rel="noopener">افتح الدعوة في تاب جديد</a>
+        <a id="statsLink" href="#" target="_blank" rel="noopener">شوف كام حد فتح الدعوة</a>
         <button type="button" class="linklike" id="resetBtn">اعمل دعوة تانية</button>
       </div>
     </div>
@@ -327,6 +328,7 @@
   var resultBox = document.getElementById('resultBox');
   var resultLink = document.getElementById('resultLink');
   var previewLink = document.getElementById('previewLink');
+  var statsLink = document.getElementById('statsLink');
   var copyBtn = document.getElementById('copyBtn');
   var resetBtn = document.getElementById('resetBtn');
   var previewFrame = document.getElementById('previewFrame');
@@ -528,6 +530,7 @@
         var fullUrl = window.location.origin + res.data.path;
         resultLink.value = fullUrl;
         previewLink.href = fullUrl;
+        statsLink.href = fullUrl + '/stats';
         resultBox.className = 'result show';
         form.style.display = 'none';
         statusMsg.className = 'status';

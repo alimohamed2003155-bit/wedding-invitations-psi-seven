@@ -19,6 +19,10 @@ const invitationSchema = new mongoose.Schema({
     default: [],
   },
 
+  // كود الجهاز اللي أنشأ الدعوة (نفس الكوكي المستخدم في الليميتر) — بيسمحلنا
+  // نحسب عدد المستخدمين الفريدين اللي استخدموا الموقع فعليًا وعملوا دعوة.
+  creatorDeviceId: { type: String, default: null },
+
   brideName: { type: String, required: true, maxlength: 80 },
   groomName: { type: String, required: true, maxlength: 80 },
   brideNameAr: { type: String, required: true, maxlength: 80 },

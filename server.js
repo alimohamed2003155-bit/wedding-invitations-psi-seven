@@ -36,6 +36,7 @@ const requireDB = async (req, res, next) => {
   }
 };
 app.use('/api/invitations', requireDB);
+app.use('/admin', requireDB);
 app.use('/i', requireDB);
 
 // صفحة إنشاء الدعوة + أي ملفات ثابتة تانية

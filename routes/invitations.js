@@ -1,5 +1,6 @@
 // routes/invitations.js
 const express = require('express');
+const crypto = require('crypto');
 
 const Invitation = require('../models/Invitation');
 const { sanitizeText } = require('../utils/sanitize');
@@ -111,7 +112,7 @@ router.post('/api/invitations', async (req, res) => {
       attempts += 1;
       const shortId = generateShortId(7);
       try {
-        invitation = await Invitation.create({ shortId, ...data });
+        invitation = await Invitation.create({ shortId, creatorDeviceId: req.deviceId || null, ...data });
       } catch (err) {
         if (err.code === 11000) continue;
         throw err;
@@ -158,6 +159,194 @@ router.get('/i/:shortId', async (req, res) => {
     return res.send(html);
   } catch (err) {
     console.error('Error rendering invitation:', err);
+    return res.status(500).send('حصل خطأ في السيرفر');
+  }
+});
+
+// GET /i/:shortId/stats — صفحة إحصائيات بسيطة (مش بتزوّد عداد الزيارات،
+// لأنها مش زيارة فعلية للدعوة نفسها)
+router.get('/i/:shortId/stats', async (req, res) => {
+  try {
+    const invitation = await Invitation.findOne({ shortId: req.params.shortId });
+
+    if (!invitation) {
+      return res
+        .status(404)
+        .set('Content-Type', 'text/html; charset=utf-8')
+        .send(
+          '<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8">' +
+          '<body style="font-family:sans-serif;text-align:center;margin-top:15%;color:#444">' +
+          '<h1>الدعوة دي مش موجودة</h1></body></html>'
+        );
+    }
+
+    const createdAtFormatted = new Intl.DateTimeFormat('ar-EG-u-nu-latn', {
+      year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+    }).format(invitation.createdAt);
+
+    const html = `<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>إحصائيات الدعوة — ${invitation.brideNameAr} &amp; ${invitation.groomNameAr}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,500&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#1b1410; --ink-soft:#2a2019; --parchment:#ede3d3; --parchment-dim:#c9bda9; --brass:#c9a227; --brass-dim:#8c7238; }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--ink); color:var(--parchment);
+    font-family:'Cairo',sans-serif; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .card{
+    width:100%; max-width:420px; border:1px solid var(--brass-dim); padding:40px 32px;
+    text-align:center; background:var(--ink-soft);
+  }
+  .eyebrow{ font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color:var(--brass); margin-bottom:10px; }
+  h1{ font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:600; font-size:26px; margin:0 0 28px; }
+  .count{ font-family:'Cormorant Garamond',serif; font-weight:600; font-size:72px; color:var(--brass); line-height:1; }
+  .count-label{ font-size:14px; color:var(--parchment-dim); margin-top:8px; }
+  .meta{ margin-top:28px; padding-top:20px; border-top:1px solid rgba(201,162,39,0.25); font-size:13px; color:var(--parchment-dim); }
+  a.back{ display:inline-block; margin-top:24px; color:var(--brass); font-size:14px; text-decoration:underline; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow">إحصائيات الدعوة</div>
+    <h1>${invitation.brideNameAr} &amp; ${invitation.groomNameAr}</h1>
+    <div class="count">${invitation.viewCount}</div>
+    <div class="count-label">عدد مرات فتح لينك الدعوة</div>
+    <div class="meta">اتعملت الدعوة في: ${createdAtFormatted}</div>
+    <a class="back" href="/i/${invitation.shortId}">افتح الدعوة نفسها ←</a>
+  </div>
+</body>
+</html>`;
+
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    return res.send(html);
+  } catch (err) {
+    console.error('Error rendering stats page:', err);
+    return res.status(500).send('حصل خطأ في السيرفر');
+  }
+});
+
+// ==========================================================================
+// GET /admin/stats — إحصائيات الموقع كله (محمية بكلمة سر، مش لأي حد)
+// ==========================================================================
+
+/**
+ * مقارنة آمنة لكلمة السر (بتاخد نفس الوقت في كل الحالات) عشان تمنع أي محاولة
+ * تخمين تعتمد على قياس زمن الاستجابة (timing attack).
+ */
+function isValidAdminKey(providedKey) {
+  const expected = process.env.ADMIN_SECRET;
+  if (!expected) return false; // لو مفيش كلمة سر متظبطة أصلًا، الصفحة مقفولة تمامًا
+  const a = Buffer.from(String(providedKey || ''));
+  const b = Buffer.from(String(expected));
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
+router.get('/admin/stats', async (req, res) => {
+  if (!isValidAdminKey(req.query.key)) {
+    return res
+      .status(403)
+      .set('Content-Type', 'text/html; charset=utf-8')
+      .send(
+        '<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8">' +
+        '<body style="font-family:sans-serif;text-align:center;margin-top:15%;color:#444">' +
+        '<h1>مفيش صلاحية</h1><p>الصفحة دي محتاجة كلمة سر صحيحة في الرابط (?key=...).</p></body></html>'
+      );
+  }
+
+  try {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const startOfWeek = new Date(startOfToday.getTime() - 6 * 24 * 60 * 60 * 1000);
+
+    const [
+      totalInvitations,
+      uniqueCreators,
+      createdToday,
+      createdThisWeek,
+      byOccasion,
+      byLanguage,
+      viewsAgg,
+    ] = await Promise.all([
+      Invitation.countDocuments({}),
+      Invitation.distinct('creatorDeviceId', { creatorDeviceId: { $ne: null } }),
+      Invitation.countDocuments({ createdAt: { $gte: startOfToday } }),
+      Invitation.countDocuments({ createdAt: { $gte: startOfWeek } }),
+      Invitation.aggregate([{ $group: { _id: '$occasionType', count: { $sum: 1 } } }]),
+      Invitation.aggregate([{ $group: { _id: '$language', count: { $sum: 1 } } }]),
+      Invitation.aggregate([{ $group: { _id: null, total: { $sum: '$viewCount' } } }]),
+    ]);
+
+    const totalViews = viewsAgg[0] ? viewsAgg[0].total : 0;
+    const OCCASION_LABELS = { wedding: 'فرح', engagement: 'خطوبة' };
+    const LANGUAGE_LABELS = { ar: 'عربي', en: 'إنجليزي', fr: 'فرنساوي' };
+
+    const occasionRows = byOccasion.map((r) =>
+      `<tr><td>${OCCASION_LABELS[r._id] || 'دعوات قديمة (قبل نظام المناسبات)'}</td><td>${r.count}</td></tr>`
+    ).join('');
+    const languageRows = byLanguage.map((r) =>
+      `<tr><td>${LANGUAGE_LABELS[r._id] || 'دعوات قديمة (قبل نظام اللغات)'}</td><td>${r.count}</td></tr>`
+    ).join('');
+
+    const html = `<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>إحصائيات الموقع</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#1b1410; --ink-soft:#2a2019; --parchment:#ede3d3; --parchment-dim:#c9bda9; --brass:#c9a227; --brass-dim:#8c7238; }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; background:var(--ink); color:var(--parchment); font-family:'Cairo',sans-serif; padding:48px 20px; }
+  .wrap{ max-width:820px; margin:0 auto; }
+  h1{ font-family:'Cormorant Garamond',serif; font-weight:600; font-size:30px; margin:0 0 32px; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:36px; }
+  .stat-card{ border:1px solid var(--brass-dim); background:var(--ink-soft); padding:22px 18px; text-align:center; }
+  .stat-number{ font-family:'Cormorant Garamond',serif; font-weight:600; font-size:40px; color:var(--brass); line-height:1; }
+  .stat-label{ font-size:13px; color:var(--parchment-dim); margin-top:8px; }
+  .panel{ border:1px solid var(--brass-dim); background:var(--ink-soft); padding:24px; margin-bottom:20px; }
+  .panel h2{ font-size:14px; letter-spacing:0.1em; text-transform:uppercase; color:var(--brass); margin:0 0 16px; }
+  table{ width:100%; border-collapse:collapse; font-size:14px; }
+  td{ padding:8px 4px; border-bottom:1px solid rgba(201,162,39,0.15); }
+  td:last-child{ text-align:left; color:var(--brass); font-weight:700; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>إحصائيات الموقع</h1>
+    <div class="grid">
+      <div class="stat-card"><div class="stat-number">${totalInvitations}</div><div class="stat-label">إجمالي الدعوات</div></div>
+      <div class="stat-card"><div class="stat-number">${uniqueCreators.length}</div><div class="stat-label">مستخدمين فريدين عملوا دعوة</div></div>
+      <div class="stat-card"><div class="stat-number">${createdToday}</div><div class="stat-label">دعوات النهاردة</div></div>
+      <div class="stat-card"><div class="stat-number">${createdThisWeek}</div><div class="stat-label">دعوات آخر 7 أيام</div></div>
+      <div class="stat-card"><div class="stat-number">${totalViews}</div><div class="stat-label">إجمالي مرات فتح كل الدعوات</div></div>
+    </div>
+    <div class="panel">
+      <h2>حسب نوع المناسبة</h2>
+      <table>${occasionRows || '<tr><td>مفيش بيانات لسه</td></tr>'}</table>
+    </div>
+    <div class="panel">
+      <h2>حسب اللغة</h2>
+      <table>${languageRows || '<tr><td>مفيش بيانات لسه</td></tr>'}</table>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    return res.send(html);
+  } catch (err) {
+    console.error('Error building admin stats:', err);
     return res.status(500).send('حصل خطأ في السيرفر');
   }
 });
