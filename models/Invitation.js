@@ -31,6 +31,12 @@ const invitationSchema = new mongoose.Schema({
   venueName: { type: String, required: true, maxlength: 120 },
   venueCity: { type: String, required: true, maxlength: 120 },
   venueMapQuery: { type: String, maxlength: 160 },
+  // عنوان تفصيلي اختياري (بيستخدمه بعض القوالب زي Viktor & Paula)
+  venueAddress: { type: String, maxlength: 200, default: '' },
+
+  // بيانات تواصل اختيارية لأي حد عنده استفسار عن الحفلة (بعض القوالب بتعرضها)
+  contactName: { type: String, maxlength: 80, default: '' },
+  contactPhone: { type: String, maxlength: 40, default: '' },
 
   // مصدر الحقيقة الوحيد للتاريخ — الأوقات التفصيلية بقت في timeline لأي دعوة جديدة
   weddingDateTime: { type: Date, required: true },

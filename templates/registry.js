@@ -26,6 +26,30 @@ const TEMPLATES = [
     ],
     // مراحل جدول أوقات الحفلة الافتراضية اللي القالب ده بيعرضها
     timelineStages: ['reception', 'ceremony', 'dinner', 'party'],
+    // بيانات إضافية اختيارية بيحتاجها القالب ده (تظهر في الفورم بس لو موجودة)
+    extraFields: [],
+  },
+  {
+    id: 'viktor-paula',
+    name: 'Viktor & Paula',
+    description: 'تصميم أوروبي أنيق وبسيط، بجدول مواعيد وقسم تفاصيل تواصل',
+    file: 'viktor-paula.html',
+    languages: SUPPORTED_LANGUAGES,
+    occasionTypes: SUPPORTED_OCCASIONS,
+    optionalSections: [
+      { key: 'countdown', label: 'العداد التنازلي' },
+      { key: 'timeline', label: 'جدول أوقات الحفلة' },
+      { key: 'dressCode', label: 'الزي المقترح (Dress Code)' },
+      { key: 'details', label: 'تفاصيل التواصل والهدايا' },
+      { key: 'rsvp', label: 'تأكيد الحضور (RSVP)' },
+    ],
+    timelineStages: ['ceremony', 'cocktail', 'dinner', 'party'],
+    // حقول إضافية خاصة بالقالب ده بس — الفورم بيظهرها تلقائي لما تختاره
+    extraFields: [
+      { key: 'venueAddress', label: 'عنوان القاعة بالتفصيل (اختياري)', maxlength: 200 },
+      { key: 'contactName', label: 'اسم الشخص المسؤول عن الاستفسارات (اختياري)', maxlength: 80 },
+      { key: 'contactPhone', label: 'رقم تليفون التواصل (اختياري)', maxlength: 40 },
+    ],
   },
 ];
 

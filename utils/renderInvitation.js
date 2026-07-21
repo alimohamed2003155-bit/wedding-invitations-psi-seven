@@ -39,6 +39,13 @@ function renderNewPathHtml(data) {
     : data.language === 'fr' ? display.timeDisplay
     : display.hourArabicDisplay;
 
+  // مهم جدًا: أسماء العروسين اللي بتظهر في الشاشة الرئيسية (وعنوان التاب)
+  // لازم تتبع اللغة المختارة زي أي نص تاني — لو اخترت عربي، تفضل أسماء
+  // لاتينية ظاهرة فوق كان أكبر مصدر للّخبطة والكلام المتناقض في اللغة.
+  const heroBrideName = data.language === 'ar' ? data.brideNameAr : data.brideName;
+  const heroGroomName = data.language === 'ar' ? data.groomNameAr : data.groomName;
+  const nameConnector = data.language === 'ar' ? ' و ' : ' &amp; ';
+
   const mainParagraphHtml = buildMainParagraph({
     language: data.language,
     occasionType: data.occasionType,
@@ -56,13 +63,18 @@ function renderNewPathHtml(data) {
   }));
 
   const config = {
-    brideName: data.brideName,
-    groomName: data.groomName,
+    brideName: heroBrideName,
+    groomName: heroGroomName,
+    nameConnector,
+    heroEyebrow: strings.heroEyebrow,
     heroDateDisplay,
     heroTimeDisplay,
     mainParagraphHtml,
+    openingTitle: strings.openingTitle,
+    openingBody: strings.openingBody,
     venueName: data.venueName,
     venueCity: data.venueCity,
+    venueAddress: data.venueAddress || '',
     venueMapQuery: data.venueMapQuery,
     venueTitle: strings.venueTitle,
     tapToOpen: strings.tapToOpen,
@@ -77,7 +89,14 @@ function renderNewPathHtml(data) {
     gentlemenLabel: strings.gentlemen,
     ladiesDesc: strings.ladiesDesc,
     gentlemenDesc: strings.gentlemenDesc,
+    detailsTitle: strings.detailsTitle,
+    contactIntro: strings.contactIntro,
+    giftNote: strings.giftNote,
+    contactName: data.contactName || '',
+    contactPhone: data.contactPhone || '',
     rsvpTitle: strings.rsvpTitle,
+    rsvpIntro: strings.rsvpIntro,
+    rsvpButtonText: strings.rsvpButtonText,
     mapTitle: strings.mapTitle,
     closingLine: strings.closingLine,
     hiddenSections: data.hiddenSections || [],

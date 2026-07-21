@@ -10,6 +10,7 @@ const path = require('path');
 
 const connectDB = require('./config/db');
 const invitationsRouter = require('./routes/invitations');
+const adminRouter = require('./routes/admin');
 const { ensureDeviceId, deviceInvitationLimiter } = require('./middleware/deviceLimiter');
 
 const app = express();
@@ -36,8 +37,8 @@ const requireDB = async (req, res, next) => {
   }
 };
 app.use('/api/invitations', requireDB);
-app.use('/admin', requireDB);
 app.use('/i', requireDB);
+app.use('/admin', requireDB);
 
 // صفحة إنشاء الدعوة + أي ملفات ثابتة تانية
 // (ملحوظة: لو استضفت المشروع على Vercel، فولدر public بيتقدّم من الـ CDN
@@ -72,6 +73,7 @@ const previewLimiter = rateLimit({
 app.use('/api/preview', previewLimiter);
 
 app.use('/', invitationsRouter);
+app.use('/', adminRouter);
 
 // صفحة 404 بسيطة لأي مسار مش موجود
 app.use((req, res) => {

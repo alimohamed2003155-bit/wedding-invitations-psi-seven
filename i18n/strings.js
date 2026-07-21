@@ -5,6 +5,7 @@
 const STRINGS = {
   ar: {
     tapToOpen: 'اضغط للفتح',
+    heroEyebrow: { wedding: 'يوم الزفاف', engagement: 'يوم الخطوبة' },
     celebrationBegins: { wedding: 'يبدأ الاحتفال', engagement: 'يبدأ حفل الخطوبة' },
     countdown: { days: 'أيام', hours: 'ساعات', minutes: 'دقايق', seconds: 'ثواني' },
     venueTitle: 'المكان',
@@ -12,6 +13,7 @@ const STRINGS = {
     timelineStages: {
       reception: 'الاستقبال',
       ceremony: { wedding: 'عقد القران', engagement: 'مراسم الخطوبة' },
+      cocktail: 'حفل الكوكتيل',
       dinner: 'العشاء',
       party: 'الحفلة',
     },
@@ -22,12 +24,23 @@ const STRINGS = {
     ladiesDesc: 'يُفضَّل فستان سهرة أنيق بألوان راقية.',
     gentlemenDesc: 'يُفضَّل بدلة رسمية كلاسيكية مع حذاء أنيق.',
     rsvpTitle: 'تأكيد الحضور',
+    rsvpIntro: 'عشان نقدر نجهز لاحتفال يليق بيكم، محتاجين تأكيد حضوركم.',
+    rsvpButtonText: 'أكّد حضورك',
     mapTitle: 'الموقع على خرائط جوجل',
     closingLine: 'يسعدنا ويشرفنا حضوركم',
+    openingTitle: { wedding: 'أعزاءنا الأهل والأصدقاء،', engagement: 'أعزاءنا الأهل والأصدقاء،' },
+    openingBody: {
+      wedding: 'وإحنا بنستعد نقول "قبلت"، حاسّين بالامتنان لوجود ناس طيبين زيكم في حياتنا.<br><br>وجودكم معانا هيكون أكبر هدية، ووجودكم هيشرّفنا ونحنا بنبدأ حياتنا الجديدة مع بعض.',
+      engagement: 'وإحنا بنستعد نبدأ الفصل الجديد ده في حياتنا، حاسّين بالامتنان لوجود ناس طيبين زيكم في حياتنا.<br><br>وجودكم معانا في حفل خطوبتنا هيكون أكبر هدية لينا.',
+    },
+    detailsTitle: 'تفاصيل إضافية',
+    contactIntro: 'لأي استفسار أو تفاصيل إضافية، تقدروا تتواصلوا مع منظمين الحفل.',
+    giftNote: 'وجودكم هو أكبر هدية لينا. لو حابين تكرمونا بهدية، أي مساهمة في بداية حياتنا هتبقى موضع تقدير كبير.',
   },
 
   en: {
     tapToOpen: 'Tap to open',
+    heroEyebrow: { wedding: 'Wedding Day', engagement: 'Engagement Day' },
     celebrationBegins: { wedding: 'The Celebration Begins', engagement: 'The Engagement Begins' },
     countdown: { days: 'Days', hours: 'Hours', minutes: 'Minutes', seconds: 'Seconds' },
     venueTitle: 'Venue',
@@ -35,6 +48,7 @@ const STRINGS = {
     timelineStages: {
       reception: 'Welcome Reception',
       ceremony: { wedding: 'Nikah Ceremony', engagement: 'Engagement Ceremony' },
+      cocktail: 'Cocktail Hour',
       dinner: 'Dinner',
       party: 'Party',
     },
@@ -45,12 +59,23 @@ const STRINGS = {
     ladiesDesc: 'Formal dresses in elegant, polished styles are encouraged.',
     gentlemenDesc: 'Well-tailored suits with classic dress shoes are preferred.',
     rsvpTitle: 'Confirm Your Presence',
+    rsvpIntro: 'To help us prepare for a joyful celebration, kindly confirm your attendance.',
+    rsvpButtonText: 'Confirm Your Attendance',
     mapTitle: 'Google Maps Directions',
     closingLine: 'We would be delighted to welcome you',
+    openingTitle: { wedding: 'Dear Friends and Family,', engagement: 'Dear Friends and Family,' },
+    openingBody: {
+      wedding: 'As we get ready to say &ldquo;I do,&rdquo; we feel grateful for the wonderful people in our lives.<br><br>Your support means the world to us, and we would be honored to have you with us as we begin our life together.',
+      engagement: 'As we get ready to begin this new chapter, we feel grateful for the wonderful people in our lives.<br><br>Your support means the world to us, and we would be honored to have you with us as we celebrate our engagement.',
+    },
+    detailsTitle: 'Details',
+    contactIntro: 'For additional information or questions, please contact the wedding organizers.',
+    giftNote: 'Your presence is the greatest gift to us. However, if you wish to honor us with a present, a contribution toward our future would be sincerely appreciated.',
   },
 
   fr: {
     tapToOpen: 'Appuyez pour ouvrir',
+    heroEyebrow: { wedding: 'Jour du Mariage', engagement: 'Jour des Fiançailles' },
     celebrationBegins: { wedding: 'La Célébration Commence', engagement: 'Les Fiançailles Commencent' },
     countdown: { days: 'Jours', hours: 'Heures', minutes: 'Minutes', seconds: 'Secondes' },
     venueTitle: 'Lieu',
@@ -58,6 +83,7 @@ const STRINGS = {
     timelineStages: {
       reception: 'Welcome Reception',
       ceremony: { wedding: 'Nikah Ceremony', engagement: 'Cérémonie de fiançailles' },
+      cocktail: 'Heure du Cocktail',
       dinner: 'Dinner',
       party: 'Party',
     },
@@ -68,8 +94,18 @@ const STRINGS = {
     ladiesDesc: 'Formal dresses in elegant, polished styles are encouraged.',
     gentlemenDesc: 'Well-tailored suits with classic dress shoes are preferred.',
     rsvpTitle: 'Confirmez Votre Présence',
+    rsvpIntro: 'Afin de préparer au mieux cette célébration, merci de confirmer votre présence.',
+    rsvpButtonText: 'Confirmez Votre Présence',
     mapTitle: 'Itinéraire Google Maps',
     closingLine: 'Au plaisir de vous accueillir',
+    openingTitle: { wedding: 'Chers amis et famille,', engagement: 'Chers amis et famille,' },
+    openingBody: {
+      wedding: 'Alors que nous nous préparons à dire &laquo;oui&raquo;, nous sommes reconnaissants d\'avoir des personnes merveilleuses comme vous dans nos vies.<br><br>Votre soutien compte énormément pour nous, et ce serait un honneur de vous avoir à nos côtés pour le début de notre vie commune.',
+      engagement: 'Alors que nous nous préparons à commencer ce nouveau chapitre, nous sommes reconnaissants d\'avoir des personnes merveilleuses comme vous dans nos vies.<br><br>Votre soutien compte énormément pour nous, et ce serait un honneur de vous avoir à nos côtés pour célébrer nos fiançailles.',
+    },
+    detailsTitle: 'Détails',
+    contactIntro: 'Pour toute information complémentaire, merci de contacter les organisateurs.',
+    giftNote: 'Votre présence est le plus beau des cadeaux. Toutefois, si vous souhaitez nous honorer d\'un présent, une contribution pour notre avenir serait sincèrement appréciée.',
   },
 };
 
@@ -87,6 +123,7 @@ function getStrings(language, occasionType) {
 
   return {
     tapToOpen: s.tapToOpen,
+    heroEyebrow: s.heroEyebrow[occ],
     celebrationBegins: s.celebrationBegins[occ],
     countdown: s.countdown,
     venueTitle: s.venueTitle,
@@ -94,6 +131,7 @@ function getStrings(language, occasionType) {
     timelineStages: {
       reception: s.timelineStages.reception,
       ceremony: s.timelineStages.ceremony[occ],
+      cocktail: s.timelineStages.cocktail,
       dinner: s.timelineStages.dinner,
       party: s.timelineStages.party,
     },
@@ -104,8 +142,15 @@ function getStrings(language, occasionType) {
     ladiesDesc: s.ladiesDesc,
     gentlemenDesc: s.gentlemenDesc,
     rsvpTitle: s.rsvpTitle,
+    rsvpIntro: s.rsvpIntro,
+    rsvpButtonText: s.rsvpButtonText,
     mapTitle: s.mapTitle,
     closingLine: s.closingLine,
+    openingTitle: s.openingTitle[occ],
+    openingBody: s.openingBody[occ],
+    detailsTitle: s.detailsTitle,
+    contactIntro: s.contactIntro,
+    giftNote: s.giftNote,
   };
 }
 

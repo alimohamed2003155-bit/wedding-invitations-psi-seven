@@ -282,6 +282,11 @@
         </div>
       </fieldset>
 
+      <fieldset id="extraFieldsGroup" style="display:none;">
+        <legend>بيانات إضافية خاصة بالقالب ده</legend>
+        <div id="extraFieldsContainer"></div>
+      </fieldset>
+
       <fieldset>
         <legend>جدول أوقات الحفلة (ساعة بس، من غير دقايق)</legend>
         <div class="row" id="timelineFields"></div>
@@ -379,6 +384,28 @@
     });
   }
 
+  function renderExtraFields(){
+    var extraFieldsGroup = document.getElementById('extraFieldsGroup');
+    var container = document.getElementById('extraFieldsContainer');
+    var fields = (currentTemplate && currentTemplate.extraFields) || [];
+    if (!fields.length){
+      extraFieldsGroup.style.display = 'none';
+      container.innerHTML = '';
+      return;
+    }
+    extraFieldsGroup.style.display = 'block';
+    container.innerHTML = fields.map(function(f){
+      var id = 'extra_' + f.key;
+      return '<div class="field">' +
+        '<label for="' + id + '">' + f.label + '</label>' +
+        '<input id="' + id + '" data-extra-key="' + f.key + '" type="text" maxlength="' + (f.maxlength || 200) + '" />' +
+        '</div>';
+    }).join('');
+    Array.prototype.forEach.call(container.querySelectorAll('input'), function(input){
+      input.addEventListener('input', schedulePreview);
+    });
+  }
+
   function renderTimelineFields(){
     if (!currentTemplate) return;
     timelineFieldsEl.innerHTML = currentTemplate.timelineStages.map(function(key){
@@ -427,6 +454,7 @@
 
     renderTimelineFields();
     renderSectionToggles();
+    renderExtraFields();
     schedulePreview();
   }
 
@@ -443,7 +471,12 @@
     });
   }
 
-  function collectPayload(){
+  function valueOrPlaceholder(input){
+    var v = input.value.trim();
+    return v || input.placeholder || '';
+  }
+
+  function collectPayload(usePlaceholders){
     var timeline = [];
     Array.prototype.forEach.call(timelineFieldsEl.querySelectorAll('select'), function(sel){
       timeline.push({ key: sel.getAttribute('data-stage-key'), hour: parseInt(sel.value, 10) });
@@ -453,21 +486,29 @@
       if (!cb.checked) hiddenSections.push(cb.getAttribute('data-section-key'));
     });
 
-    return {
+    var pick = usePlaceholders ? valueOrPlaceholder : function(input){ return input.value.trim(); };
+
+    var payload = {
       templateId: state.templateId,
       occasionType: state.occasionType,
       language: state.language,
-      brideName: form.brideName.value.trim(),
-      groomName: form.groomName.value.trim(),
-      brideNameAr: form.brideNameAr.value.trim(),
-      groomNameAr: form.groomNameAr.value.trim(),
-      venueName: form.venueName.value.trim(),
-      venueCity: form.venueCity.value.trim(),
+      brideName: pick(form.brideName),
+      groomName: pick(form.groomName),
+      brideNameAr: pick(form.brideNameAr),
+      groomNameAr: pick(form.groomNameAr),
+      venueName: pick(form.venueName),
+      venueCity: pick(form.venueCity),
       venueMapQuery: form.venueMapQuery.value.trim(),
       weddingDate: form.weddingDate.value,
       timeline: timeline,
       hiddenSections: hiddenSections,
     };
+
+    Array.prototype.forEach.call(document.querySelectorAll('#extraFieldsContainer input'), function(input){
+      payload[input.getAttribute('data-extra-key')] = input.value.trim();
+    });
+
+    return payload;
   }
 
   var previewTimer = null;
@@ -478,7 +519,7 @@
 
   function runPreview(){
     if (!state.templateId) return;
-    var payload = collectPayload();
+    var payload = collectPayload(true);
     if (!payload.weddingDate) payload.weddingDate = new Date().toISOString().slice(0, 10);
     fetch('/api/preview', {
       method: 'POST',
