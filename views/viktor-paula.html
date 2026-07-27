@@ -205,16 +205,21 @@
                     hideRec('rec2002506421');
                 }
 
-                // ===== الموقع (Location) =====
+                // ===== الموقع =====
                 setHTML('#rec2002802231 [field="tn_text_1771277026942000001"]', C.venueTitle);
                 setHTML('#rec2002802231 [field="tn_text_1772804808869"]', C.venueName);
                 setHTML('#rec2002802231 [field="tn_text_1772813480591000001"]', C.venueAddress || C.venueCity);
                 var mapFrame = document.getElementById('venueMapFrame');
                 if (mapFrame) {
-                    mapFrame.src = 'https://www.google.com/maps?q=' + encodeURIComponent(C.venueMapQuery) + '&output=embed';
+                    mapFrame.src = C.venueMapEmbedSrc;
+                }
+                var openMapLink = document.getElementById('venueOpenMapLink');
+                if (openMapLink) {
+                    openMapLink.href = C.venueMapDirectLink;
+                    openMapLink.textContent = C.openInMapsText;
                 }
 
-                // ===== الزي المقترح (Dress Code) =====
+                // ===== الزي المقترح =====
                 if (hidden.indexOf('dressCode') === -1) {
                     setHTML('#rec2003451831 [field="tn_text_1763405219328"]', C.dressCodeTitle);
                     setHTML('#rec2003451831 [field="tn_text_1772814614231000014"]', C.gentlemenLabel + ':<br>' + C.gentlemenDesc);
@@ -223,7 +228,7 @@
                     hideRec('rec2003451831');
                 }
 
-                // ===== تفاصيل إضافية (Details) =====
+                // ===== تفاصيل إضافية =====
                 if (hidden.indexOf('details') === -1) {
                     setHTML('#rec2003555721 [field="tn_text_1771277026942000001"]', C.detailsTitle);
                     setHTML('#rec2003555721 [field="tn_text_1772804808869"]', C.contactIntro);
@@ -234,12 +239,29 @@
                     hideRec('rec2003555721');
                 }
 
-                // ===== تأكيد الحضور (RSVP) =====
+                // ===== تأكيد الحضور =====
                 if (hidden.indexOf('rsvp') === -1) {
                     setHTML('#rec2003860951 [field="tn_text_1763405219328"]', C.rsvpButtonText);
                     setHTML('#rec2003860951 [field="tn_text_1772813849329000001"]', C.rsvpIntro);
+
+                    // نافذة تأكيد الحضور المنبثقة (فورم حقيقي بحقوله الأصلية)
+                    setHTML('#popuptitle_2052858183', C.rsvpButtonText);
+                    var rsvpDialog = document.getElementById('rsvpPopupDialog');
+                    if (rsvpDialog) rsvpDialog.setAttribute('aria-label', C.rsvpButtonText);
+                    setHTML('#rec2052858183 .t702__descr', C.rsvpDeadlineNote);
+                    setHTML('#field-title_5828866651120', C.yourNameLabel);
+                    setHTML('#field-title_5828866651121', C.willYouComeLabel);
+                    var yesNoLabels = [C.yesOption, C.noOption];
+                    Array.prototype.forEach.call(document.querySelectorAll('#rec2052858183 .t-checkbox'), function (cb, i) {
+                        if (cb.nextElementSibling && yesNoLabels[i]) {
+                            cb.nextElementSibling.textContent = yesNoLabels[i];
+                        }
+                    });
+                    setHTML('#field-title_5828866651122', C.foodIntoleranceLabel);
+                    setHTML('#rec2052858183 .t-btnflex__text', C.submitButtonText);
                 } else {
                     hideRec('rec2003860951');
+                    hideRec('rec2052858183');
                 }
 
                 // ===== سطر الختام =====
@@ -2528,7 +2550,12 @@
                                             </div>
                                         </div>
                                         <script>
-                                            const eventLocal = new Date(2026,6,10,16,15,0);
+                                            // بيقرا التاريخ الحقيقي من كونفيج الدعوة (المحقون في الصفحة الأصلية)،
+                                            // ولو حصلت مشكلة في الوصول ليه (نادر جدًا)، بيرجع لتاريخ افتراضي بعيد
+                                            // في المستقبل عشان العداد ما يقولش "EXPIRED" غلط بدل ما يكون فيه باج
+                                            // فعلي في تاريخ الدعوة نفسها.
+                                            var _cd = (window.top && window.top.WEDDING_CONFIG) || window.WEDDING_CONFIG || {countdown:{year:2027,monthIndex:4,day:20,hour:16,minute:0}};
+                                            const eventLocal = new Date(_cd.countdown.year, _cd.countdown.monthIndex, _cd.countdown.day, _cd.countdown.hour, _cd.countdown.minute, 0);
                                             const interval = setInterval( () => {
                                                 const now = new Date();
                                                 const distance = eventLocal - now;
@@ -4255,6 +4282,15 @@
                         <div class='t396__elem tn-elem tn-elem__20028022311772813558569000002' data-elem-id='1772813558569000002' data-elem-type='image' data-field-top-value="463" data-field-left-value="265" data-field-height-value="121" data-field-width-value="630" data-field-axisy-value="top" data-field-axisx-value="left" data-field-container-value="grid" data-field-topunits-value="px" data-field-leftunits-value="px" data-field-heightunits-value="px" data-field-widthunits-value="px" data-field-filewidth-value="991" data-field-fileheight-value="190" data-field-heightmode-value="hug" data-field-left-res-320-value="-177" data-field-height-res-320-value="121" data-field-left-res-480-value="-97" data-field-height-res-480-value="121" data-field-left-res-640-value="-17" data-field-height-res-640-value="121" data-field-left-res-960-value="143" data-field-height-res-960-value="121">
                             <div class='tn-atom'>
                                 <img class='tn-atom__img t-img' data-original='https://static.tildacdn.net/tild3832-6561-4131-b539-313934396635/Mask_group_2_1_Trace.svg' src='https://static.tildacdn.net/tild3832-6561-4131-b539-313934396635/Mask_group_2_1_Trace.svg' alt='' imgfield='tn_img_1772813558569000002'/>
+                            </div>
+                        </div>
+                        <!-- خريطة جوجل تفاعلية حقيقية + رابط فتح مباشر (التصميم الأصلي ماكانش فيه خريطة شغالة أصلًا، صورة خلفية بس) -->
+                        <div class='t396__elem tn-elem tn-elem__20028022311772899000001' data-elem-id='1772899000001' data-elem-type='html' data-field-top-value="240" data-field-left-value="375" data-field-height-value="210" data-field-width-value="360" data-field-axisy-value="top" data-field-axisx-value="left" data-field-container-value="grid" data-field-topunits-value="px" data-field-leftunits-value="px" data-field-heightunits-value="px" data-field-widthunits-value="px" data-field-left-res-320-value="-65" data-field-left-res-480-value="15" data-field-left-res-640-value="95" data-field-left-res-960-value="255">
+                            <div class='tn-atom tn-atom__html'>
+                                <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                                    <iframe id="venueMapFrame" src="https://www.google.com/maps?q=Chateau%20de%20Paon%2C%20Arles%2C%20France&output=embed" width="260" height="170" style="border:0; border-radius:12px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                                    <a id="venueOpenMapLink" href="#" target="_blank" rel="noopener" style="font-family:sans-serif; font-size:12px; color:#8a6a3f; text-decoration:underline;">Open in Google Maps</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -7309,7 +7345,7 @@
             <div id="rec2052858183" class="r t-rec" style=" " data-animationappear="off" data-record-type="702">
                 <!-- T702 -->
                 <div class="t702">
-                    <div class="t-popup" data-tooltip-hook="#popup:myform" role="dialog" aria-modal="true" tabindex="-1" aria-label="Confirm Your Attendance">
+                    <div class="t-popup" id="rsvpPopupDialog" data-tooltip-hook="#popup:myform" role="dialog" aria-modal="true" tabindex="-1" aria-label="Confirm Your Attendance">
                         <div class="t-popup__close t-popup__block-close">
                             <button type="button" class="t-popup__close-wrapper t-popup__block-close-button" aria-label="Close dialog window">
                                 <svg role="presentation" class="t-popup__close-icon" width="23px" height="23px" viewBox="0 0 23 23" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">

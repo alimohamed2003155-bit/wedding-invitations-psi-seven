@@ -5,6 +5,7 @@ const Invitation = require('../models/Invitation');
 const { sanitizeText } = require('../utils/sanitize');
 const { generateShortId } = require('../utils/idGenerator');
 const { renderNewPathHtml, renderLegacyHtml } = require('../utils/renderInvitation');
+const { resolveMapInput } = require('../utils/mapsLink');
 const { getTemplate, getDefaultTemplate, TEMPLATES } = require('../templates/registry');
 
 const router = express.Router();
@@ -17,8 +18,10 @@ const REQUIRED_FIELDS = [
 /**
  * بيتحقق من مدخلات الفورم ويبني كائن بيانات نضيف وجاهز، سواء للمعاينة
  * المؤقتة أو للحفظ الفعلي — نفس التحقق يتطبق في الحالتين.
+ * async لأن معالجة رابط الخريطة (utils/mapsLink.js) ممكن تحتاج تتابع
+ * إعادة توجيه لينك مصغّر من جوجل مابس.
  */
-function buildInvitationDataFromRequest(body) {
+async function buildInvitationDataFromRequest(body, { skipMapNetwork } = {}) {
   for (const field of REQUIRED_FIELDS) {
     if (!body[field] || String(body[field]).trim() === '') {
       throw Object.assign(new Error('من فضلك املأ كل الحقول المطلوبة.'), { status: 400 });
@@ -59,11 +62,20 @@ function buildInvitationDataFromRequest(body) {
   const groomNameAr = sanitizeText(body.groomNameAr, 60);
   const venueName = sanitizeText(body.venueName, 100);
   const venueCity = sanitizeText(body.venueCity, 100);
-  const venueMapQuery = sanitizeText(body.venueMapQuery, 140) || `${venueName}, ${venueCity}`;
+  // بنقبل هنا أي حاجة: لينك جوجل مابس كامل، لينك مصغّر، أو مجرد نص عنوان —
+  // ورابط التضمين النهائي بيتحسب بعدين بمعالجة ذكية (utils/mapsLink.js)
+  const venueMapQueryRaw = String(body.venueMapQuery || '').trim().slice(0, 300);
 
   if (!brideName || !groomName || !brideNameAr || !groomNameAr || !venueName || !venueCity) {
     throw Object.assign(new Error('من فضلك تأكد إن كل الحقول متكتوبة بشكل صحيح.'), { status: 400 });
   }
+
+  const { embedSrc: venueMapEmbedSrc, directLink: venueMapDirectLink } = await resolveMapInput({
+    raw: venueMapQueryRaw,
+    venueName,
+    venueCity,
+    skipNetwork: !!skipMapNetwork,
+  });
 
   // حقول إضافية اختيارية بيحددها كل قالب لوحده (extraFields في السجل) —
   // بنقبل بس الحقول اللي القالب المختار فعليًا بيدعمها.
@@ -75,7 +87,10 @@ function buildInvitationDataFromRequest(body) {
   return {
     templateId: template.id, language, occasionType, hiddenSections, timeline,
     brideName, groomName, brideNameAr, groomNameAr,
-    venueName, venueCity, venueMapQuery, weddingDateTime,
+    venueName, venueCity,
+    venueMapQuery: venueMapQueryRaw || `${venueName}, ${venueCity}`,
+    venueMapEmbedSrc, venueMapDirectLink,
+    weddingDateTime,
     ...extra,
   };
 }
@@ -95,9 +110,9 @@ router.get('/api/templates', (req, res) => {
 });
 
 // POST /api/preview — معاينة حية للتصميم الحقيقي، من غير أي حفظ في قاعدة البيانات
-router.post('/api/preview', (req, res) => {
+router.post('/api/preview', async (req, res) => {
   try {
-    const data = buildInvitationDataFromRequest(req.body || {});
+    const data = await buildInvitationDataFromRequest(req.body || {}, { skipMapNetwork: true });
     const html = renderNewPathHtml(data);
     res.set('Content-Type', 'text/html; charset=utf-8');
     return res.send(html);
@@ -111,7 +126,7 @@ router.post('/api/preview', (req, res) => {
 // POST /api/invitations — إنشاء دعوة فعلية (بتتحفظ في قاعدة البيانات)
 router.post('/api/invitations', async (req, res) => {
   try {
-    const data = buildInvitationDataFromRequest(req.body || {});
+    const data = await buildInvitationDataFromRequest(req.body || {});
 
     let invitation = null;
     let attempts = 0;

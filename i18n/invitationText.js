@@ -25,7 +25,7 @@ function buildMainParagraph(p) {
       `يسعدهما ويشرفهما أن يدعوا حضرتكم الكريمة<br>` +
       `لمشاركتهما فرحة حفل ${occasionWord}<br><br>` +
       `وذلك بمشيئة الله تعالى يوم ${display.dayNameAr} ${display.dateArabicDisplay} <br>` +
-      `على الساعة ${display.hourArabicDisplay}<br><br>` +
+      `على ${display.hourArabicDisplay}<br><br>` +
       `بقاعة <br><br>`
     );
   }

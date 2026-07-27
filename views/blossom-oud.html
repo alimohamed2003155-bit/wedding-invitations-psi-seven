@@ -176,13 +176,18 @@
                 setHTML('#rec2339662083 [field="tn_text_1779624381838000001"]', C.mainParagraphHtml);
                 setHTML('#rec2339662083 [field="tn_text_1779472210551000005"]', C.venueName);
 
-                // ===== قسم الموقع (Lieu / Venue / المكان) =====
+                // ===== قسم الموقع =====
                 setHTML('#rec2339662113 [field="tn_text_1771277026942000001"]', C.venueTitle);
                 setHTML('#rec2339662113 [field="tn_text_1779544773135"]', C.venueName);
                 setHTML('#rec2339662113 [field="tn_text_1779545032699000001"]', C.venueCity);
                 var mapFrame = document.getElementById('venueMapFrame');
                 if (mapFrame) {
-                    mapFrame.src = 'https://www.google.com/maps?q=' + encodeURIComponent(C.venueMapQuery) + '&output=embed';
+                    mapFrame.src = C.venueMapEmbedSrc;
+                }
+                var openMapLink = document.getElementById('venueOpenMapLink');
+                if (openMapLink) {
+                    openMapLink.href = C.venueMapDirectLink;
+                    openMapLink.textContent = C.openInMapsText;
                 }
 
                 // ===== العداد التنازلي =====
@@ -216,7 +221,7 @@
                     hideRec('rec2355511493');
                 }
 
-                // ===== الزي المقترح (Dress Code) =====
+                // ===== الزي المقترح =====
                 if (hidden.indexOf('dressCode') === -1) {
                     setHTML('#rec2355542373 [field="tn_text_1771277026942000001"]', C.dressCodeTitle);
                     setHTML('#rec2355542373 [field="tn_text_1780768374065000001"]', C.colorPalette);
@@ -229,7 +234,7 @@
                     hideRec('rec2355574603');
                 }
 
-                // ===== تأكيد الحضور (RSVP) =====
+                // ===== تأكيد الحضور =====
                 if (hidden.indexOf('rsvp') === -1) {
                     setHTML('#rec2339662123 [field="tn_text_1771277026942000001"]', C.rsvpTitle);
                 } else {
@@ -6261,8 +6266,9 @@
                         </div>
                         <div class='t396__elem tn-elem tn-elem__23396621531710614957366' data-elem-id='1710614957366' data-elem-type='html' data-field-top-value="1" data-field-left-value="0" data-field-height-value="100" data-field-width-value="100" data-field-axisy-value="center" data-field-axisx-value="center" data-field-container-value="window" data-field-topunits-value="px" data-field-leftunits-value="px" data-field-heightunits-value="%" data-field-widthunits-value="%">
                             <div class='tn-atom tn-atom__html'>
-                                <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                                <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; gap: 10px;">
                                     <iframe id="venueMapFrame" src="https://www.google.com/maps?q=Beldi%20Country%20Club%2C%20Marrakech%2C%20Morocco&output=embed" width="335" height="335" style="border:0; border-radius:15px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                                    <a id="venueOpenMapLink" href="#" target="_blank" rel="noopener" style="font-family:sans-serif; font-size:13px; color:#c9a227; text-decoration:underline;">افتح في خرائط جوجل</a>
                                 </div>
                             </div>
                         </div>

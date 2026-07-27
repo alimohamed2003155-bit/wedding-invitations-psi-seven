@@ -76,6 +76,13 @@ function renderNewPathHtml(data) {
     venueCity: data.venueCity,
     venueAddress: data.venueAddress || '',
     venueMapQuery: data.venueMapQuery,
+    // رابط التضمين النهائي ورابط الفتح المباشر بيتحسبوا مسبقًا (utils/mapsLink.js)
+    // من أي مدخل (لينك جوجل مابس كامل، لينك مصغّر، أو نص عادي). الـ fallback هنا
+    // للحماية بس لو الدالة دي اتنادت من كود قديم من غير الحقول الجديدة.
+    venueMapEmbedSrc: data.venueMapEmbedSrc
+      || `https://www.google.com/maps?q=${encodeURIComponent(data.venueMapQuery || `${data.venueName}, ${data.venueCity}`)}&output=embed`,
+    venueMapDirectLink: data.venueMapDirectLink
+      || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.venueMapQuery || `${data.venueName}, ${data.venueCity}`)}`,
     venueTitle: strings.venueTitle,
     tapToOpen: strings.tapToOpen,
     celebrationBegins: strings.celebrationBegins,
@@ -97,7 +104,15 @@ function renderNewPathHtml(data) {
     rsvpTitle: strings.rsvpTitle,
     rsvpIntro: strings.rsvpIntro,
     rsvpButtonText: strings.rsvpButtonText,
+    rsvpDeadlineNote: strings.rsvpDeadlineNote,
+    yourNameLabel: strings.yourNameLabel,
+    willYouComeLabel: strings.willYouComeLabel,
+    yesOption: strings.yesOption,
+    noOption: strings.noOption,
+    foodIntoleranceLabel: strings.foodIntoleranceLabel,
+    submitButtonText: strings.submitButtonText,
     mapTitle: strings.mapTitle,
+    openInMapsText: strings.openInMapsText,
     closingLine: strings.closingLine,
     hiddenSections: data.hiddenSections || [],
   };

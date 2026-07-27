@@ -31,6 +31,10 @@ const invitationSchema = new mongoose.Schema({
   venueName: { type: String, required: true, maxlength: 120 },
   venueCity: { type: String, required: true, maxlength: 120 },
   venueMapQuery: { type: String, maxlength: 160 },
+  // رابط التضمين النهائي (iframe) ورابط "افتح في خرائط جوجل" — بيتحسبوا مرة
+  // واحدة وقت إنشاء الدعوة (utils/mapsLink.js)، مش في كل زيارة، عشان الأداء.
+  venueMapEmbedSrc: { type: String, default: '' },
+  venueMapDirectLink: { type: String, default: '' },
   // عنوان تفصيلي اختياري (بيستخدمه بعض القوالب زي Viktor & Paula)
   venueAddress: { type: String, maxlength: 200, default: '' },
 
@@ -44,5 +48,15 @@ const invitationSchema = new mongoose.Schema({
   viewCount: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
 });
+
+// فهارس عادية على الحقول اللي البحث في لوحة التحكم بيعتمد عليها، عشان
+// الاستعلام يفضل سريع حتى مع آلاف الدعوات. البحث نفسه بيتم بـ regex جزئي
+// (مش $text) عشان ندعم "جزء من الاسم" مش كلمة كاملة بس.
+invitationSchema.index({ brideName: 1 });
+invitationSchema.index({ groomName: 1 });
+invitationSchema.index({ brideNameAr: 1 });
+invitationSchema.index({ groomNameAr: 1 });
+invitationSchema.index({ venueName: 1 });
+invitationSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Invitation', invitationSchema);
