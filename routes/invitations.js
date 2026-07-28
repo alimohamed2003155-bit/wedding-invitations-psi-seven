@@ -110,6 +110,38 @@ router.get('/api/templates', (req, res) => {
   res.json(publicList);
 });
 
+// GET /api/public-stats — أرقام حقيقية آمنة (مفيش أي بيانات شخصية) بتتعرض
+// للزوار في الصفحة الرئيسية (عدد الدعوات، عدد المشاهدات، عدد المستخدمين).
+// متكاشة لمدة قصيرة عشان آلاف الزيارات على الصفحة الرئيسية ما تضغطش على
+// قاعدة البيانات في كل مرة.
+let publicStatsCache = { data: null, expiresAt: 0 };
+router.get('/api/public-stats', async (req, res) => {
+  try {
+    const now = Date.now();
+    if (publicStatsCache.data && publicStatsCache.expiresAt > now) {
+      return res.json(publicStatsCache.data);
+    }
+
+    const [totalInvitations, viewsAgg, uniqueCreators] = await Promise.all([
+      Invitation.countDocuments({}),
+      Invitation.aggregate([{ $group: { _id: null, total: { $sum: '$viewCount' } } }]),
+      Invitation.distinct('creatorDeviceId', { creatorDeviceId: { $ne: null } }),
+    ]);
+
+    const data = {
+      totalInvitations,
+      totalViews: viewsAgg[0] ? viewsAgg[0].total : 0,
+      totalUsers: uniqueCreators.length,
+    };
+    publicStatsCache = { data, expiresAt: now + 30 * 1000 }; // كاش لمدة 30 ثانية
+    return res.json(data);
+  } catch (err) {
+    console.error('Error fetching public stats:', err);
+    // في أسوأ الأحوال بنرجع أصفار بدل ما نكسر تحميل الصفحة الرئيسية
+    return res.json({ totalInvitations: 0, totalViews: 0, totalUsers: 0 });
+  }
+});
+
 // POST /api/preview — معاينة حية للتصميم الحقيقي، من غير أي حفظ في قاعدة البيانات
 router.post('/api/preview', async (req, res) => {
   try {

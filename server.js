@@ -37,6 +37,7 @@ const requireDB = async (req, res, next) => {
   }
 };
 app.use('/api/invitations', requireDB);
+app.use('/api/public-stats', requireDB);
 app.use('/i', requireDB);
 app.use('/admin', requireDB);
 
