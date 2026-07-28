@@ -3,47 +3,288 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>استوديو الدعوات — Blossom &amp; Oud</title>
+<title>استوديو الدعوات — اختار تصميم دعوتك</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1b1410;
-    --ink-soft:#2a2019;
-    --parchment:#ede3d3;
-    --parchment-dim:#c9bda9;
-    --brass:#c9a227;
-    --brass-dim:#8c7238;
-    --blossom:#c98a93;
+    /* ===== هوية الاستوديو (مختلفة عن ألوان أي قالب بذاته — دي واجهة المعرض) ===== */
+    --paper:#f7f1e6;       /* خلفية دافئة تشبه ورق الدعوات */
+    --paper-soft:#efe6d4;
+    --ink:#241318;         /* أسود دافئ يميل للعنابي */
+    --ink-dim:#6b5a5f;
+    --gold:#a9812f;        /* دهبي متيقّظ، أهدى من دهبي التصاميم نفسها */
+    --wine:#6e1e32;        /* عنابي غامق — لون البانر المميز */
+    --wine-soft:#8a2c44;
+    --sage:#5f6f4e;        /* لمسة خضرا هادية للتفاصيل الثانوية */
+    --line: rgba(36,19,24,0.14);
     --error:#d97757;
-    --ok:#8fae82;
+    --ok:#5f6f4e;
+    --radius: 3px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--ink);
-    color:var(--parchment);
+    background:var(--paper);
+    color:var(--ink);
     font-family:'Cairo',sans-serif;
     min-height:100vh;
-    line-height:1.6;
+    line-height:1.65;
   }
   a{color:inherit;}
-  .layout{
+  button{font-family:inherit;}
+  .serif{font-family:'Cormorant Garamond',serif;}
+
+  /* ===== موتيف الورق الممزّق — نفس اللمسة الموجودة جوه تصميم Blossom & Oud نفسه،
+     مستخدمة هنا كخيط بصري بيربط صفحة المعرض بالمنتج الحقيقي ===== */
+  .torn-divider{
+    position:relative;
+    height:34px;
+    background:var(--paper);
+  }
+  .torn-divider::before{
+    content:'';
+    position:absolute; inset:0;
+    background:var(--wine);
+    clip-path: polygon(
+      0% 0%, 4% 60%, 8% 10%, 12% 55%, 16% 15%, 20% 58%, 24% 8%, 28% 52%,
+      32% 12%, 36% 60%, 40% 18%, 44% 55%, 48% 10%, 52% 58%, 56% 14%, 60% 50%,
+      64% 20%, 68% 56%, 72% 12%, 76% 58%, 80% 16%, 84% 52%, 88% 10%, 92% 56%,
+      96% 18%, 100% 0%, 100% 0%, 0% 0%
+    );
+  }
+  .torn-divider.flip::before{ transform: scaleY(-1); }
+
+  /* ===== الهيدر ===== */
+  .hero{
+    max-width:960px;
+    margin:0 auto;
+    padding:64px 24px 40px;
+    text-align:center;
+  }
+  .hero .eyebrow{
+    font-size:12px;
+    letter-spacing:0.28em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:14px;
+  }
+  .hero h1{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:600;
+    font-style:italic;
+    font-size:clamp(34px,5.5vw,54px);
+    margin:0 0 16px;
+    line-height:1.15;
+  }
+  .hero p{
+    color:var(--ink-dim);
+    font-size:16px;
+    max-width:52ch;
+    margin:0 auto;
+  }
+
+  /* ===== معرض القوالب ===== */
+  .gallery-wrap{
+    max-width:960px;
+    margin:0 auto;
+    padding:0 24px 56px;
+  }
+  .template-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:28px;
+  }
+  .template-card{
+    background:#fffdf9;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    transition:transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .template-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 32px -18px rgba(36,19,24,0.35);
+  }
+  .template-swatch{
+    height:120px;
+    position:relative;
+    display:flex;
+    align-items:flex-end;
+    padding:16px;
+  }
+  .template-swatch .swatch-name{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:26px;
+    color:#fdf9f0;
+  }
+  .template-body{
+    padding:20px 22px 24px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    flex:1;
+  }
+  .template-body p{
+    font-size:14px;
+    color:var(--ink-dim);
+    margin:0;
+    flex:1;
+  }
+  .template-actions{
+    display:flex;
+    gap:10px;
+  }
+  .btn{
+    font-size:14px;
+    font-weight:600;
+    padding:11px 16px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    border:1px solid transparent;
+    text-align:center;
+    flex:1;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .btn-ghost{
+    background:transparent;
+    border-color:var(--ink);
+    color:var(--ink);
+  }
+  .btn-ghost:hover{ background:rgba(36,19,24,0.05); }
+  .btn-solid{
+    background:var(--ink);
+    color:var(--paper);
+  }
+  .btn-solid:hover{ background:var(--wine); }
+  .gallery-status{
+    text-align:center;
+    color:var(--ink-dim);
+    padding:20px;
+    font-size:14px;
+  }
+
+  /* ===== بانر التصميم الخاص (العنصر المميز في الصفحة) ===== */
+  .commission-band{
+    background:var(--wine);
+    color:#fbf1e6;
+    padding:48px 32px 40px;
+    border-radius:var(--radius);
+    position:relative;
+    overflow:hidden;
+  }
+  .commission-band::after{
+    /* خط تنقيط شكله زي تذكرة مقصوصة — بيربط فكرة "اطلب نسخة خاصة بيك" بشكل تذكرة/دعوة حقيقية */
+    content:'';
+    position:absolute;
+    inset-inline:24px;
+    bottom:0;
+    height:0;
+    border-top:2px dashed rgba(251,241,230,0.35);
+  }
+  .commission-inner{
+    max-width:640px;
+    margin:0 auto;
+    text-align:center;
+  }
+  .commission-band .eyebrow{
+    font-size:12px;
+    letter-spacing:0.28em;
+    text-transform:uppercase;
+    color:#e8c874;
+    margin-bottom:14px;
+  }
+  .commission-band h2{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:clamp(26px,4vw,36px);
+    margin:0 0 14px;
+  }
+  .commission-band > .commission-inner > p.lead{
+    font-size:15px;
+    color:#e9d9c8;
+    margin:0 0 26px;
+  }
+  .commission-features{
+    list-style:none;
+    padding:0;
+    margin:0 0 30px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:12px;
+    text-align:right;
+  }
+  .commission-features li{
+    font-size:14px;
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+    color:#f3e7d8;
+  }
+  .commission-features li::before{
+    content:'✦';
+    color:#e8c874;
+    flex-shrink:0;
+  }
+  .whatsapp-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:#e8c874;
+    color:var(--ink);
+    font-weight:700;
+    font-size:15px;
+    padding:15px 30px;
+    border-radius:var(--radius);
+    text-decoration:none;
+  }
+  .whatsapp-btn:hover{ background:#f3d789; }
+  .commission-note{
+    font-size:12.5px;
+    color:#d8c3ae;
+    margin-top:16px;
+  }
+
+  footer.site-footer{
+    text-align:center;
+    padding:32px 24px 48px;
+    font-size:13px;
+    color:var(--ink-dim);
+  }
+
+  /* ==========================================================================
+     خطوة الفورم (تظهر بعد ما تختار قالب من المعرض)
+     ========================================================================== */
+  #formView{ display:none; }
+  .form-layout{
     display:grid;
     grid-template-columns:minmax(0,560px) minmax(0,480px);
     min-height:100vh;
   }
-  @media (max-width:960px){
-    .layout{grid-template-columns:1fr;}
-  }
+  @media (max-width:960px){ .form-layout{ grid-template-columns:1fr; } }
 
-  /* ===== لوحة المعاينة الحية ===== */
+  .back-row{
+    padding:20px 44px 0;
+  }
+  @media (max-width:960px){ .back-row{ padding:16px 20px 0; } }
+  .back-link{
+    background:none; border:0; cursor:pointer;
+    font-family:'Cairo',sans-serif; font-size:14px; color:var(--ink-dim);
+    display:inline-flex; align-items:center; gap:6px; padding:0;
+  }
+  .back-link:hover{ color:var(--wine); }
+
   .preview-panel{
-    background:
-      radial-gradient(circle at 30% 20%, rgba(201,162,39,0.10), transparent 55%),
-      radial-gradient(circle at 80% 80%, rgba(201,138,147,0.08), transparent 50%),
-      var(--ink-soft);
+    background:var(--ink);
     padding:32px;
     display:flex;
     flex-direction:column;
@@ -51,283 +292,265 @@
     position:sticky;
     top:0;
     height:100vh;
-    border-inline-start:1px solid rgba(201,162,39,0.18);
   }
-  @media (max-width:960px){
-    .preview-panel{position:relative; height:auto; padding:20px;}
-  }
+  @media (max-width:960px){ .preview-panel{ position:relative; height:auto; padding:20px; } }
   .preview-label{
     font-size:12px;
     letter-spacing:0.15em;
     text-transform:uppercase;
-    color:var(--brass);
+    color:var(--gold);
     margin-bottom:10px;
     align-self:flex-start;
   }
   .preview-frame-wrap{
-    width:100%;
-    max-width:390px;
-    height:640px;
-    border:1px solid var(--brass-dim);
-    border-radius:2px;
-    overflow:hidden;
-    background:#000;
-    position:relative;
+    width:100%; max-width:390px; height:640px;
+    border:1px solid rgba(169,129,47,0.4);
+    border-radius:2px; overflow:hidden; background:#000; position:relative;
   }
   @media (max-height:760px){ .preview-frame-wrap{ height:520px; } }
-  .preview-frame-wrap iframe{
-    width:100%;
-    height:100%;
-    border:0;
-    display:block;
-  }
+  .preview-frame-wrap iframe{ width:100%; height:100%; border:0; display:block; }
   .preview-note{
-    font-size:12px;
-    color:var(--parchment-dim);
-    margin-top:12px;
-    max-width:390px;
-    text-align:center;
-    opacity:0.8;
+    font-size:12px; color:#c9bda9; margin-top:12px; max-width:390px; text-align:center; opacity:0.85;
   }
 
-  /* ===== لوحة الفورم ===== */
-  .form-panel{padding:48px 44px 90px;}
-  @media (max-width:960px){.form-panel{padding:32px 20px 60px;}}
-  @media (max-width:480px){.form-panel{padding:24px 16px 56px;}}
+  .form-panel{ padding:36px 44px 90px; }
+  @media (max-width:960px){ .form-panel{ padding:28px 20px 60px; } }
+  @media (max-width:480px){ .form-panel{ padding:22px 16px 56px; } }
 
-  .brand{
-    font-family:'Cormorant Garamond',serif;
-    font-style:italic;
-    font-size:22px;
-    color:var(--brass);
-    margin-bottom:6px;
+  .brand{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:20px; color:var(--wine); margin-bottom:6px; }
+  h1.form-title{
+    font-family:'Cormorant Garamond',serif; font-weight:600; font-size:clamp(26px,3.6vw,32px); margin:0 0 8px;
   }
-  h1{
-    font-family:'Cormorant Garamond',serif;
-    font-weight:600;
-    font-size:clamp(26px,3.6vw,34px);
-    margin:0 0 8px;
-  }
-  .subtitle{
-    color:var(--parchment-dim);
-    font-size:15px;
-    margin:0 0 32px;
-    max-width:52ch;
-  }
+  .subtitle{ color:var(--ink-dim); font-size:15px; margin:0 0 30px; max-width:52ch; }
 
-  fieldset{border:0;padding:0;margin:0 0 30px;}
+  fieldset{ border:0; padding:0; margin:0 0 28px; }
   legend{
-    font-size:12px;
-    letter-spacing:0.15em;
-    text-transform:uppercase;
-    color:var(--brass);
-    margin-bottom:14px;
-    padding:0;
+    font-size:12px; letter-spacing:0.15em; text-transform:uppercase; color:var(--wine); margin-bottom:14px; padding:0;
   }
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
-  @media (max-width:560px){.row{grid-template-columns:1fr;}}
-  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
-  label{font-size:13px;color:var(--parchment-dim);}
+  .row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  @media (max-width:560px){ .row{ grid-template-columns:1fr; } }
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+  label{ font-size:13px; color:var(--ink-dim); }
   input,select{
-    background:transparent;
-    border:0;
-    border-bottom:1px solid var(--brass-dim);
-    color:var(--parchment);
-    font-family:'Cairo',sans-serif;
-    font-size:16px;
-    padding:10px 2px;
-    border-radius:0;
+    background:transparent; border:0; border-bottom:1px solid var(--line); color:var(--ink);
+    font-family:'Cairo',sans-serif; font-size:16px; padding:10px 2px; border-radius:0;
   }
-  select{cursor:pointer;}
-  select option{background:var(--ink-soft); color:var(--parchment);}
-  input::placeholder{color:rgba(201,189,169,0.4);}
-  input:focus,select:focus{
-    outline:none;
-    border-bottom-color:var(--brass);
-    box-shadow:0 1px 0 0 var(--brass);
-  }
-  .hint{font-size:12px;color:var(--parchment-dim);opacity:0.75;margin-top:-4px;}
+  select{ cursor:pointer; }
+  input::placeholder{ color:rgba(107,90,95,0.55); }
+  input:focus,select:focus{ outline:none; border-bottom-color:var(--wine); box-shadow:0 1px 0 0 var(--wine); }
+  .hint{ font-size:12px; color:var(--ink-dim); opacity:0.85; margin-top:-4px; }
 
-  /* بطاقات الاختيار (قالب / نوع مناسبة / لغة) */
-  .choice-cards{display:flex;flex-wrap:wrap;gap:10px;}
+  .choice-cards{ display:flex; flex-wrap:wrap; gap:10px; }
   .choice-card{
-    border:1px solid var(--brass-dim);
-    padding:10px 18px;
-    cursor:pointer;
-    font-size:14px;
-    user-select:none;
-    transition:border-color .15s ease, background .15s ease;
+    border:1px solid var(--line); padding:10px 18px; cursor:pointer; font-size:14px; user-select:none;
+    border-radius:var(--radius); transition:border-color .15s ease, background .15s ease;
   }
-  .choice-card.active{
-    border-color:var(--brass);
-    background:rgba(201,162,39,0.12);
-    color:var(--brass);
-  }
-  .choice-card input{display:none;}
+  .choice-card.active{ border-color:var(--wine); background:rgba(110,30,50,0.08); color:var(--wine); }
+  .choice-card input{ display:none; }
 
-  .section-toggle-list{display:flex; flex-direction:column; gap:12px;}
-  .section-toggle{
-    display:flex; align-items:center; gap:10px;
-    font-size:14px; cursor:pointer; user-select:none;
-  }
-  .section-toggle input{width:16px; height:16px; accent-color:var(--brass); padding:0;}
+  .section-toggle-list{ display:flex; flex-direction:column; gap:12px; }
+  .section-toggle{ display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer; user-select:none; }
+  .section-toggle input{ width:16px; height:16px; accent-color:var(--wine); padding:0; }
 
   button.primary{
-    width:100%;
-    background:var(--brass);
-    color:var(--ink);
-    border:0;
-    font-family:'Cairo',sans-serif;
-    font-weight:700;
-    font-size:16px;
-    padding:16px;
-    cursor:pointer;
-    letter-spacing:0.02em;
+    width:100%; background:var(--ink); color:var(--paper); border:0; font-family:'Cairo',sans-serif;
+    font-weight:700; font-size:16px; padding:16px; cursor:pointer; letter-spacing:0.02em; border-radius:var(--radius);
     transition:background 0.15s ease;
   }
-  button.primary:hover{background:#dcb64a;}
-  button.primary:disabled{background:var(--brass-dim); cursor:progress;}
+  button.primary:hover{ background:var(--wine); }
+  button.primary:disabled{ background:var(--ink-dim); cursor:progress; }
 
-  .status{margin-top:16px; font-size:14px; display:none;}
-  .status.show{display:block;}
-  .status.error{color:var(--error);}
+  .status{ margin-top:16px; font-size:14px; display:none; }
+  .status.show{ display:block; }
+  .status.error{ color:var(--error); }
 
-  .result{display:none; margin-top:28px; border:1px solid var(--brass-dim); padding:24px;}
-  .result.show{display:block;}
-  .result h2{font-family:'Cormorant Garamond',serif; font-size:22px; margin:0 0 12px; color:var(--ok);}
-  .link-row{display:flex; gap:8px; margin-bottom:14px;}
+  .result{ display:none; margin-top:28px; border:1px solid var(--line); border-radius:var(--radius); padding:24px; background:#fffdf9; }
+  .result.show{ display:block; }
+  .result h2{ font-family:'Cormorant Garamond',serif; font-size:22px; margin:0 0 12px; color:var(--ok); }
+  .link-row{ display:flex; gap:8px; margin-bottom:14px; }
   .link-row input{
-    flex:1; border:1px solid var(--brass-dim); padding:10px 12px;
-    font-size:14px; direction:ltr; text-align:left;
+    flex:1; border:1px solid var(--line); padding:10px 12px; font-size:14px; direction:ltr; text-align:left; border-radius:var(--radius);
   }
   .link-row button{
-    background:transparent; border:1px solid var(--brass); color:var(--brass);
-    font-family:'Cairo',sans-serif; padding:0 18px; cursor:pointer; font-size:14px; white-space:nowrap;
+    background:transparent; border:1px solid var(--wine); color:var(--wine); font-family:'Cairo',sans-serif;
+    padding:0 18px; cursor:pointer; font-size:14px; white-space:nowrap; border-radius:var(--radius);
   }
-  .link-row button:hover{background:rgba(201,162,39,0.12);}
-  .result-actions{display:flex; gap:16px; font-size:14px; flex-wrap:wrap;}
-  .result-actions a{color:var(--blossom); text-decoration:underline;}
+  .link-row button:hover{ background:rgba(110,30,50,0.08); }
+  .result-actions{ display:flex; gap:16px; font-size:14px; flex-wrap:wrap; }
+  .result-actions a{ color:var(--wine); text-decoration:underline; }
   .result-actions button.linklike{
-    background:none;border:0;color:var(--parchment-dim);text-decoration:underline;
-    cursor:pointer;font-family:'Cairo',sans-serif;font-size:14px;padding:0;
+    background:none; border:0; color:var(--ink-dim); text-decoration:underline; cursor:pointer;
+    font-family:'Cairo',sans-serif; font-size:14px; padding:0;
   }
 </style>
 </head>
 <body>
-<div class="layout">
 
-  <div class="form-panel">
-    <div class="brand">Blossom &amp; Oud — استوديو الدعوات</div>
-    <h1>اعمل دعوة زفاف أو خطوبة بلينك خاص بيك</h1>
-    <p class="subtitle">إملا البيانات، شوف الدعوة بتصميمها الحقيقي وهي بتتبني قصادك على اليمين، وبعدين اضغط إنشاء.</p>
+<!-- ==========================================================================
+     خطوة 1: معرض القوالب
+     ========================================================================== -->
+<section id="galleryView">
+  <div class="hero">
+    <div class="eyebrow">استوديو الدعوات</div>
+    <h1>اختار تصميم دعوتك</h1>
+    <p>شوف كل تصميم وهو شغال بالظبط قبل ما تقرر، وبعدين املا بياناتك واحصل على لينك خاص بيك جاهز تبعته لصحابك.</p>
+  </div>
 
-    <form id="inviteForm" novalidate>
+  <div class="gallery-wrap">
+    <div class="template-grid" id="templateGrid">
+      <div class="gallery-status">جاري تحميل التصاميم...</div>
+    </div>
+  </div>
 
-      <fieldset>
-        <legend>القالب</legend>
-        <div class="choice-cards" id="templateCards"></div>
-      </fieldset>
+  <div class="torn-divider"></div>
 
-      <fieldset>
-        <legend>نوع المناسبة</legend>
-        <div class="choice-cards" id="occasionCards"></div>
-      </fieldset>
-
-      <fieldset>
-        <legend>لغة الدعوة</legend>
-        <div class="choice-cards" id="languageCards"></div>
-      </fieldset>
-
-      <fieldset>
-        <legend>أسماء العروسين</legend>
-        <div class="row">
-          <div class="field">
-            <label for="brideName">اسم العروسة (بالحروف اللاتينية)</label>
-            <input id="brideName" name="brideName" type="text" placeholder="Amira" required maxlength="60" />
-          </div>
-          <div class="field">
-            <label for="groomName">اسم العريس (بالحروف اللاتينية)</label>
-            <input id="groomName" name="groomName" type="text" placeholder="Yusuf" required maxlength="60" />
-          </div>
-        </div>
-        <div class="row">
-          <div class="field">
-            <label for="brideNameAr">اسم العروسة بالعربي</label>
-            <input id="brideNameAr" name="brideNameAr" type="text" placeholder="أميرة" required maxlength="60" />
-          </div>
-          <div class="field">
-            <label for="groomNameAr">اسم العريس بالعربي</label>
-            <input id="groomNameAr" name="groomNameAr" type="text" placeholder="يوسف" required maxlength="60" />
-          </div>
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>المكان والتاريخ</legend>
-        <div class="field">
-          <label for="venueName">اسم القاعة / المكان</label>
-          <input id="venueName" name="venueName" type="text" placeholder="Beldi Country Club" required maxlength="100" />
-        </div>
-        <div class="field">
-          <label for="venueCity">المدينة</label>
-          <input id="venueCity" name="venueCity" type="text" placeholder="Marrakech, Morocco" required maxlength="100" />
-        </div>
-        <div class="field">
-          <label for="weddingDate">تاريخ الحفلة</label>
-          <input id="weddingDate" name="weddingDate" type="date" required />
-        </div>
-        <div class="field">
-          <label for="venueMapQuery">لينك جوجل مابس أو عنوان القاعة (اختياري)</label>
-          <input id="venueMapQuery" name="venueMapQuery" type="text" placeholder="الصق لينك خرائط جوجل (حتى لو مصغّر)، أو اكتب اسم/عنوان المكان" maxlength="300" />
-          <div class="hint">تقدر تلصق أي لينك من جوجل مابس زي ما هو (حتى لينكات المشاركة القصيرة)، أو تكتب اسم المكان بس. لو سبته فاضي هنستخدم اسم القاعة + المدينة.</div>
-        </div>
-      </fieldset>
-
-      <fieldset id="extraFieldsGroup" style="display:none;">
-        <legend>بيانات إضافية خاصة بالقالب ده</legend>
-        <div id="extraFieldsContainer"></div>
-      </fieldset>
-
-      <fieldset>
-        <legend>جدول أوقات الحفلة (ساعة بس، من غير دقايق)</legend>
-        <div class="row" id="timelineFields"></div>
-      </fieldset>
-
-      <fieldset>
-        <legend>أقسام تقدر تشيلها من الدعوة لو مش عايزها</legend>
-        <div class="section-toggle-list" id="sectionToggles"></div>
-      </fieldset>
-
-      <button type="submit" class="primary" id="submitBtn">إنشاء الدعوة</button>
-      <div class="status" id="statusMsg" role="status" aria-live="polite"></div>
-    </form>
-
-    <div class="result" id="resultBox">
-      <h2>الدعوة اتعملت 🎉</h2>
-      <div class="link-row">
-        <input type="text" id="resultLink" readonly />
-        <button type="button" id="copyBtn">نسخ اللينك</button>
-      </div>
-      <div class="result-actions">
-        <a id="previewLink" href="#" target="_blank" rel="noopener">افتح الدعوة في تاب جديد</a>
-        <a id="statsLink" href="#" target="_blank" rel="noopener">شوف كام حد فتح الدعوة</a>
-        <button type="button" class="linklike" id="resetBtn">اعمل دعوة تانية</button>
+  <div class="gallery-wrap" style="padding-top:40px;">
+    <div class="commission-band">
+      <div class="commission-inner">
+        <div class="eyebrow">تصميم حصري</div>
+        <h2>عايز تصميم مش موجود عندنا؟</h2>
+        <p class="lead">نعمله لك خصيصي من الصفر، بالشكل والألوان اللي في بالك، وبسعر رمزي جدًا.</p>
+        <ul class="commission-features">
+          <li>الموقع بتاعك شغال مدى الحياة</li>
+          <li>تعديلات شهرية مجانية على الدعوة</li>
+          <li>أي تعديل تحتاجه بنطبقه بسرعة</li>
+          <li>أي تصميم تتخيله — حتى لو مش موجود عندنا أصلًا</li>
+          <li>هيكون تصميم حصري ليك انت بس</li>
+          <li>هتبقى ذكرى جميلة تفضل معاك</li>
+        </ul>
+        <a class="whatsapp-btn" id="whatsappCta" href="https://wa.me/201035225735" target="_blank" rel="noopener">
+          تواصل معانا على واتساب ↗
+        </a>
+        <div class="commission-note">01035225735 — رد سريع، من غير أي التزام</div>
       </div>
     </div>
   </div>
 
-  <div class="preview-panel">
-    <div class="preview-label">معاينة حية للتصميم الحقيقي</div>
-    <div class="preview-frame-wrap">
-      <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin" title="معاينة الدعوة"></iframe>
-    </div>
-    <div class="preview-note">المعاينة دي نفس التصميم اللي صحابك هيشوفوه بالظبط — من غير ما نحفظ حاجة لحد ما تضغط "إنشاء الدعوة".</div>
+  <footer class="site-footer">Blossom &amp; Oud — استوديو الدعوات</footer>
+</section>
+
+<!-- ==========================================================================
+     خطوة 2: الفورم (بتظهر بعد اختيار قالب من المعرض)
+     ========================================================================== -->
+<section id="formView">
+  <div class="back-row">
+    <button type="button" class="back-link" id="backToGalleryBtn">→ رجوع لكل التصاميم</button>
   </div>
 
-</div>
+  <div class="form-layout">
+    <div class="form-panel">
+      <div class="brand" id="formBrand">استوديو الدعوات</div>
+      <h1 class="form-title">اعمل دعوة زفاف أو خطوبة بلينك خاص بيك</h1>
+      <p class="subtitle">إملا البيانات، شوف الدعوة بتصميمها الحقيقي وهي بتتبني قصادك على اليسار، وبعدين اضغط إنشاء.</p>
+
+      <form id="inviteForm" novalidate>
+
+        <fieldset>
+          <legend>نوع المناسبة</legend>
+          <div class="choice-cards" id="occasionCards"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>لغة الدعوة</legend>
+          <div class="choice-cards" id="languageCards"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>أسماء العروسين</legend>
+          <div class="row">
+            <div class="field">
+              <label for="groomName">اسم العريس (بالحروف اللاتينية)</label>
+              <input id="groomName" name="groomName" type="text" placeholder="Yusuf" required maxlength="60" />
+            </div>
+            <div class="field">
+              <label for="brideName">اسم العروسة (بالحروف اللاتينية)</label>
+              <input id="brideName" name="brideName" type="text" placeholder="Amira" required maxlength="60" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="groomNameAr">اسم العريس بالعربي</label>
+              <input id="groomNameAr" name="groomNameAr" type="text" placeholder="يوسف" required maxlength="60" />
+            </div>
+            <div class="field">
+              <label for="brideNameAr">اسم العروسة بالعربي</label>
+              <input id="brideNameAr" name="brideNameAr" type="text" placeholder="أميرة" required maxlength="60" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>المكان والتاريخ</legend>
+          <div class="field">
+            <label for="venueName">اسم القاعة / المكان</label>
+            <input id="venueName" name="venueName" type="text" placeholder="Beldi Country Club" required maxlength="100" />
+          </div>
+          <div class="field">
+            <label for="venueCity">المدينة</label>
+            <input id="venueCity" name="venueCity" type="text" placeholder="Marrakech, Morocco" required maxlength="100" />
+          </div>
+          <div class="field">
+            <label for="weddingDate">تاريخ الحفلة</label>
+            <input id="weddingDate" name="weddingDate" type="date" required />
+          </div>
+          <div class="field">
+            <label for="venueMapQuery">لينك جوجل مابس أو عنوان القاعة (اختياري)</label>
+            <input id="venueMapQuery" name="venueMapQuery" type="text" placeholder="الصق لينك خرائط جوجل (حتى لو مصغّر)، أو اكتب اسم/عنوان المكان" maxlength="300" />
+            <div class="hint">تقدر تلصق أي لينك من جوجل مابس زي ما هو (حتى لينكات المشاركة القصيرة)، أو تكتب اسم المكان بس. لو سبته فاضي هنستخدم اسم القاعة + المدينة.</div>
+          </div>
+        </fieldset>
+
+        <fieldset id="extraFieldsGroup" style="display:none;">
+          <legend>بيانات إضافية خاصة بالقالب ده</legend>
+          <div id="extraFieldsContainer"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>جدول أوقات الحفلة (ساعة بس، من غير دقايق)</legend>
+          <div class="row" id="timelineFields"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>أقسام تقدر تشيلها من الدعوة لو مش عايزها</legend>
+          <div class="section-toggle-list" id="sectionToggles"></div>
+        </fieldset>
+
+        <button type="submit" class="primary" id="submitBtn">إنشاء الدعوة</button>
+        <div class="status" id="statusMsg" role="status" aria-live="polite"></div>
+      </form>
+
+      <div class="result" id="resultBox">
+        <h2>الدعوة اتعملت 🎉</h2>
+        <div class="link-row">
+          <input type="text" id="resultLink" readonly />
+          <button type="button" id="copyBtn">نسخ اللينك</button>
+        </div>
+        <div class="result-actions">
+          <a id="previewLink" href="#" target="_blank" rel="noopener">افتح الدعوة في تاب جديد</a>
+          <a id="statsLink" href="#" target="_blank" rel="noopener">شوف كام حد فتح الدعوة</a>
+          <button type="button" class="linklike" id="resetBtn">اعمل دعوة تانية</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-panel">
+      <div class="preview-label">معاينة حية للتصميم الحقيقي</div>
+      <div class="preview-frame-wrap">
+        <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin" title="معاينة الدعوة"></iframe>
+      </div>
+      <div class="preview-note">المعاينة دي نفس التصميم اللي صحابك هيشوفوه بالظبط — من غير ما نحفظ حاجة لحد ما تضغط "إنشاء الدعوة".</div>
+    </div>
+  </div>
+</section>
 
 <script>
 (function(){
+  var galleryView = document.getElementById('galleryView');
+  var formView = document.getElementById('formView');
+  var templateGrid = document.getElementById('templateGrid');
+  var backToGalleryBtn = document.getElementById('backToGalleryBtn');
+  var formBrand = document.getElementById('formBrand');
+
   var form = document.getElementById('inviteForm');
   var submitBtn = document.getElementById('submitBtn');
   var statusMsg = document.getElementById('statusMsg');
@@ -339,7 +562,6 @@
   var resetBtn = document.getElementById('resetBtn');
   var previewFrame = document.getElementById('previewFrame');
 
-  var templateCardsEl = document.getElementById('templateCards');
   var occasionCardsEl = document.getElementById('occasionCards');
   var languageCardsEl = document.getElementById('languageCards');
   var timelineFieldsEl = document.getElementById('timelineFields');
@@ -350,15 +572,77 @@
   var STAGE_LABELS = {
     reception: 'وقت الاستقبال',
     ceremony: 'وقت عقد القران / الخطوبة',
+    cocktail: 'وقت الكوكتيل',
     dinner: 'وقت العشاء',
     party: 'وقت الحفلة',
   };
-  var STAGE_DEFAULT_HOURS = { reception: 16, ceremony: 17, dinner: 19, party: 20 };
+  var STAGE_DEFAULT_HOURS = { reception: 16, ceremony: 17, cocktail: 18, dinner: 19, party: 20 };
+
+  // ألوان تعريفية لكل قالب معروف — أي قالب جديد يتضاف بعدين هياخد شكل افتراضي محايد تلقائيًا
+  var TEMPLATE_SWATCHES = {
+    'blossom-oud': 'linear-gradient(135deg, #3a2117, #6b4a1f 55%, #a9812f)',
+    'viktor-paula': 'linear-gradient(135deg, #4a0f1f, #6e1e32 60%, #8a2c44)',
+  };
+  var DEFAULT_SWATCH = 'linear-gradient(135deg, #241318, #6b5a5f)';
 
   var templates = [];
   var currentTemplate = null;
   var state = { templateId: null, occasionType: 'wedding', language: 'ar' };
 
+  // ===== المعرض =====
+  function renderGallery(){
+    if (!templates.length){
+      templateGrid.innerHTML = '<div class="gallery-status">مفيش تصاميم متاحة دلوقتي.</div>';
+      return;
+    }
+    templateGrid.innerHTML = templates.map(function(t){
+      var swatch = TEMPLATE_SWATCHES[t.id] || DEFAULT_SWATCH;
+      return (
+        '<div class="template-card">' +
+          '<div class="template-swatch" style="background:' + swatch + '">' +
+            '<div class="swatch-name">' + t.name + '</div>' +
+          '</div>' +
+          '<div class="template-body">' +
+            '<p>' + (t.description || '') + '</p>' +
+            '<div class="template-actions">' +
+              '<a class="btn btn-ghost" href="/preview-sample/' + t.id + '" target="_blank" rel="noopener">شوف شكل الدعوة</a>' +
+              '<button type="button" class="btn btn-solid" data-use-template="' + t.id + '">استخدم القالب ده</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    Array.prototype.forEach.call(templateGrid.querySelectorAll('[data-use-template]'), function(btn){
+      btn.addEventListener('click', function(){
+        goToForm(btn.getAttribute('data-use-template'));
+      });
+    });
+  }
+
+  function loadTemplates(){
+    fetch('/api/templates').then(function(r){ return r.json(); }).then(function(list){
+      templates = list;
+      renderGallery();
+    }).catch(function(){
+      templateGrid.innerHTML = '<div class="gallery-status">تعذر تحميل التصاميم — تأكد إن السيرفر شغال.</div>';
+    });
+  }
+
+  function goToForm(templateId){
+    applyTemplate(templateId);
+    galleryView.style.display = 'none';
+    formView.style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+
+  backToGalleryBtn.addEventListener('click', function(){
+    formView.style.display = 'none';
+    galleryView.style.display = 'block';
+    window.scrollTo(0, 0);
+  });
+
+  // ===== الفورم (نفس المنطق اللي كان شغال قبل كده) =====
   function hourOptionsHTML(selectedHour){
     var opts = '';
     for (var h = 0; h < 24; h++){
@@ -382,28 +666,6 @@
         onPick(input.value);
         renderChoiceCards(container, items, groupName, input.value, onPick);
       });
-    });
-  }
-
-  function renderExtraFields(){
-    var extraFieldsGroup = document.getElementById('extraFieldsGroup');
-    var container = document.getElementById('extraFieldsContainer');
-    var fields = (currentTemplate && currentTemplate.extraFields) || [];
-    if (!fields.length){
-      extraFieldsGroup.style.display = 'none';
-      container.innerHTML = '';
-      return;
-    }
-    extraFieldsGroup.style.display = 'block';
-    container.innerHTML = fields.map(function(f){
-      var id = 'extra_' + f.key;
-      return '<div class="field">' +
-        '<label for="' + id + '">' + f.label + '</label>' +
-        '<input id="' + id + '" data-extra-key="' + f.key + '" type="text" maxlength="' + (f.maxlength || 200) + '" />' +
-        '</div>';
-    }).join('');
-    Array.prototype.forEach.call(container.querySelectorAll('input'), function(input){
-      input.addEventListener('input', schedulePreview);
     });
   }
 
@@ -434,9 +696,33 @@
     });
   }
 
+  function renderExtraFields(){
+    var extraFieldsGroup = document.getElementById('extraFieldsGroup');
+    var container = document.getElementById('extraFieldsContainer');
+    var fields = (currentTemplate && currentTemplate.extraFields) || [];
+    if (!fields.length){
+      extraFieldsGroup.style.display = 'none';
+      container.innerHTML = '';
+      return;
+    }
+    extraFieldsGroup.style.display = 'block';
+    container.innerHTML = fields.map(function(f){
+      var id = 'extra_' + f.key;
+      return '<div class="field">' +
+        '<label for="' + id + '">' + f.label + '</label>' +
+        '<input id="' + id + '" data-extra-key="' + f.key + '" type="text" maxlength="' + (f.maxlength || 200) + '" />' +
+        '</div>';
+    }).join('');
+    Array.prototype.forEach.call(container.querySelectorAll('input'), function(input){
+      input.addEventListener('input', schedulePreview);
+    });
+  }
+
   function applyTemplate(templateId){
     currentTemplate = templates.find(function(t){ return t.id === templateId; }) || templates[0];
+    if (!currentTemplate) return;
     state.templateId = currentTemplate.id;
+    formBrand.textContent = currentTemplate.name + ' — استوديو الدعوات';
 
     if (currentTemplate.occasionTypes.indexOf(state.occasionType) === -1){
       state.occasionType = currentTemplate.occasionTypes[0];
@@ -457,19 +743,6 @@
     renderSectionToggles();
     renderExtraFields();
     schedulePreview();
-  }
-
-  function loadTemplates(){
-    fetch('/api/templates').then(function(r){ return r.json(); }).then(function(list){
-      templates = list;
-      if (!templates.length) return;
-      renderChoiceCards(templateCardsEl, templates.map(function(t){
-        return { value: t.id, label: t.name };
-      }), 'templateId', templates[0].id, function(v){ applyTemplate(v); });
-      applyTemplate(templates[0].id);
-    }).catch(function(){
-      templateCardsEl.innerHTML = '<span style="color:var(--error)">تعذر تحميل القوالب — تأكد إن السيرفر شغال.</span>';
-    });
   }
 
   function valueOrPlaceholder(input){

@@ -21,7 +21,7 @@ function buildMainParagraph(p) {
   if (language === 'ar') {
     const occasionWord = isEngagement ? 'خطوبتهما' : 'زفافهما';
     return (
-      `الآنسة ${brideNameAr} والسيد ${groomNameAr}<br><br>` +
+      `السيد ${groomNameAr} والآنسة ${brideNameAr}<br><br>` +
       `يسعدهما ويشرفهما أن يدعوا حضرتكم الكريمة<br>` +
       `لمشاركتهما فرحة حفل ${occasionWord}<br><br>` +
       `وذلك بمشيئة الله تعالى يوم ${display.dayNameAr} ${display.dateArabicDisplay} <br>` +
@@ -33,7 +33,7 @@ function buildMainParagraph(p) {
   if (language === 'en') {
     const occasionWord = isEngagement ? 'engagement' : 'wedding';
     return (
-      `${brideName} &amp; ${groomName}<br><br>` +
+      `${groomName} &amp; ${brideName}<br><br>` +
       `Request the honor of your presence<br>` +
       `to celebrate their ${occasionWord}<br><br>` +
       `on ${display.dayNameEn}, ${display.dateDisplayEn}<br>` +
@@ -45,7 +45,7 @@ function buildMainParagraph(p) {
   // fr
   const occasionWord = isEngagement ? 'fiançailles' : 'mariage';
   return (
-    `${brideName} &amp; ${groomName}<br><br>` +
+    `${groomName} &amp; ${brideName}<br><br>` +
     `Ont l'honneur de vous inviter<br>` +
     `à célébrer leur ${occasionWord}<br><br>` +
     `le ${display.dateDisplay}<br>` +

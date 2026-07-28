@@ -105,6 +105,7 @@ router.get('/api/templates', (req, res) => {
     occasionTypes: t.occasionTypes,
     optionalSections: t.optionalSections,
     timelineStages: t.timelineStages,
+    extraFields: t.extraFields || [],
   }));
   res.json(publicList);
 });
@@ -252,6 +253,37 @@ router.get('/i/:shortId/stats', async (req, res) => {
     console.error('Error rendering stats page:', err);
     return res.status(500).send('حصل خطأ في السيرفر');
   }
+});
+
+// GET /preview-sample/:templateId — معاينة القالب ببيانات وهمية جاهزة (زرار
+// "شوف شكل الدعوة" في معرض القوالب)، بدون أي حفظ ومن غير ما يحتاج المستخدم
+// يفتح الفورم أصلًا.
+router.get('/preview-sample/:templateId', (req, res) => {
+  const template = getTemplate(req.params.templateId);
+  if (!template) return res.status(404).send('القالب ده مش موجود');
+
+  const now = new Date();
+  const sampleDate = new Date(now.getFullYear(), now.getMonth() + 2, 15, 18, 0, 0);
+  const timeline = template.timelineStages.map((key, i) => ({ key, hour: 17 + i }));
+
+  const data = {
+    templateId: template.id,
+    language: 'ar',
+    occasionType: 'wedding',
+    hiddenSections: [],
+    timeline,
+    brideName: 'Amira', groomName: 'Yusuf',
+    brideNameAr: 'أميرة', groomNameAr: 'يوسف',
+    venueName: 'قاعة النموذج', venueCity: 'القاهرة، مصر',
+    venueMapQuery: '', venueMapEmbedSrc: 'https://www.google.com/maps?q=Cairo&output=embed',
+    venueMapDirectLink: 'https://www.google.com/maps/search/?api=1&query=Cairo',
+    contactName: '', contactPhone: '', venueAddress: '',
+    weddingDateTime: sampleDate,
+  };
+
+  const html = renderNewPathHtml(data);
+  res.set('Content-Type', 'text/html; charset=utf-8');
+  return res.send(html);
 });
 
 module.exports = router;
