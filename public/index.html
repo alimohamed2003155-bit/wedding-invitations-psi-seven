@@ -3,243 +3,331 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>استوديو الدعوات — دعوة زفافك في لينك واحد</title>
+<title>Studio Nour — دعوة زفافك في لينك واحد، بتصميم يليق بيوم عمرك</title>
+<meta name="description" content="اعمل دعوة زفاف أو خطوبة احترافية بلينك خاص بيك — موسيقى تختارها، صور بتختارها، ودومين باسم العروسين. أكتر من 100,000 مستخدم جربوا الاستوديو." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#181110;
-    --ink-soft:#241a17;
-    --paper:#f7f1e6;
-    --paper-dim:#e7dcc6;
-    --cream:#f5ecd9;
-    --gold:#c9a227;
-    --gold-soft:#e8c874;
-    --wine:#6e1e32;
-    --wine-deep:#4a0f1f;
-    --blossom:#c98a93;
-    --ink-dim:#6b5a5f;
-    --line: rgba(36,19,24,0.14);
-    --error:#d97757;
-    --ok:#5f6f4e;
-    --radius:4px;
+    /* ============================================================
+       باليتة ألوان جديدة كليًا — Deep Teal + Rose Gold + Ivory
+       (بعيدة تمامًا عن البني/الخمري القديم) — طابع فاخر وعصري
+       ============================================================ */
+    --night:#08130f;          /* أخضر-كحلي غامق جدًا، خلفية أساسية */
+    --night-soft:#0e1e18;
+    --panel:#0f2119;
+    --ivory:#faf5ec;          /* خلفية فاتحة دافئة */
+    --ivory-dim:#efe4d2;
+    --card:#fffdf8;
+    --rose:#c9788a;           /* روز جولد/بينك غامق */
+    --rose-bright:#e8a6b4;
+    --emerald:#1f6f5c;        /* أخضر زمردي */
+    --emerald-bright:#2f9c80;
+    --brass:#c9a24a;          /* دهبي نحاسي */
+    --brass-soft:#e6c684;
+    --ink:#0f1d18;
+    --ink-dim:#5c6b64;
+    --line: rgba(15,29,24,0.13);
+    --line-lite: rgba(250,245,236,0.14);
+    --error:#d9614f;
+    --ok:#2f9c80;
+    --radius:6px;
+    --radius-lg:22px;
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--paper);
+    background:var(--ivory);
     color:var(--ink);
-    font-family:'Cairo',sans-serif;
+    font-family:'Tajawal',sans-serif;
     min-height:100vh;
-    line-height:1.65;
+    line-height:1.7;
   }
   a{color:inherit;}
   button{font-family:inherit;}
   img,iframe{max-width:100%;}
-  .serif{font-family:'Cormorant Garamond',serif;}
+  .serif{font-family:'Playfair Display',serif;}
   @media (prefers-reduced-motion: reduce){
     html{scroll-behavior:auto;}
     *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
   }
 
   /* ==========================================================================
-     مكوّن معاينة الدعوة المصغّرة (نفس الماركب بيتغير حجمه بالخط بس — is-hero / is-card)
+     مكوّن معاينة الدعوة المصغّرة — نفس الميكانيزم الأصلي (container query،
+     من غير أي JS) عشان الـ iframe يتصغّر بدقة مهما كان حجم الكارت.
      ========================================================================== */
   .invite-mock{
     position:relative;
-    aspect-ratio:9/17.5;
-    border-radius:20px;
+    aspect-ratio:320/850;
+    border-radius:26px;
     overflow:hidden;
-    border:5px solid #0c0807;
-    box-shadow:0 30px 70px -28px rgba(0,0,0,0.6), 0 2px 0 rgba(255,255,255,0.03) inset;
+    border:6px solid #050b08;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,0.55), 0 2px 0 rgba(255,255,255,0.04) inset;
   }
   .invite-mock.is-hero{ font-size:20px; }
   .invite-mock.is-card{ font-size:12.5px; }
-  .invite-mock--blossom{
-    background:
-      radial-gradient(circle at 28% 14%, rgba(201,162,39,0.22), transparent 55%),
-      radial-gradient(circle at 82% 88%, rgba(201,138,147,0.16), transparent 50%),
-      linear-gradient(165deg, #221911, #17110c 65%);
+  .invite-mock--device{ background:#050b08; }
+  .invite-mock__viewport{
+    position:absolute; inset:0; overflow:hidden;
+    container-type: inline-size;
+    container-name: mock-viewport;
   }
-  .invite-mock--viktor{
-    background: linear-gradient(170deg, #7c2439 0%, #58152a 55%, #430e1d 100%);
+  .invite-mock__iframe{
+    position:absolute; top:0; left:0;
+    width:320px; height:850px;
+    border:0; background:#050b08;
+    pointer-events:none;
+    transform-origin: top left;
+    transform: scale(calc(100cqw / 320px));
   }
-  .invite-mock--neutral{
-    background: linear-gradient(165deg, #2a2019, #181110);
+  @supports not (width: 100cqw){
+    .invite-mock__iframe{ transform: scale(0.62); }
   }
-  .invite-mock__frame{
-    position:absolute; inset:0;
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.6em;
-    padding:10% 12%; text-align:center;
+  .invite-mock__notch{
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    width:32%; height:5px; background:#050b08; border-radius:6px; z-index:3;
   }
-  .invite-mock__eyebrow{
-    font-size:0.52em; letter-spacing:0.32em; text-transform:uppercase; color:var(--gold-soft);
-  }
-  .invite-mock--viktor .invite-mock__eyebrow{ color:#f3d8a8; }
-  .invite-mock__names{
-    font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:600;
-    color:var(--cream); line-height:1.18; font-size:1.7em;
-  }
-  .invite-mock__amp{ color:var(--blossom); font-size:0.6em; display:block; margin:0.15em 0; }
-  .invite-mock--viktor .invite-mock__amp{ color:#f3d8a8; }
-  .invite-mock__rule{ width:2.2em; height:1px; background:rgba(201,162,39,0.55); }
-  .invite-mock__date{ font-size:0.58em; color:#d8c9ad; letter-spacing:0.02em; }
-  .invite-mock__venue{ font-size:0.56em; color:#b7a488; letter-spacing:0.03em; }
-  .invite-mock__ring{
-    position:absolute; width:2.6em; height:2.6em; border:1px solid rgba(201,162,39,0.35);
-    border-radius:50%; top:8%; inset-inline-end:8%;
+  .invite-mock__home-bar{
+    position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
+    width:26%; height:3px; background:rgba(255,255,255,0.35); border-radius:4px; z-index:3;
   }
 
   /* ==========================================================================
-     الهيرو
+     الهيرو — تصميم مختلف تمامًا: خلفية داكنة خضراء-كحلية + نقشة شبكية خفيفة
+     + شارة ثقة + عناوين درامية
      ========================================================================== */
   .hero{
+    position:relative;
     background:
-      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(201,162,39,0.10), transparent 60%),
-      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(201,138,147,0.08), transparent 55%),
-      var(--ink);
-    color:var(--cream);
-    padding:76px 24px 40px;
+      radial-gradient(ellipse 900px 560px at 12% -8%, rgba(201,162,74,0.16), transparent 60%),
+      radial-gradient(ellipse 760px 560px at 104% 6%, rgba(201,120,138,0.14), transparent 55%),
+      linear-gradient(175deg, var(--night) 0%, var(--night-soft) 60%, #0a1712 100%);
+    color:var(--ivory);
+    padding:96px 24px 44px;
+    overflow:hidden;
   }
+  .hero::before{
+    content:''; position:absolute; inset:0; opacity:0.5; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(250,245,236,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(250,245,236,0.035) 1px, transparent 1px);
+    background-size:46px 46px;
+    mask-image: radial-gradient(ellipse 900px 500px at 20% 0%, black, transparent 70%);
+  }
+  .trust-badge{
+    position:relative; z-index:1;
+    display:inline-flex; align-items:center; gap:10px;
+    background:rgba(250,245,236,0.07); border:1px solid rgba(230,198,132,0.35);
+    padding:8px 18px 8px 10px; border-radius:999px; font-size:12.5px; color:var(--brass-soft);
+    margin-bottom:26px;
+  }
+  .trust-badge .dot{ width:7px; height:7px; border-radius:999px; background:var(--emerald-bright); box-shadow:0 0 0 3px rgba(47,156,128,0.25); }
   .hero-inner{
-    max-width:1180px; margin:0 auto;
-    display:grid; grid-template-columns:1.05fr 0.95fr; gap:56px; align-items:center;
+    position:relative; z-index:1;
+    max-width:1200px; margin:0 auto;
+    display:grid; grid-template-columns:1.05fr 0.95fr; gap:60px; align-items:center;
   }
-  @media (max-width:940px){ .hero-inner{ grid-template-columns:1fr; gap:44px; } }
+  @media (max-width:960px){ .hero-inner{ grid-template-columns:1fr; gap:48px; } }
 
   .hero-copy .eyebrow{
-    font-size:12px; letter-spacing:0.3em; text-transform:uppercase; color:var(--gold-soft); margin-bottom:18px;
+    font-size:12.5px; letter-spacing:0.32em; text-transform:uppercase; color:var(--rose-bright); margin-bottom:16px; font-weight:700;
   }
   .hero-copy h1{
-    font-family:'Cormorant Garamond',serif; font-weight:600; font-style:italic;
-    font-size:clamp(38px,5.6vw,60px); line-height:1.08; margin:0 0 20px;
+    font-family:'Playfair Display',serif; font-weight:700; font-style:italic;
+    font-size:clamp(38px,5.8vw,64px); line-height:1.1; margin:0 0 22px;
+    background:linear-gradient(95deg, var(--ivory) 40%, var(--brass-soft) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
   }
   .hero-copy p.lead{
-    color:#cbbfae; font-size:16.5px; max-width:46ch; margin:0 0 32px;
+    color:#cdd8d0; font-size:17px; max-width:48ch; margin:0 0 34px;
   }
+  .hero-cta-row{ display:flex; gap:14px; flex-wrap:wrap; }
   .hero-cta{
     display:inline-flex; align-items:center; gap:10px;
-    background:var(--gold); color:var(--ink); font-weight:700; font-size:15.5px;
-    padding:15px 30px; border-radius:var(--radius); text-decoration:none; border:0; cursor:pointer;
+    background:linear-gradient(120deg, var(--brass), var(--brass-soft));
+    color:#241608; font-weight:800; font-size:15.5px;
+    padding:16px 32px; border-radius:999px; text-decoration:none; border:0; cursor:pointer;
+    box-shadow:0 16px 34px -14px rgba(201,162,74,0.55);
+    transition:transform .18s ease, box-shadow .18s ease;
   }
-  .hero-cta:hover{ background:var(--gold-soft); }
+  .hero-cta:hover{ transform:translateY(-2px); box-shadow:0 20px 40px -14px rgba(201,162,74,0.65); }
+  .hero-cta-outline{
+    display:inline-flex; align-items:center; gap:10px;
+    background:transparent; color:var(--ivory); font-weight:700; font-size:15px;
+    padding:15px 26px; border-radius:999px; text-decoration:none; border:1px solid rgba(250,245,236,0.3);
+    transition:border-color .18s ease, background .18s ease;
+  }
+  .hero-cta-outline:hover{ border-color:var(--rose-bright); background:rgba(250,245,236,0.05); }
 
   .stats-row{
     display:grid; grid-template-columns:repeat(3,1fr); gap:0;
-    margin-top:46px; border-top:1px solid rgba(245,236,217,0.14); padding-top:26px;
+    margin-top:48px; border-top:1px solid rgba(250,245,236,0.12); padding-top:28px;
   }
   .stat-item{ text-align:right; padding-inline-end:16px; }
-  .stat-item + .stat-item{ border-inline-start:1px solid rgba(245,236,217,0.14); padding-inline-start:16px; }
+  .stat-item + .stat-item{ border-inline-start:1px solid rgba(250,245,236,0.12); padding-inline-start:16px; }
   .stat-number{
-    font-family:'Cormorant Garamond',serif; font-weight:700; font-size:clamp(26px,3.4vw,36px);
-    color:var(--gold-soft); line-height:1; display:block;
+    font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(26px,3.4vw,38px);
+    color:var(--brass-soft); line-height:1; display:block;
   }
-  .stat-label{ font-size:12.5px; color:#b6a998; margin-top:8px; display:block; }
+  .stat-label{ font-size:12.5px; color:#a9bab1; margin-top:8px; display:block; }
 
-  /* واجهة الهيرو: موبايلين متراكبين */
   .hero-showcase{ position:relative; max-width:340px; margin:0 auto; padding:20px 0; }
   .hero-showcase .invite-mock{ position:relative; z-index:2; animation:float 6s ease-in-out infinite; }
   .hero-showcase .invite-mock--back{
-    position:absolute; top:-18px; inset-inline-start:-34px; width:78%; z-index:1;
-    transform:rotate(-9deg); opacity:0.9; animation:floatBack 7s ease-in-out infinite;
+    position:absolute; top:-20px; inset-inline-start:-36px; width:78%; z-index:1;
+    transform:rotate(-10deg); opacity:0.85; animation:floatBack 7s ease-in-out infinite;
   }
-  @media (max-width:940px){ .hero-showcase .invite-mock--back{ display:none; } }
+  .hero-showcase .glow{
+    position:absolute; inset:-40px; z-index:0; pointer-events:none;
+    background:radial-gradient(circle at 50% 45%, rgba(201,120,138,0.28), transparent 62%);
+    filter:blur(10px);
+  }
+  @media (max-width:960px){ .hero-showcase .invite-mock--back{ display:none; } }
   @keyframes float{
     0%,100%{ transform:translateY(0) rotate(2deg); }
-    50%{ transform:translateY(-10px) rotate(2deg); }
+    50%{ transform:translateY(-12px) rotate(2deg); }
   }
   @keyframes floatBack{
-    0%,100%{ transform:translateY(0) rotate(-9deg); }
-    50%{ transform:translateY(-6px) rotate(-9deg); }
+    0%,100%{ transform:translateY(0) rotate(-10deg); }
+    50%{ transform:translateY(-7px) rotate(-10deg); }
   }
 
-  /* ===== موتيف الورق الممزّق (نفس اللمسة الموجودة جوه تصميم Blossom & Oud الحقيقي) ===== */
-  .torn-divider{ position:relative; height:38px; background:var(--paper); }
-  .torn-divider::before{
-    content:''; position:absolute; inset:0; background:var(--ink);
-    clip-path: polygon(
-      0% 0%, 4% 60%, 8% 10%, 12% 55%, 16% 15%, 20% 58%, 24% 8%, 28% 52%,
-      32% 12%, 36% 60%, 40% 18%, 44% 55%, 48% 10%, 52% 58%, 56% 14%, 60% 50%,
-      64% 20%, 68% 56%, 72% 12%, 76% 58%, 80% 16%, 84% 52%, 88% 10%, 92% 56%,
-      96% 18%, 100% 0%
-    );
-  }
+  .wave-divider{ display:block; width:100%; height:56px; margin-top:-2px; }
 
   /* ==========================================================================
      المعرض
      ========================================================================== */
-  .section-wrap{ max-width:1180px; margin:0 auto; padding:64px 24px; }
-  .section-head{ text-align:center; max-width:56ch; margin:0 auto 44px; }
+  .section-wrap{ max-width:1200px; margin:0 auto; padding:70px 24px; }
+  .section-head{ text-align:center; max-width:58ch; margin:0 auto 46px; }
   .section-head .eyebrow{
-    font-size:12px; letter-spacing:0.28em; text-transform:uppercase; color:var(--wine); margin-bottom:12px;
+    font-size:12.5px; letter-spacing:0.3em; text-transform:uppercase; color:var(--emerald); margin-bottom:12px; font-weight:800;
   }
   .section-head h2{
-    font-family:'Cormorant Garamond',serif; font-weight:600; font-style:italic;
-    font-size:clamp(28px,3.6vw,38px); margin:0 0 10px;
+    font-family:'Playfair Display',serif; font-weight:700; font-style:italic;
+    font-size:clamp(28px,3.8vw,42px); margin:0 0 12px; color:var(--ink);
   }
-  .section-head p{ color:var(--ink-dim); font-size:15px; margin:0; }
+  .section-head p{ color:var(--ink-dim); font-size:15.5px; margin:0; }
 
-  .template-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:32px; }
+  .template-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(264px,1fr)); gap:34px; }
   .template-card{
-    background:#fffdf9; border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg);
     overflow:hidden; display:flex; flex-direction:column;
-    transition:transform 0.2s ease, box-shadow 0.2s ease;
+    transition:transform 0.22s ease, box-shadow 0.22s ease, border-color .22s ease;
   }
-  .template-card:hover{ transform:translateY(-4px); box-shadow:0 20px 44px -24px rgba(36,19,24,0.4); }
-  .template-mock-wrap{ padding:26px 26px 0; display:flex; justify-content:center; }
+  .template-card:hover{ transform:translateY(-6px); box-shadow:0 28px 54px -26px rgba(15,29,24,0.35); border-color:rgba(201,120,138,0.35); }
+  .template-mock-wrap{ padding:28px 28px 0; display:flex; justify-content:center; background:linear-gradient(180deg, rgba(31,111,92,0.06), transparent); }
   .template-mock-wrap .invite-mock{ width:64%; }
-  .template-body{ padding:22px 24px 26px; display:flex; flex-direction:column; gap:14px; flex:1; text-align:center; }
-  .template-body h3{ font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:600; font-size:22px; margin:0; }
+  .template-body{ padding:24px 26px 28px; display:flex; flex-direction:column; gap:14px; flex:1; text-align:center; }
+  .template-body h3{ font-family:'Playfair Display',serif; font-style:italic; font-weight:700; font-size:23px; margin:0; color:var(--ink); }
   .template-body p{ font-size:13.5px; color:var(--ink-dim); margin:0; flex:1; }
   .template-actions{ display:flex; gap:10px; }
   .btn{
-    font-size:14px; font-weight:600; padding:11px 16px; border-radius:var(--radius); cursor:pointer;
+    font-size:14px; font-weight:700; padding:12px 16px; border-radius:999px; cursor:pointer;
     border:1px solid transparent; text-align:center; flex:1; text-decoration:none;
     display:inline-flex; align-items:center; justify-content:center;
+    transition:background .16s ease, color .16s ease, border-color .16s ease;
   }
   .btn-ghost{ background:transparent; border-color:var(--ink); color:var(--ink); }
-  .btn-ghost:hover{ background:rgba(36,19,24,0.05); }
-  .btn-solid{ background:var(--ink); color:var(--paper); }
-  .btn-solid:hover{ background:var(--wine); }
+  .btn-ghost:hover{ background:rgba(15,29,24,0.06); }
+  .btn-solid{ background:var(--night); color:var(--ivory); }
+  .btn-solid:hover{ background:var(--emerald); }
   .gallery-status{ text-align:center; color:var(--ink-dim); padding:20px; font-size:14px; grid-column:1/-1; }
 
   /* ==========================================================================
-     بانر التصميم الخاص
+     قسم الباقة المميزة (المدفوعة) — جديد بالكامل
+     موسيقى / تصاميم متعددة / صور / دومين باسم العروسين / تحكم بالأقسام
      ========================================================================== */
-  .commission-outer{ max-width:1180px; margin:0 auto; padding:0 24px 64px; }
+  .premium-outer{ background:var(--night); position:relative; overflow:hidden; }
+  .premium-outer::before{
+    content:''; position:absolute; inset:0; opacity:0.55; pointer-events:none;
+    background:
+      radial-gradient(ellipse 700px 460px at 90% 0%, rgba(201,120,138,0.14), transparent 60%),
+      radial-gradient(ellipse 620px 420px at 6% 100%, rgba(31,111,92,0.22), transparent 60%);
+  }
+  .premium-inner{ position:relative; max-width:1200px; margin:0 auto; padding:78px 24px; }
+  .premium-head{ text-align:center; max-width:64ch; margin:0 auto 50px; }
+  .premium-head .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:12.5px; letter-spacing:0.3em; text-transform:uppercase; color:var(--brass-soft);
+    margin-bottom:16px; font-weight:800;
+  }
+  .premium-head .eyebrow::before, .premium-head .eyebrow::after{ content:'✦'; font-size:10px; opacity:0.7; }
+  .premium-head h2{
+    font-family:'Playfair Display',serif; font-weight:700; font-style:italic;
+    font-size:clamp(28px,4vw,44px); margin:0 0 14px; color:var(--ivory);
+  }
+  .premium-head p{ color:#c3d1c9; font-size:15.5px; margin:0; }
+
+  .premium-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:22px; margin-bottom:48px; }
+  .premium-card{
+    background:rgba(250,245,236,0.045); border:1px solid rgba(250,245,236,0.1);
+    border-radius:var(--radius-lg); padding:28px 24px; text-align:right;
+    transition:border-color .2s ease, background .2s ease, transform .2s ease;
+  }
+  .premium-card:hover{ border-color:rgba(201,120,138,0.4); background:rgba(250,245,236,0.07); transform:translateY(-4px); }
+  .premium-card .icon{
+    width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, rgba(201,162,74,0.25), rgba(201,120,138,0.2));
+    font-size:21px; margin-bottom:16px;
+  }
+  .premium-card h3{ font-family:'Playfair Display',serif; font-style:italic; font-weight:700; font-size:18.5px; margin:0 0 8px; color:var(--ivory); }
+  .premium-card p{ font-size:13.5px; color:#b7c6bd; margin:0; line-height:1.75; }
+
+  .premium-cta-band{
+    display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;
+    background:linear-gradient(120deg, rgba(201,162,74,0.14), rgba(201,120,138,0.14));
+    border:1px solid rgba(230,198,132,0.3); border-radius:var(--radius-lg);
+    padding:30px 34px;
+  }
+  .premium-cta-copy h3{ font-family:'Playfair Display',serif; font-style:italic; font-weight:700; font-size:21px; margin:0 0 6px; color:var(--ivory); }
+  .premium-cta-copy p{ font-size:13.5px; color:#c3d1c9; margin:0; }
+  .premium-cta-btn{
+    display:inline-flex; align-items:center; gap:10px; white-space:nowrap;
+    background:linear-gradient(120deg, var(--brass), var(--brass-soft)); color:#241608;
+    font-weight:800; font-size:15px; padding:15px 30px; border-radius:999px; text-decoration:none;
+    box-shadow:0 16px 34px -14px rgba(201,162,74,0.5);
+  }
+  .premium-cta-btn:hover{ filter:brightness(1.05); }
+
+  /* ==========================================================================
+     بانر التصميم الخاص (Custom design)
+     ========================================================================== */
+  .commission-outer{ max-width:1200px; margin:0 auto; padding:78px 24px; }
   .commission-band{
-    background:linear-gradient(155deg, var(--wine), var(--wine-deep));
-    color:#fbf1e6; padding:52px 32px 44px; border-radius:var(--radius); position:relative; overflow:hidden;
+    background:linear-gradient(150deg, #7a2f43, var(--rose) 45%, #3f1420);
+    color:#fdf6f2; padding:56px 34px 48px; border-radius:var(--radius-lg); position:relative; overflow:hidden;
   }
   .commission-band::after{
-    content:''; position:absolute; inset-inline:28px; bottom:26px; height:0;
-    border-top:2px dashed rgba(251,241,230,0.3);
+    content:''; position:absolute; inset-inline:30px; bottom:28px; height:0;
+    border-top:2px dashed rgba(253,246,242,0.28);
   }
-  .commission-inner{ max-width:660px; margin:0 auto; text-align:center; }
+  .commission-inner{ max-width:680px; margin:0 auto; text-align:center; }
   .commission-band .eyebrow{
-    font-size:12px; letter-spacing:0.28em; text-transform:uppercase; color:var(--gold-soft); margin-bottom:14px;
+    font-size:12px; letter-spacing:0.28em; text-transform:uppercase; color:var(--brass-soft); margin-bottom:14px; font-weight:700;
   }
   .commission-band h2{
-    font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:600;
-    font-size:clamp(27px,4vw,38px); margin:0 0 14px;
+    font-family:'Playfair Display',serif; font-style:italic; font-weight:700;
+    font-size:clamp(27px,4vw,40px); margin:0 0 14px;
   }
-  .commission-band p.lead{ font-size:15.5px; color:#e9d9c8; margin:0 0 28px; }
+  .commission-band p.lead{ font-size:15.5px; color:#f6e3da; margin:0 0 30px; }
   .commission-features{
-    list-style:none; padding:0; margin:0 0 34px;
+    list-style:none; padding:0; margin:0 0 36px;
     display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:13px; text-align:right;
   }
-  .commission-features li{ font-size:14px; display:flex; gap:8px; align-items:flex-start; color:#f3e7d8; }
-  .commission-features li::before{ content:'✦'; color:var(--gold-soft); flex-shrink:0; }
+  .commission-features li{ font-size:14px; display:flex; gap:8px; align-items:flex-start; color:#fbeee7; }
+  .commission-features li::before{ content:'✦'; color:var(--brass-soft); flex-shrink:0; }
   .whatsapp-btn{
-    display:inline-flex; align-items:center; gap:10px; background:var(--gold-soft); color:var(--ink);
-    font-weight:700; font-size:15px; padding:16px 32px; border-radius:var(--radius); text-decoration:none;
+    display:inline-flex; align-items:center; gap:10px; background:var(--brass-soft); color:#241608;
+    font-weight:800; font-size:15px; padding:17px 34px; border-radius:999px; text-decoration:none;
+    box-shadow:0 16px 34px -14px rgba(0,0,0,0.35);
   }
   .whatsapp-btn:hover{ background:#f3d789; }
-  .commission-note{ font-size:12.5px; color:#d8c3ae; margin-top:16px; }
+  .commission-note{ font-size:12.5px; color:#f0d9cf; margin-top:16px; }
 
-  footer.site-footer{ text-align:center; padding:30px 24px 50px; font-size:13px; color:var(--ink-dim); }
+  footer.site-footer{ text-align:center; padding:34px 24px 56px; font-size:13px; color:var(--ink-dim); background:var(--ivory); }
+  footer.site-footer .foot-brand{ font-family:'Playfair Display',serif; font-style:italic; font-weight:700; color:var(--ink); margin-bottom:4px; }
 
   /* ==========================================================================
      خطوة الفورم
@@ -248,104 +336,109 @@
   .form-layout{ display:grid; grid-template-columns:minmax(0,560px) minmax(0,480px); min-height:100vh; }
   @media (max-width:960px){ .form-layout{ grid-template-columns:1fr; } }
 
-  .back-row{ padding:20px 44px 0; background:var(--paper); }
+  .back-row{ padding:22px 44px 0; background:var(--ivory); }
   @media (max-width:960px){ .back-row{ padding:16px 20px 0; } }
   .back-link{
-    background:none; border:0; cursor:pointer; font-family:'Cairo',sans-serif; font-size:14px; color:var(--ink-dim);
+    background:none; border:0; cursor:pointer; font-family:'Tajawal',sans-serif; font-size:14px; color:var(--ink-dim);
     display:inline-flex; align-items:center; gap:6px; padding:0;
   }
-  .back-link:hover{ color:var(--wine); }
+  .back-link:hover{ color:var(--rose); }
 
   .preview-panel{
-    background:var(--ink); padding:32px; display:flex; flex-direction:column; align-items:center;
+    background:var(--night); padding:32px; display:flex; flex-direction:column; align-items:center;
     position:sticky; top:0; height:100vh;
   }
   @media (max-width:960px){ .preview-panel{ position:relative; height:auto; padding:20px; } }
-  .preview-label{ font-size:12px; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; align-self:flex-start; }
-  .preview-frame-wrap{ width:100%; max-width:390px; height:640px; border:1px solid rgba(201,162,39,0.4); border-radius:2px; overflow:hidden; background:#000; }
+  .preview-label{ font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:var(--brass-soft); margin-bottom:10px; align-self:flex-start; font-weight:700; }
+  .preview-frame-wrap{ width:100%; max-width:390px; height:640px; border:1px solid rgba(201,162,74,0.4); border-radius:14px; overflow:hidden; background:#000; }
   @media (max-height:760px){ .preview-frame-wrap{ height:520px; } }
   .preview-frame-wrap iframe{ width:100%; height:100%; border:0; display:block; }
-  .preview-note{ font-size:12px; color:#c9bda9; margin-top:12px; max-width:390px; text-align:center; opacity:0.85; }
+  .preview-note{ font-size:12px; color:#a9bab1; margin-top:12px; max-width:390px; text-align:center; opacity:0.9; }
 
-  .form-panel{ padding:36px 44px 90px; background:var(--paper); }
+  .form-panel{ padding:38px 44px 90px; background:var(--ivory); }
   @media (max-width:960px){ .form-panel{ padding:28px 20px 60px; } }
   @media (max-width:480px){ .form-panel{ padding:22px 16px 56px; } }
 
-  .brand{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:20px; color:var(--wine); margin-bottom:6px; }
-  h1.form-title{ font-family:'Cormorant Garamond',serif; font-weight:600; font-size:clamp(26px,3.6vw,32px); margin:0 0 8px; }
+  .brand{ font-family:'Playfair Display',serif; font-style:italic; font-size:20px; color:var(--rose); margin-bottom:6px; font-weight:700; }
+  h1.form-title{ font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(26px,3.6vw,33px); margin:0 0 8px; color:var(--ink); }
   .subtitle{ color:var(--ink-dim); font-size:15px; margin:0 0 30px; max-width:52ch; }
 
   fieldset{ border:0; padding:0; margin:0 0 28px; }
-  legend{ font-size:12px; letter-spacing:0.15em; text-transform:uppercase; color:var(--wine); margin-bottom:14px; padding:0; }
+  legend{ font-size:12px; letter-spacing:0.15em; text-transform:uppercase; color:var(--emerald); margin-bottom:14px; padding:0; font-weight:700; }
   .row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
   @media (max-width:560px){ .row{ grid-template-columns:1fr; } }
   .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
   label{ font-size:13px; color:var(--ink-dim); }
   input,select{
     background:transparent; border:0; border-bottom:1px solid var(--line); color:var(--ink);
-    font-family:'Cairo',sans-serif; font-size:16px; padding:10px 2px; border-radius:0;
+    font-family:'Tajawal',sans-serif; font-size:16px; padding:10px 2px; border-radius:0;
   }
   select{ cursor:pointer; }
-  input::placeholder{ color:rgba(107,90,95,0.55); }
-  input:focus,select:focus{ outline:none; border-bottom-color:var(--wine); box-shadow:0 1px 0 0 var(--wine); }
+  input::placeholder{ color:rgba(92,107,100,0.55); }
+  input:focus,select:focus{ outline:none; border-bottom-color:var(--rose); box-shadow:0 1px 0 0 var(--rose); }
   .hint{ font-size:12px; color:var(--ink-dim); opacity:0.85; margin-top:-4px; }
 
   .choice-cards{ display:flex; flex-wrap:wrap; gap:10px; }
   .choice-card{
     border:1px solid var(--line); padding:10px 18px; cursor:pointer; font-size:14px; user-select:none;
-    border-radius:var(--radius); transition:border-color .15s ease, background .15s ease;
+    border-radius:999px; transition:border-color .15s ease, background .15s ease;
   }
-  .choice-card.active{ border-color:var(--wine); background:rgba(110,30,50,0.08); color:var(--wine); }
+  .choice-card.active{ border-color:var(--rose); background:rgba(201,120,138,0.08); color:var(--rose); }
   .choice-card input{ display:none; }
 
   .section-toggle-list{ display:flex; flex-direction:column; gap:12px; }
   .section-toggle{ display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer; user-select:none; }
-  .section-toggle input{ width:16px; height:16px; accent-color:var(--wine); padding:0; }
+  .section-toggle input{ width:16px; height:16px; accent-color:var(--rose); padding:0; }
 
   button.primary{
-    width:100%; background:var(--ink); color:var(--paper); border:0; font-family:'Cairo',sans-serif;
-    font-weight:700; font-size:16px; padding:16px; cursor:pointer; letter-spacing:0.02em; border-radius:var(--radius);
+    width:100%; background:var(--night); color:var(--ivory); border:0; font-family:'Tajawal',sans-serif;
+    font-weight:800; font-size:16px; padding:17px; cursor:pointer; letter-spacing:0.02em; border-radius:999px;
     transition:background 0.15s ease;
   }
-  button.primary:hover{ background:var(--wine); }
+  button.primary:hover{ background:var(--emerald); }
   button.primary:disabled{ background:var(--ink-dim); cursor:progress; }
 
   .status{ margin-top:16px; font-size:14px; display:none; }
   .status.show{ display:block; }
   .status.error{ color:var(--error); }
 
-  .result{ display:none; margin-top:28px; border:1px solid var(--line); border-radius:var(--radius); padding:24px; background:#fffdf9; }
+  .result{ display:none; margin-top:28px; border:1px solid var(--line); border-radius:var(--radius-lg); padding:26px; background:var(--card); }
   .result.show{ display:block; }
-  .result h2{ font-family:'Cormorant Garamond',serif; font-size:22px; margin:0 0 12px; color:var(--ok); }
+  .result h2{ font-family:'Playfair Display',serif; font-size:22px; margin:0 0 12px; color:var(--ok); }
   .link-row{ display:flex; gap:8px; margin-bottom:14px; }
   .link-row input{ flex:1; border:1px solid var(--line); padding:10px 12px; font-size:14px; direction:ltr; text-align:left; border-radius:var(--radius); }
   .link-row button{
-    background:transparent; border:1px solid var(--wine); color:var(--wine); font-family:'Cairo',sans-serif;
-    padding:0 18px; cursor:pointer; font-size:14px; white-space:nowrap; border-radius:var(--radius);
+    background:transparent; border:1px solid var(--rose); color:var(--rose); font-family:'Tajawal',sans-serif;
+    padding:0 18px; cursor:pointer; font-size:14px; white-space:nowrap; border-radius:999px;
   }
-  .link-row button:hover{ background:rgba(110,30,50,0.08); }
+  .link-row button:hover{ background:rgba(201,120,138,0.08); }
   .result-actions{ display:flex; gap:16px; font-size:14px; flex-wrap:wrap; }
-  .result-actions a{ color:var(--wine); text-decoration:underline; }
+  .result-actions a{ color:var(--rose); text-decoration:underline; }
   .result-actions button.linklike{
     background:none; border:0; color:var(--ink-dim); text-decoration:underline; cursor:pointer;
-    font-family:'Cairo',sans-serif; font-size:14px; padding:0;
+    font-family:'Tajawal',sans-serif; font-size:14px; padding:0;
   }
 </style>
 </head>
+
 <body>
 
 <!-- ==========================================================================
-     خطوة 1: الصفحة الرئيسية (هيرو + إحصائيات حية + معرض + بانر خاص)
+     خطوة 1: الصفحة الرئيسية (هيرو + إحصائيات حية + معرض + الباقة المميزة + بانر خاص)
      ========================================================================== -->
 <section id="galleryView">
 
   <div class="hero">
     <div class="hero-inner">
       <div class="hero-copy">
+        <div class="trust-badge"><span class="dot"></span> أكتر من 100,000 مستخدم جربوا الاستوديو</div>
         <div class="eyebrow">استوديو الدعوات الرقمي</div>
         <h1>دعوة زفافك<br>في لينك واحد</h1>
-        <p class="lead">اختار تصميم، اكتب بياناتك، وابعت لينك جاهز لصحابك خلال دقايق — شغال على أي موبايل وأي مكان.</p>
-        <a href="#gallery" class="hero-cta">اختار تصميمك ↓</a>
+        <p class="lead">اختار تصميم، اكتب بياناتك، وابعت لينك جاهز لصحابك خلال دقايق — شغال على أي موبايل وأي مكان، وبتصميم يليق بيوم عمرك.</p>
+        <div class="hero-cta-row">
+          <a href="#gallery" class="hero-cta">اختار تصميمك ↓</a>
+          <a href="#premium" class="hero-cta-outline">شوف الباقة المميزة</a>
+        </div>
 
         <div class="stats-row" id="statsRow">
           <div class="stat-item">
@@ -364,29 +457,28 @@
       </div>
 
       <div class="hero-showcase">
-        <div class="invite-mock is-hero invite-mock--viktor invite-mock--back">
-          <div class="invite-mock__frame">
-            <div class="invite-mock__eyebrow">Wedding Day</div>
-            <div class="invite-mock__names">Yusuf<span class="invite-mock__amp">&amp;</span>Amira</div>
-            <div class="invite-mock__rule"></div>
-            <div class="invite-mock__date">30.08.2026</div>
+        <div class="glow"></div>
+        <div class="invite-mock is-hero invite-mock--device invite-mock--back">
+          <div class="invite-mock__viewport">
+            <iframe class="invite-mock__iframe" src="/preview-sample/viktor-paula" loading="lazy" sandbox="allow-scripts allow-same-origin" tabindex="-1" aria-hidden="true" scrolling="no"></iframe>
           </div>
+          <div class="invite-mock__notch"></div>
+          <div class="invite-mock__home-bar"></div>
         </div>
-        <div class="invite-mock is-hero invite-mock--blossom">
-          <div class="invite-mock__ring"></div>
-          <div class="invite-mock__frame">
-            <div class="invite-mock__eyebrow">✦ دعوة زفاف ✦</div>
-            <div class="invite-mock__names">يوسف<span class="invite-mock__amp">&amp;</span>أميرة</div>
-            <div class="invite-mock__rule"></div>
-            <div class="invite-mock__date">٣٠ أغسطس ٢٠٢٦</div>
-            <div class="invite-mock__venue">Beldi Country Club</div>
+        <div class="invite-mock is-hero invite-mock--device">
+          <div class="invite-mock__viewport">
+            <iframe class="invite-mock__iframe" src="/preview-sample/blossom-oud" loading="lazy" sandbox="allow-scripts allow-same-origin" tabindex="-1" aria-hidden="true" scrolling="no"></iframe>
           </div>
+          <div class="invite-mock__notch"></div>
+          <div class="invite-mock__home-bar"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="torn-divider"></div>
+  <svg class="wave-divider" viewBox="0 0 1440 56" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,0 C240,56 480,56 720,28 C960,0 1200,0 1440,28 L1440,56 L0,56 Z" fill="var(--ivory)"></path>
+  </svg>
 
   <div class="section-wrap" id="gallery">
     <div class="section-head">
@@ -396,6 +488,60 @@
     </div>
     <div class="template-grid" id="templateGrid">
       <div class="gallery-status">جاري تحميل التصاميم...</div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       قسم الباقة المميزة (المدفوعة) — جديد بالكامل حسب الطلب
+       ========================================================================== -->
+  <div class="premium-outer" id="premium">
+    <div class="premium-inner">
+      <div class="premium-head">
+        <div class="eyebrow">الباقة المميزة</div>
+        <h2>دعوتك، بس بتحكم كامل في كل تفصيلة</h2>
+        <p>في الباقة المدفوعة بنديك حرية كاملة تشكّل الدعوة زي ما نفسك بالظبط — من غير ما تحتاج خبرة تقنية.</p>
+      </div>
+
+      <div class="premium-grid">
+        <div class="premium-card">
+          <div class="icon">🎵</div>
+          <h3>موسيقى تختارها انت</h3>
+          <p>غيّر الموسيقى اللي بتشتغل في خلفية الدعوة وقت ما حد يفتحها — نبعتلك أكتر من مقطوعة تختار منها الأنسب لذوقكم.</p>
+        </div>
+        <div class="premium-card">
+          <div class="icon">🎨</div>
+          <h3>أكتر من تصميم تختار منه</h3>
+          <p>بنبعتلك أكتر من تمبليت مختلف في الشكل والألوان، وانت تختار اللي يعجبك ويعبّر عنكم أكتر.</p>
+        </div>
+        <div class="premium-card">
+          <div class="icon">🖼️</div>
+          <h3>صور بتختارها انت</h3>
+          <p>غيّر صور الدعوة وقت ما تحب — صور خطوبة، صور تصوير، أو أي صورة عايز تظهر في التصميم.</p>
+        </div>
+        <div class="premium-card">
+          <div class="icon">🌐</div>
+          <h3>دومين باسم العروسين</h3>
+          <p>لينك الدعوة بيبقى باسم العريس والعروسة نفسهم، بدل ما يبقى رقم أو كود عشوائي.</p>
+        </div>
+        <div class="premium-card">
+          <div class="icon">➕</div>
+          <h3>تحكم كامل في الأقسام</h3>
+          <p>تقدر تضيف أقسام جديدة للدعوة أو تحذف أي جزء مش محتاجه — الدعوة بتتشكل زي ما انت عايز بالظبط.</p>
+        </div>
+        <div class="premium-card">
+          <div class="icon">🤝</div>
+          <h3>متابعة ودعم مستمر</h3>
+          <p>أي تعديل أو تغيير تحتاجه بعد كده، بنكون معاك وبنطبقه بسرعة، من غير أي تعقيد.</p>
+        </div>
+      </div>
+
+      <div class="premium-cta-band">
+        <div class="premium-cta-copy">
+          <h3>عايز تعرف أسعار الباقة المميزة؟</h3>
+          <p>كلمنا على واتساب وهنرد عليك بسرعة، من غير أي التزام.</p>
+        </div>
+        <a class="premium-cta-btn" href="https://wa.me/201035225735" target="_blank" rel="noopener">تواصل على واتساب ↗</a>
+      </div>
     </div>
   </div>
 
@@ -421,7 +567,10 @@
     </div>
   </div>
 
-  <footer class="site-footer">Blossom &amp; Oud — استوديو الدعوات</footer>
+  <footer class="site-footer">
+    <div class="foot-brand">Studio Nour — استوديو الدعوات</div>
+    دعوة زفافك في لينك واحد
+  </footer>
 </section>
 
 <!-- ==========================================================================
@@ -573,47 +722,14 @@
   };
   var STAGE_DEFAULT_HOURS = { reception: 16, ceremony: 17, cocktail: 18, dinner: 19, party: 20 };
 
-  // كل قالب معروف ليه ماركب مصغّر مخصص بألوانه الحقيقية؛ أي قالب جديد غير
-  // معروف ياخد شكل محايد افتراضي تلقائيًا من غير ما يحتاج كود إضافي
-  var TEMPLATE_MOCKS = {
-    'blossom-oud': {
-      cls: 'invite-mock--blossom',
-      html:
-        '<div class="invite-mock__ring"></div>' +
-        '<div class="invite-mock__frame">' +
-          '<div class="invite-mock__eyebrow">✦ دعوة زفاف ✦</div>' +
-          '<div class="invite-mock__names">يوسف<span class="invite-mock__amp">&amp;</span>أميرة</div>' +
-          '<div class="invite-mock__rule"></div>' +
-          '<div class="invite-mock__date">٣٠ أغسطس ٢٠٢٦</div>' +
-          '<div class="invite-mock__venue">Beldi Country Club</div>' +
-        '</div>',
-    },
-    'viktor-paula': {
-      cls: 'invite-mock--viktor',
-      html:
-        '<div class="invite-mock__frame">' +
-          '<div class="invite-mock__eyebrow">Wedding Day</div>' +
-          '<div class="invite-mock__names">Yusuf<span class="invite-mock__amp">&amp;</span>Amira</div>' +
-          '<div class="invite-mock__rule"></div>' +
-          '<div class="invite-mock__date">30.08.2026</div>' +
-        '</div>',
-    },
-  };
-  function defaultMock(name){
-    return {
-      cls: 'invite-mock--neutral',
-      html:
-        '<div class="invite-mock__frame">' +
-          '<div class="invite-mock__eyebrow">دعوة زفاف</div>' +
-          '<div class="invite-mock__names">' + name + '</div>' +
-          '<div class="invite-mock__rule"></div>' +
-        '</div>',
-    };
-  }
-
   var templates = [];
   var currentTemplate = null;
   var state = { templateId: null, occasionType: 'wedding', language: 'ar' };
+
+  // ملحوظة: تصغير iframe المعاينة (390×850) بقى بالكامل بـ CSS container query
+  // (شوف .invite-mock__viewport / .invite-mock__iframe فوق) — مفيش JS محتاج
+  // يقيس عرض ولا يسمع resize، فمفيش أي احتمال لـ "فجوة" أو مربّع فاضي زي اللي
+  // كان بيحصل قبل كده.
 
   // ===== الإحصائيات الحية =====
   function formatNumber(n){
@@ -638,11 +754,16 @@
       return;
     }
     templateGrid.innerHTML = templates.map(function(t){
-      var mock = TEMPLATE_MOCKS[t.id] || defaultMock(t.name);
       return (
         '<div class="template-card">' +
           '<div class="template-mock-wrap">' +
-            '<div class="invite-mock is-card ' + mock.cls + '">' + mock.html + '</div>' +
+            '<div class="invite-mock is-card invite-mock--device">' +
+              '<div class="invite-mock__viewport">' +
+                '<iframe class="invite-mock__iframe" src="/preview-sample/' + t.id + '" loading="lazy" sandbox="allow-scripts allow-same-origin" tabindex="-1" aria-hidden="true" scrolling="no"></iframe>' +
+              '</div>' +
+              '<div class="invite-mock__notch"></div>' +
+              '<div class="invite-mock__home-bar"></div>' +
+            '</div>' +
           '</div>' +
           '<div class="template-body">' +
             '<h3>' + t.name + '</h3>' +
@@ -920,4 +1041,5 @@
 })();
 </script>
 </body>
+
 </html>

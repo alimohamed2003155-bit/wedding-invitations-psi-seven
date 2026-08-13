@@ -311,6 +311,8 @@ router.get('/preview-sample/:templateId', (req, res) => {
     venueMapDirectLink: 'https://www.google.com/maps/search/?api=1&query=Cairo',
     contactName: '', contactPhone: '', venueAddress: '',
     weddingDateTime: sampleDate,
+    // اتقرر إن المعاينة تفضل بشاشة الغلاف الطبيعية من غير فتح تلقائي
+    autoOpen: false,
   };
 
   const html = renderNewPathHtml(data);

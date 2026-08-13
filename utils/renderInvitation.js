@@ -115,6 +115,9 @@ function renderNewPathHtml(data) {
     openInMapsText: strings.openInMapsText,
     closingLine: strings.closingLine,
     hiddenSections: data.hiddenSections || [],
+    // بيخلي شاشة "اضغط للفتح" تتخطى نفسها تلقائيًا — مستخدم بس في صفحات
+    // المعاينة (زي كروت المعرض) اللي محدش هيضغط عليها فعليًا
+    autoOpen: !!data.autoOpen,
   };
 
   return readTemplateFile(template.file).replace(
