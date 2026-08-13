@@ -726,10 +726,40 @@
   var currentTemplate = null;
   var state = { templateId: null, occasionType: 'wedding', language: 'ar' };
 
-  // ملحوظة: تصغير iframe المعاينة (390×850) بقى بالكامل بـ CSS container query
-  // (شوف .invite-mock__viewport / .invite-mock__iframe فوق) — مفيش JS محتاج
-  // يقيس عرض ولا يسمع resize، فمفيش أي احتمال لـ "فجوة" أو مربّع فاضي زي اللي
-  // كان بيحصل قبل كده.
+  // ملحوظة: تصغير iframe المعاينة كان بالكامل بـ CSS container query (cqw)،
+  // لكن اتبان إن بعض المتصفحات المدمجة جوه تطبيقات زي إنستجرام مش بتحسب
+  // cqw صح مع container-type على عنصر أبعاده جايه من aspect-ratio، فبيفضل
+  // سكيل قديم/غلط وبتظهر مساحة فاضية (فجوة) جنب المعاينة. الحل: بنقيس
+  // عرض الـ viewport فعليًا بالـ JS (ResizeObserver) وبنفرض السكيل الصح
+  // كـ inline style فوق الـ CSS — ده بيشتغل صح في كل المتصفحات حتى لو
+  // الـ container query اتحسبت غلط أو مش مدعومة أصلًا.
+  function applyMockScale(viewport){
+    var iframe = viewport.querySelector('.invite-mock__iframe');
+    if (!iframe) return;
+    var w = viewport.clientWidth;
+    if (!w) return;
+    iframe.style.transform = 'scale(' + (w / 320) + ')';
+  }
+  function scaleAllMocks(){
+    Array.prototype.forEach.call(document.querySelectorAll('.invite-mock__viewport'), applyMockScale);
+  }
+  var mockResizeObserver = ('ResizeObserver' in window)
+    ? new ResizeObserver(function(entries){
+        entries.forEach(function(entry){ applyMockScale(entry.target); });
+      })
+    : null;
+  function observeMocks(){
+    if (mockResizeObserver){
+      Array.prototype.forEach.call(document.querySelectorAll('.invite-mock__viewport'), function(v){
+        mockResizeObserver.observe(v);
+      });
+    } else {
+      scaleAllMocks();
+    }
+  }
+  window.addEventListener('resize', scaleAllMocks);
+  window.addEventListener('orientationchange', scaleAllMocks);
+  observeMocks(); // يغطي الموبايلين الثابتين في الهيرو
 
   // ===== الإحصائيات الحية =====
   function formatNumber(n){
@@ -782,6 +812,8 @@
         goToForm(btn.getAttribute('data-use-template'));
       });
     });
+
+    observeMocks(); // كروت القوالب جديدة في الـ DOM، لازم نراقبها ونظبط السكيل بتاعها
   }
 
   function loadTemplates(){
