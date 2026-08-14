@@ -71,19 +71,14 @@
   .invite-mock--device{ background:#050b08; }
   .invite-mock__viewport{
     position:absolute; inset:0; overflow:hidden;
-    container-type: inline-size;
-    container-name: mock-viewport;
   }
-  .invite-mock__iframe{
-    position:absolute; top:0; left:0;
-    width:320px; height:850px;
-    border:0; background:#050b08;
-    pointer-events:none;
-    transform-origin: top left;
-    transform: scale(calc(100cqw / 320px));
+  .invite-mock__img{
+    display:block; width:100%; height:100%; object-fit:cover; object-position:top center;
   }
-  @supports not (width: 100cqw){
-    .invite-mock__iframe{ transform: scale(0.62); }
+  .invite-mock__viewport.thumb-fallback{
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    background:linear-gradient(160deg, var(--night), #16281f);
+    color:var(--brass-soft); font-family:'Playfair Display',serif; font-style:italic; font-size:15px; padding:20px;
   }
   .invite-mock__notch{
     position:absolute; top:10px; left:50%; transform:translateX(-50%);
@@ -460,14 +455,14 @@
         <div class="glow"></div>
         <div class="invite-mock is-hero invite-mock--device invite-mock--back">
           <div class="invite-mock__viewport">
-            <iframe class="invite-mock__iframe" src="/preview-sample/viktor-paula" loading="lazy" sandbox="allow-scripts" tabindex="-1" aria-hidden="true" scrolling="no"></iframe>
+            <img class="invite-mock__img" src="/img/template-thumbs/viktor-paula.jpg" alt="معاينة تصميم Viktor & Paula" loading="lazy" />
           </div>
           <div class="invite-mock__notch"></div>
           <div class="invite-mock__home-bar"></div>
         </div>
         <div class="invite-mock is-hero invite-mock--device">
           <div class="invite-mock__viewport">
-            <iframe class="invite-mock__iframe" src="/preview-sample/blossom-oud" loading="lazy" sandbox="allow-scripts" tabindex="-1" aria-hidden="true" scrolling="no"></iframe>
+            <img class="invite-mock__img" src="/img/template-thumbs/blossom-oud.jpg" alt="معاينة تصميم Blossom & Oud" loading="lazy" />
           </div>
           <div class="invite-mock__notch"></div>
           <div class="invite-mock__home-bar"></div>
@@ -726,40 +721,12 @@
   var currentTemplate = null;
   var state = { templateId: null, occasionType: 'wedding', language: 'ar' };
 
-  // ملحوظة: تصغير iframe المعاينة كان بالكامل بـ CSS container query (cqw)،
-  // لكن اتبان إن بعض المتصفحات المدمجة جوه تطبيقات زي إنستجرام مش بتحسب
-  // cqw صح مع container-type على عنصر أبعاده جايه من aspect-ratio، فبيفضل
-  // سكيل قديم/غلط وبتظهر مساحة فاضية (فجوة) جنب المعاينة. الحل: بنقيس
-  // عرض الـ viewport فعليًا بالـ JS (ResizeObserver) وبنفرض السكيل الصح
-  // كـ inline style فوق الـ CSS — ده بيشتغل صح في كل المتصفحات حتى لو
-  // الـ container query اتحسبت غلط أو مش مدعومة أصلًا.
-  function applyMockScale(viewport){
-    var iframe = viewport.querySelector('.invite-mock__iframe');
-    if (!iframe) return;
-    var w = viewport.clientWidth;
-    if (!w) return;
-    iframe.style.transform = 'scale(' + (w / 320) + ')';
-  }
-  function scaleAllMocks(){
-    Array.prototype.forEach.call(document.querySelectorAll('.invite-mock__viewport'), applyMockScale);
-  }
-  var mockResizeObserver = ('ResizeObserver' in window)
-    ? new ResizeObserver(function(entries){
-        entries.forEach(function(entry){ applyMockScale(entry.target); });
-      })
-    : null;
-  function observeMocks(){
-    if (mockResizeObserver){
-      Array.prototype.forEach.call(document.querySelectorAll('.invite-mock__viewport'), function(v){
-        mockResizeObserver.observe(v);
-      });
-    } else {
-      scaleAllMocks();
-    }
-  }
-  window.addEventListener('resize', scaleAllMocks);
-  window.addEventListener('orientationchange', scaleAllMocks);
-  observeMocks(); // يغطي الموبايلين الثابتين في الهيرو
+  // ملحوظة: معاينات القوالب (المعرض + الهيرو) بقت صور ثابتة (public/img/template-thumbs)
+  // بدل iframe حي مصغّر بـ CSS/JS. القرار ده جاي بعد ما اتأكدنا إن تصغير تصميم
+  // القالب الحقيقي (Tilda) جوه إطار صغير بيدي نتائج مش ثابتة عبر المتصفحات
+  // المختلفة. الصفحة الحقيقية الكاملة لسه شغالة زي ما هي عادي من زرار
+  // "شوف شكل الدعوة" (بتفتح /preview-sample/:id في تاب جديد بحجمها الطبيعي).
+
 
   // ===== الإحصائيات الحية =====
   function formatNumber(n){
@@ -789,7 +756,7 @@
           '<div class="template-mock-wrap">' +
             '<div class="invite-mock is-card invite-mock--device">' +
               '<div class="invite-mock__viewport">' +
-                '<iframe class="invite-mock__iframe" src="/preview-sample/' + t.id + '" loading="lazy" sandbox="allow-scripts" tabindex="-1" aria-hidden="true" scrolling="no"></iframe>' +
+                '<img class="invite-mock__img" src="/img/template-thumbs/' + t.id + '.jpg" alt="معاينة تصميم ' + t.name + '" loading="lazy" onerror="this.remove(); this.parentElement.classList.add(&quot;thumb-fallback&quot;); this.parentElement.textContent = &quot;' + t.name + '&quot;;" />' +
               '</div>' +
               '<div class="invite-mock__notch"></div>' +
               '<div class="invite-mock__home-bar"></div>' +
@@ -812,8 +779,6 @@
         goToForm(btn.getAttribute('data-use-template'));
       });
     });
-
-    observeMocks(); // كروت القوالب جديدة في الـ DOM، لازم نراقبها ونظبط السكيل بتاعها
   }
 
   function loadTemplates(){
