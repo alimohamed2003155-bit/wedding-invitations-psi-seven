@@ -29,6 +29,35 @@ const router = express.Router();
 // وجمع جنيه على دولار في رقم واحد بيدي رقم كذّاب.
 const CURRENCIES = ['EGP', 'USD'];
 
+/**
+ * بيحفظ حقول محددة من حساب العميل — بدل `user.save()`.
+ *
+ * ليه ده مهم: `user.save()` بيعمل تحقق على المستند **كله**. يعني حساب
+ * قديم اتسجّل قبل ما نضيف حقل مطلوب (زي `country`) أو فيه قيمة مش
+ * مطابقة للسكيما الحالية، أي إجراء إداري عليه كان بيقع بـ 500 — حتى لو
+ * اللي بنغيّره حاجة تانية خالص. الأدمن كان بيشوف "حصل خطأ في السيرفر"
+ * ومايعرفش السبب.
+ *
+ * الحل: نكتب الحقول المقصودة لوحدها. `runValidators` بيتأكد من اللي
+ * بنكتبه هو بس، والباقي من المستند القديم مابيتلمسش.
+ */
+async function saveUserFields(user, fields) {
+  await User.updateOne({ _id: user._id }, { $set: fields }, { runValidators: true });
+}
+
+/** الاشتراك بعد التعديل، جاهز للكتابة (من غير خصائص Mongoose الداخلية) */
+function subscriptionOf(user) {
+  const sub = (user.toObject ? user.toObject() : user).subscription || {};
+  return {
+    packageId: sub.packageId || null,
+    invitationsLeft: sub.invitationsLeft || 0,
+    activatedAt: sub.activatedAt || null,
+    status: sub.status || 'active',
+    suspendedAt: sub.suspendedAt || null,
+    adminNote: sub.adminNote || '',
+  };
+}
+
 /** بيهرّب أي حرف خاص بالـ regex عشان نص البحث يتعامل كنص عادي */
 function escapeRegex(s) {
   return String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -420,8 +449,7 @@ router.patch('/admin/api/users/:id/subscription', requireAdminSession, async (re
       return res.status(400).json({ error: 'الإجراء ده مش معروف.' });
     }
 
-    user.markModified('subscription');
-    await user.save();
+    await saveUserFields(user, { subscription: subscriptionOf(user) });
 
     logAdminAction(req, `subscription.${action}`, {
       type: 'user', id: user._id, label: user.email,
@@ -437,6 +465,11 @@ router.patch('/admin/api/users/:id/subscription', requireAdminSession, async (re
     return res.json({ ok: true });
   } catch (err) {
     console.error('Error updating subscription:', err);
+    // رسالة أوضح للأدمن بدل "خطأ في السيرفر" الصمّاء — ده مسار محمي
+    // بجلسة أدمن، فمفيش مشكلة إننا نقول السبب الحقيقي.
+    if (err && err.name === 'ValidationError') {
+      return res.status(400).json({ error: 'بيانات الاشتراك مرفوضة: ' + err.message });
+    }
     return res.status(500).json({ error: 'حصل خطأ في السيرفر' });
   }
 });
@@ -450,7 +483,7 @@ router.patch('/admin/api/users/:id/block', requireAdminSession, async (req, res)
     const blocked = !!(req.body || {}).blocked;
     user.isBlocked = blocked;
     user.blockedAt = blocked ? new Date() : null;
-    await user.save();
+    await saveUserFields(user, { isBlocked: user.isBlocked, blockedAt: user.blockedAt });
 
     // الحظر لازم يشتغل فورًا: بنلغي كل جلساته المفتوحة، مش بس نمنع الدخول
     // الجديد — غير كده هيفضل داخل من التاب المفتوح لحد ما الكوكي تنتهي.
@@ -535,7 +568,7 @@ router.post('/admin/api/orders/:id/activate', requireAdminSession, async (req, r
       suspendedAt: null,
       adminNote: (user.subscription && user.subscription.adminNote) || '',
     };
-    await user.save();
+    await saveUserFields(user, { subscription: subscriptionOf(user) });
 
     order.status = 'activated';
     order.activatedAt = new Date();
@@ -584,8 +617,7 @@ router.post('/admin/api/orders/:id/cancel', requireAdminSession, async (req, res
           user.subscription.packageId = null;
           user.subscription.activatedAt = null;
         }
-        user.markModified('subscription');
-        await user.save();
+        await saveUserFields(user, { subscription: subscriptionOf(user) });
       }
     }
 
