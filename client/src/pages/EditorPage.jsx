@@ -30,9 +30,21 @@ import {
   useUploadAudioMutation,
 } from '../store/api.js';
 import MusicPanel from '../components/editor/MusicPanel.jsx';
+import BigScreenNotice, { hintDismissed } from '../components/editor/BigScreenNotice.jsx';
+import useIsCompact from '../hooks/useIsCompact.js';
 
 const SHELL = 'mithaq-shell';
 const RUNTIME = 'mithaq-editor';
+
+// ===== درج الأدوات على الموبايل =====
+// الدرج ليه وضعين بس: مقفول (المقبض + التبويبات ظاهرين) ومفتوح.
+//
+// المعاينة بتسيب تحتها مساحة **الجزء الظاهر دايمًا** بس (المقبض
+// والتبويبات)، مش ارتفاع الدرج وهو مفتوح. يعني لما الدرج يفتح بيعدّي
+// فوق الدعوة بدل ما يزقّها ويغيّر مقاسها — ده اللي كل محرر على الموبايل
+// بيعمله، وبيمنع الدعوة إنها ترقص كل ما تفتح لوحة.
+const SHEET_PEEK_FALLBACK = 118; // لحد ما القياس الحقيقي يحصل
+const SHEET_PANEL = '44vh';      // ارتفاع محتوى الدرج وهو مفتوح
 
 // التبويبات اللي مالهاش feature مش مميزات باقة — دي تعديل العميل في
 // دعوته هو (النص، البيانات)، وأي صاحب دعوة مميزة لازم يقدر يعملها.
@@ -128,6 +140,16 @@ export default function EditorPage() {
   const [hasCover, setHasCover] = useState(false);
   const [tab, setTab] = useState('inline');
   const [device, setDevice] = useState('mobile');
+  // ===== وضع الموبايل =====
+  const compact = useIsCompact();
+  // الدرج بيفتح مقفول: أول حاجة العميل يشوفها هي دعوته كاملة، مش لوحة
+  // أدوات نصها مقصوص. المقبض قدامه وواضح إنه بيتسحب.
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [showBigScreenHint, setShowBigScreenHint] = useState(false);
+  // ارتفاع الجزء الظاهر من الدرج — بيتقاس فعليًا مش بالتخمين، لأنه
+  // بيفرق حسب اللغة وحسب وجود زرار الغلاف من عدمه
+  const peekRef = useRef(null);
+  const [peekH, setPeekH] = useState(SHEET_PEEK_FALLBACK);
   const [selected, setSelected] = useState(null);
   const [pickedImage, setPickedImage] = useState(null);
   const [counts, setCounts] = useState(null);
@@ -201,6 +223,33 @@ export default function EditorPage() {
       });
     }
   }, [data, draft]);
+
+  // النصيحة بتظهر مرة واحدة أول ما المحرر يفتح فعلاً على شاشة صغيرة —
+  // بعد ما البيانات توصل، عشان ماتظهرش فوق شاشة تحميل.
+  useEffect(() => {
+    if (compact && data && !hintDismissed()) setShowBigScreenHint(true);
+  }, [compact, data]);
+
+  // على الموبايل: أول ما العميل يضغط على جزء في الدعوة، الأدوات بتاعته
+  // لازم تطلعله من غير ما يدوّر — زي أي محرر على الموبايل.
+  useEffect(() => {
+    if (compact && selected) setSheetOpen(true);
+  }, [compact, selected]);
+
+  // وضع التشغيل بياخد الشاشة كلها — الدرج مالوش لازمة وهو شغال
+  useEffect(() => {
+    if (playing) setSheetOpen(false);
+  }, [playing]);
+
+  // قياس الجزء الظاهر من الدرج (المقبض + التبويبات)
+  useEffect(() => {
+    const el = peekRef.current;
+    if (!compact || !el || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(() => setPeekH(el.offsetHeight));
+    ro.observe(el);
+    setPeekH(el.offsetHeight);
+    return () => ro.disconnect();
+  }, [compact, playing]);
 
   // خطوط قايمة الاختيار بتتحمّل هنا بس (مش في index.html) عشان باقي
   // صفحات الموقع متتحمّلش 13 خط من غير داعي.
@@ -738,9 +787,69 @@ export default function EditorPage() {
   const tabUnlocked = !activeTab.feature || has(activeTab.feature);
   const isDraft = data.status === 'draft';
 
+  // ===== حالة الحفظ في صورة مختصرة (للموبايل) =====
+  const saveState = (isSaving || textSaving)
+    ? { icon: <Loader2 size={13} className="animate-spin" />, tone: 'text-ink-dim', label: t('editor.saving') }
+    : dirty
+      ? { icon: <span className="h-1.5 w-1.5 rounded-full bg-brass" />, tone: 'text-brass', label: t('editor.unsaved') }
+      : { icon: <Check size={13} />, tone: 'text-ok', label: justSaved ? t('editor.saved') : t('editor.allSaved') };
+
   return (
-    <div className="flex h-screen flex-col bg-ivory">
-      {/* ===== الشريط العلوي ===== */}
+    // dvh مش vh: على الموبايل شريط عنوان المتصفح بيدخل ويطلع، و vh
+    // بيحسبه غلط فيطلع جزء من الصفحة تحت الشاشة
+    <div className="flex h-dvh flex-col overflow-hidden bg-ivory">
+      {/* النصيحة بتظهر فوق كل حاجة على الموبايل */}
+      <AnimatePresence>
+        {showBigScreenHint && <BigScreenNotice onClose={() => setShowBigScreenHint(false)} />}
+      </AnimatePresence>
+
+      {/* ===== الشريط العلوي — نسخة الموبايل: سطر واحد، عمره ما يلف ===== */}
+      {compact ? (
+        <header className="flex shrink-0 items-center gap-2 border-b border-line bg-card px-3 py-2">
+          <Link
+            to="/dashboard"
+            aria-label={t('editor.back')}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-ink-dim active:bg-ink/5"
+          >
+            <ArrowRight size={17} />
+          </Link>
+
+          <span className={`inline-flex min-w-0 items-center gap-1.5 text-[12px] ${saveState.tone}`}>
+            {saveState.icon}
+            <span className="truncate">{saveState.label}</span>
+          </span>
+
+          <span className="flex-1" />
+
+          {playing ? (
+            <>
+              <button
+                type="button"
+                onClick={replay}
+                aria-label={t('editor.replay')}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-ink-dim active:bg-ink/5"
+              >
+                <RotateCw size={15} />
+              </button>
+              <button
+                type="button"
+                onClick={stopPlaying}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-night px-3.5 py-2 text-[12.5px] font-bold text-ivory"
+              >
+                <PenLine size={13} /> {t('editor.editShort')}
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={play}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-l from-brass to-brass-soft px-4 py-2 text-[12.5px] font-extrabold text-[#241608]"
+            >
+              <PlayCircle size={14} /> {t('editor.playShort')}
+            </button>
+          )}
+        </header>
+      ) : (
       <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-line bg-card px-5 py-3">
         <div className="flex items-center gap-4">
           <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-[13px] text-ink-dim hover:text-rose">
@@ -858,11 +967,64 @@ export default function EditorPage() {
           )}
         </div>
       </header>
+      )}
 
       {/* ===== شريط النشر ===== */}
       {/* المسودة مبتخصمش من رصيد الباقة ومحدش شايفها غير صاحبها — الخصم
           والنشر بيحصلوا مع بعض بضغطة واحدة هنا. */}
-      {isDraft ? (
+      {compact ? (
+        isDraft ? (
+          <div className="flex shrink-0 items-center gap-2 border-b border-brass/40 bg-gradient-to-l from-night to-[#16281f] px-3 py-2 text-ivory">
+            <FileText size={14} className="shrink-0 text-brass-soft" />
+            <span className="min-w-0 flex-1 truncate text-[12px]">
+              <b className="font-bold">{t('editor.draftShort')}</b>
+              <span className="text-ivory/60"> · {t('editor.draftSubtitle', { count: data.invitationsLeft })}</span>
+            </span>
+            <button
+              type="button"
+              onClick={discardDraft}
+              disabled={deleting}
+              aria-label={t('editor.discard')}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-ivory/25 text-ivory/70 disabled:opacity-50"
+            >
+              <Trash2 size={13} />
+            </button>
+            <button
+              type="button"
+              onClick={publish}
+              disabled={publishing}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-l from-brass to-brass-soft px-3.5 py-2 text-[12px] font-extrabold text-[#241608] disabled:opacity-60"
+            >
+              {publishing ? <Loader2 size={12} className="animate-spin" /> : <Rocket size={12} />}
+              {t('editor.publishShort')}
+            </button>
+          </div>
+        ) : (
+          <div className="flex shrink-0 items-center gap-2 border-b border-line bg-ok/[0.07] px-3 py-1.5">
+            <Check size={13} className="shrink-0 text-ok" />
+            <span className="min-w-0 flex-1 truncate text-[12px] font-bold text-ok">
+              {t('editor.publishedShort')}
+            </span>
+            <button
+              type="button"
+              onClick={copyLink}
+              aria-label={t('result.copy')}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-line text-ink active:bg-ink/5"
+            >
+              {copied ? <Check size={13} className="text-ok" /> : <Copy size={13} />}
+            </button>
+            <a
+              href={`/i/${shortId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={t('dash.open')}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-night text-ivory"
+            >
+              <ExternalLink size={13} />
+            </a>
+          </div>
+        )
+      ) : isDraft ? (
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-brass/40 bg-gradient-to-l from-night to-[#16281f] px-5 py-3 text-ivory">
           <div className="flex items-center gap-2.5">
             <FileText size={16} className="text-brass-soft" />
@@ -925,24 +1087,87 @@ export default function EditorPage() {
             العميل لازم يقدر يعدّل من الموبايل برضو */}
         <aside
           hidden={playing}
-          className="flex shrink-0 flex-col border-line bg-card lg:w-[400px] xl:w-[440px] lg:border-e
-            max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-30 max-lg:h-[56vh]
-            max-lg:rounded-t-[22px] max-lg:border-t max-lg:shadow-[0_-10px_34px_-14px_rgba(0,0,0,.34)]"
+          className={`flex flex-col border-line bg-card ${
+            compact
+              ? 'fixed inset-x-0 bottom-0 z-30 rounded-t-[22px] border-t shadow-[0_-12px_40px_-16px_rgba(0,0,0,.38)]'
+              : 'shrink-0 lg:w-[400px] xl:w-[440px] lg:border-e'
+          }`}
         >
-          <nav className="flex shrink-0 border-b border-line">
+          {/* ===== مقبض الدرج + الأدوات السريعة — موبايل بس ===== */}
+          {/* الأدوات اللي كانت مزنوقة في الشريط العلوي (رجوع/إعادة/الغلاف)
+              مكانها هنا: قريبة من الإيد، وسطر واحد مايزحمش الشاشة. */}
+          <div ref={peekRef} className="shrink-0">
+          {compact && (
+            <div className="px-3 pt-2">
+              <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-ink/15" />
+              <div className="flex items-center gap-1.5 pb-2">
+                <button
+                  type="button"
+                  onClick={() => setSheetOpen((v) => !v)}
+                  aria-expanded={sheetOpen}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-ink/[0.06] px-3 py-1.5 text-[12px] font-bold text-ink"
+                >
+                  {sheetOpen ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                  {t('editor.tools')}
+                </button>
+
+                <span className="flex-1" />
+
+                <button
+                  type="button"
+                  onClick={undo}
+                  disabled={pastRef.current.length === 0 || textSaving}
+                  aria-label={t('editor.undo')}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-line text-ink-dim disabled:opacity-30"
+                >
+                  <Undo2 size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={redo}
+                  disabled={futureRef.current.length === 0 || textSaving}
+                  aria-label={t('editor.redo')}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-line text-ink-dim disabled:opacity-30"
+                >
+                  <Redo2 size={14} />
+                </button>
+                {hasCover && (
+                  <button
+                    type="button"
+                    onClick={toggleCover}
+                    aria-label={t('editor.cover')}
+                    aria-pressed={coverOpen}
+                    className={`flex h-8 w-8 items-center justify-center rounded-full border ${
+                      coverOpen ? 'border-brass bg-brass/15 text-[#7a5a1a]' : 'border-line text-ink-dim'
+                    }`}
+                  >
+                    <Layers size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          <nav className={`flex shrink-0 border-line ${compact ? 'border-y' : 'border-b'}`}>
             {TABS.map(({ id, icon: Icon, feature, label }) => (
               <button
                 key={id}
                 type="button"
-                onClick={() => setTab(id)}
-                className={`relative flex flex-1 flex-col items-center gap-1.5 py-3.5 text-[11.5px] font-bold transition ${
-                  tab === id ? 'text-rose' : 'text-ink-dim hover:text-ink'
-                }`}
+                // على الموبايل الضغط على تبويب بيفتح الدرج كمان، والضغط
+                // على التبويب المفتوح بيقفله — أسرع طريق للدعوة ورجوع
+                onClick={() => {
+                  if (compact && tab === id) setSheetOpen((v) => !v);
+                  else if (compact) setSheetOpen(true);
+                  setTab(id);
+                }}
+                className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 font-bold transition ${
+                  compact ? 'px-1 py-2.5 text-[10.5px]' : 'gap-1.5 py-3.5 text-[11.5px]'
+                } ${tab === id ? 'text-rose' : 'text-ink-dim hover:text-ink'}`}
               >
-                <Icon size={16} />
-                {t(label)}
+                <Icon size={compact ? 15 : 16} />
+                <span className="w-full truncate text-center">{t(label)}</span>
                 {feature && !has(feature) && (
-                  <Lock size={9} className="absolute end-2 top-2.5 text-ink-dim" />
+                  <Lock size={9} className={`absolute text-ink-dim ${compact ? 'end-1 top-1.5' : 'end-2 top-2.5'}`} />
                 )}
                 {tab === id && (
                   <motion.span layoutId="editor-tab" className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-rose" />
@@ -950,8 +1175,16 @@ export default function EditorPage() {
               </button>
             ))}
           </nav>
+          </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto p-5">
+          {/* محتوى الدرج — بيتطوي لصفر على الموبايل لما يتقفل */}
+          <div
+            className={compact
+              ? 'overflow-hidden transition-[height] duration-300 ease-out'
+              : 'flex min-h-0 flex-1 flex-col'}
+            style={compact ? { height: sheetOpen ? SHEET_PANEL : 0 } : undefined}
+          >
+          <div className={compact ? 'h-full overflow-y-auto p-4' : 'min-h-0 flex-1 overflow-y-auto p-5'}>
             {error && (
               <div className="mb-4 rounded-xl bg-error/10 px-4 py-3 text-[12.5px] text-error">{error}</div>
             )}
@@ -968,8 +1201,10 @@ export default function EditorPage() {
                   transition={{ duration: 0.16 }}
                 >
                   {/* ---- تعديل مباشر ---- */}
+                  {/* flex عشان نقدر نقدّم لوحة العنصر المختار على الشرح
+                      في وضع الموبايل (order) من غير ما نكرر الكود */}
                   {tab === 'inline' && (
-                    <>
+                    <div className="flex flex-col">
                       <h2 className="mb-1.5 font-serif text-[16px] font-bold text-ink">{t('editor.inlineTitle')}</h2>
                       <p className="mb-4 text-[12.5px] text-ink-dim">{t('editor.inlineHint')}</p>
 
@@ -989,9 +1224,13 @@ export default function EditorPage() {
                         </div>
                       </div>
 
-                      <p className="mt-3 rounded-xl bg-emerald/[0.07] px-4 py-3 text-[12px] text-ink-dim">
-                        {t('editor.inlineTip')}
-                      </p>
+                      {/* التلميح ده بيتكلم عن Enter و Esc — مالوش لازمة
+                          على الموبايل، ومكانه في درج قصير غالي */}
+                      {!compact && (
+                        <p className="mt-3 rounded-xl bg-emerald/[0.07] px-4 py-3 text-[12px] text-ink-dim">
+                          {t('editor.inlineTip')}
+                        </p>
+                      )}
 
                       {/* أضف نص جديد فوق التصميم */}
                       <button
@@ -1021,7 +1260,12 @@ export default function EditorPage() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.15 }}
-                            className="mt-5 rounded-2xl border border-rose/40 bg-rose/[0.04] p-4"
+                            // على الموبايل الدرج قصير — أدوات الجزء اللي
+                            // العميل لسه ضاغط عليه لازم تبقى أول حاجة
+                            // يشوفها، مش تحت أربع فقرات شرح
+                            className={`rounded-2xl border border-rose/40 bg-rose/[0.04] p-4 ${
+                              compact ? 'order-first mb-4' : 'mt-5'
+                            }`}
                           >
                             <div className="mb-3 flex items-center gap-2">
                               <Sparkles size={13} className="text-rose" />
@@ -1196,7 +1440,7 @@ export default function EditorPage() {
                           </div>
                         )}
                       </div>
-                    </>
+                    </div>
                   )}
 
                   {/* ---- الخط ---- */}
@@ -1359,7 +1603,10 @@ export default function EditorPage() {
             )}
           </div>
 
-          {counts && (
+          </div>
+
+          {/* عدّاد العناصر على الديسكتوب بس — على الموبايل كل بكسل محسوب */}
+          {counts && !compact && (
             <div className="shrink-0 border-t border-line px-5 py-3 text-[11.5px] text-ink-dim">
               {t('editor.elementsFound', { texts: counts.texts, images: counts.images })}
             </div>
@@ -1368,9 +1615,12 @@ export default function EditorPage() {
 
         {/* ===== المعاينة ===== */}
         <main
-          className={`flex min-w-0 flex-1 flex-col items-center overflow-auto bg-[repeating-linear-gradient(45deg,#0000_0_10px,#00000005_10px_20px)] p-5 ${
-            playing ? '' : 'max-lg:pb-[58vh]'
+          className={`flex min-w-0 flex-1 flex-col items-center overflow-auto bg-[repeating-linear-gradient(45deg,#0000_0_10px,#00000005_10px_20px)] ${
+            compact ? 'p-2.5' : 'p-5'
           }`}
+          // بنسيب مساحة الجزء الظاهر من الدرج بس — الدرج وهو مفتوح بيعدّي
+          // فوق الدعوة، فالمقاس مابيتغيّرش وإحنا بنفتح ونقفل
+          style={compact && !playing ? { paddingBottom: peekH } : undefined}
         >
           {playing && (
             <p className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-night px-4 py-1.5 text-[12px] font-bold text-brass-soft">
@@ -1380,8 +1630,18 @@ export default function EditorPage() {
           <motion.div
             layout
             transition={{ type: 'spring', stiffness: 220, damping: 26 }}
-            className="overflow-hidden rounded-[26px] border border-line bg-card shadow-[0_18px_50px_-20px_rgba(0,0,0,.35)]"
-            style={{ width: device === 'mobile' ? 390 : '100%', maxWidth: '100%', height: '100%', minHeight: 560 }}
+            className={`w-full overflow-hidden border border-line bg-card shadow-[0_18px_50px_-20px_rgba(0,0,0,.35)] ${
+              compact ? 'rounded-[18px]' : 'rounded-[26px]'
+            }`}
+            // على الموبايل الشاشة نفسها هي المقاس — أي عرض ثابت هنا كان
+            // بيخلي الصفحة أعرض من الجهاز، فالمتصفح يصغّر كل حاجة ويطلع
+            // شريط تمرير أفقي. `min()` بتمنع ده نهائيًا.
+            style={{
+              width: compact ? '100%' : (device === 'mobile' ? 'min(390px, 100%)' : '100%'),
+              maxWidth: '100%',
+              height: '100%',
+              minHeight: compact ? 420 : 560,
+            }}
           >
             <iframe
               // الـ key بيجبر المتصفح يبني الإطار من الأول — وده اللي
