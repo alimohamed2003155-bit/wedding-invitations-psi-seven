@@ -1,0 +1,32 @@
+{
+  "name": "wedding-invitation-generator",
+  "version": "1.0.0",
+  "description": "منصة لإنشاء دعوات زفاف شخصية بلينك فريد لكل دعوة",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "client:install": "npm --prefix client install",
+    "client:dev": "npm --prefix client run dev",
+    "client:build": "npm --prefix client run build",
+    "cleanup": "node scripts/cleanup-expired.js",
+    "build": "npm --prefix client install && npm --prefix client run build"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.11.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "file-type": "^22.0.2",
+    "helmet": "^7.1.0",
+    "interactjs": "^1.10.28",
+    "mongoose": "^8.6.0",
+    "multer": "^2.3.0"
+  }
+}

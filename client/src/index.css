@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* ============================================================
+   نفس باليتة ألوان الموقع الحالية بالظبط (Deep Teal + Rose Gold + Ivory)
+   — منقولة هنا كـ Tailwind theme tokens (كانت :root custom properties
+   في public/index.html القديمة) عشان الألوان تفضل واحدة بالظبط.
+   ============================================================ */
+@theme {
+  --color-night: #08130f;
+  --color-night-soft: #0e1e18;
+  --color-panel: #0f2119;
+  --color-ivory: #faf5ec;
+  --color-ivory-dim: #efe4d2;
+  --color-card: #fffdf8;
+  --color-rose: #c9788a;
+  --color-rose-bright: #e8a6b4;
+  --color-emerald: #1f6f5c;
+  --color-emerald-bright: #2f9c80;
+  --color-brass: #c9a24a;
+  --color-brass-soft: #e6c684;
+  --color-ink: #0f1d18;
+  --color-ink-dim: #5c6b64;
+  --color-line: rgba(15, 29, 24, 0.13);
+  --color-line-lite: rgba(250, 245, 236, 0.14);
+  --color-error: #d9614f;
+  --color-ok: #2f9c80;
+
+  --radius-lg: 22px;
+
+  /* اللاتيني بياخد Playfair، والعربي بياخد Amiri — المتصفح بيختار لكل حرف
+     الخط اللي فيه شكله، فمش محتاجين نفصل العناوين المختلطة يدويًا. */
+  --font-serif: 'Playfair Display', 'Amiri', serif;
+  /* Inter للاتيني و Tajawal للعربي — المتصفح بيختار لكل حرف الخط اللي
+     فيه شكله، فالموقع بيبقى مضبوط في اللغتين من غير ما نبدّل يدويًا */
+  --font-sans: 'Inter', 'Tajawal', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background: var(--color-ivory);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.7;
+  /* العربي مالوش خط مائل حقيقي، والمتصفح كان بيميّله صناعيًا فيطلع مشوّه.
+     ده بيمنع الميل الصناعي: اللاتيني (Playfair عنده مائل حقيقي) بيفضل
+     مائل، والعربي بيرجع معتدل زي ما المفروض. */
+  font-synthesis-style: none;
+}
+
+/* العربي حروفه أطول من اللاتيني فوق وتحت، فالأسطر الضيقة كانت بتقص أطرافه */
+h1,
+h2,
+h3 {
+  line-height: 1.45;
+}
+img,
+iframe {
+  max-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

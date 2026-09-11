@@ -1,0 +1,10 @@
+node_modules/
+.env
+# ملفات بيئة إضافية (زي .env.production.local اللي فيه رابط قاعدة
+# الإنتاج) — دي أسرار، عمرها ما تترفع. و.env.example بيفضل مرفوع
+# لأنه قالب فاضي.
+.env.*.local
+!.env.example
+.vercel
+*.log
+client/dist/
