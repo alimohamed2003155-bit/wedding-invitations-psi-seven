@@ -63,18 +63,39 @@
           location.replace(u + (u.indexOf('?') === -1 ? '?' : '&') + '_r=' + Date.now());
         }
 
+        /**
+         * الملف ده بتاعنا ومن ملفات البناء؟
+         *
+         * مهم جدًا نفرّق: لو خطوط جوجل (أو أي ملف خارجي) فشلت — وده
+         * بيحصل عادي في سفاري وفي شبكات كتير — الصفحة شغالة تمام
+         * بخط النظام، وإعادة تحميلها غلط صريح: بتقطع التحميل وبتبان
+         * للعميل كأنه اتطرد. إعادة التحميل ليها سبب واحد بس: ملف من
+         * ملفات بنائنا إحنا اختفى بعد رفع نسخة جديدة.
+         */
+        function isOurAsset(el) {
+          var src = el.src || el.href || '';
+          if (!src) return false;
+          try {
+            var u = new URL(src, location.href);
+            return u.origin === location.origin && u.pathname.indexOf('/assets/') === 0;
+          } catch (e) { return false; }
+        }
+
         // فشل تحميل ملف (سكريبت/ستايل) — بيتبلّغ في مرحلة الالتقاط بس
         window.addEventListener('error', function (e) {
           var el = e && e.target;
           if (!el || !el.tagName) return;
           var tag = el.tagName.toUpperCase();
-          if (tag === 'SCRIPT' || tag === 'LINK') recover(tag);
+          if ((tag === 'SCRIPT' || tag === 'LINK') && isOurAsset(el)) recover(tag);
         }, true);
 
-        // استيراد كسول فشل (زي ملف لوحة التحكم)
+        // استيراد كسول فشل (زي ملف لوحة التحكم).
+        // "Failed to fetch" لوحدها مش كفاية — دي بتطلع من أي طلب شبكة
+        // فاشل (رفع اتقطع، إنترنت ضعيف)، وإعادة التحميل ساعتها بتضيّع
+        // شغل العميل. بندوّر على رسايل فشل الوحدات بالتحديد.
         window.addEventListener('unhandledrejection', function (e) {
           var m = e && e.reason && (e.reason.message || String(e.reason));
-          if (m && /dynamically imported module|Importing a module script failed|Failed to fetch/i.test(m)) {
+          if (m && /(dynamically imported module|Importing a module script failed|error loading dynamically imported module)/i.test(m)) {
             recover('chunk');
           }
         });

@@ -74,7 +74,14 @@ app.use(helmet({
       baseUri: ["'self'"],
       formAction: ["'self'"],
       frameAncestors: ["'self'"],
-      upgradeInsecureRequests: [],
+      // ترقية أي طلب http لـ https — مهمة على الإنتاج، بس لازم تتشال
+      // في التطوير. سبب عملي: كروم بيستثني localhost من الترقية دي،
+      // وسفاري (WebKit) **لأ** — فالتطوير المحلي على http كان بيقع
+      // عنده بـ SSL connect error وكل ملفات الصفحة مبتحمّلش. وده خلانا
+      // منقدرش نختبر سفاري محليًا أصلًا.
+      // null (مش حذف السطر) لأن helmet بيضيف التوجيه ده من إعداداته
+      // الافتراضية، وnull هي الطريقة الوحيدة لإلغاء توجيه افتراضي.
+      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
     },
   },
 }));
