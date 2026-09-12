@@ -13,6 +13,7 @@ import {
 import {
   Panel, Badge, Btn, Field, Table, Row, Cell, Spinner, Empty, fmtDate,
 } from '../../components/admin/ui.jsx';
+import { tooBig, sizeError, uploadError, MAX_UPLOAD_LABEL } from '../../lib/uploadLimits.js';
 
 /** ثواني → د:ث */
 function fmtDuration(sec) {
@@ -39,6 +40,9 @@ export default function MusicPage() {
     e.target.value = '';
     if (!file) return;
     setError('');
+    // الفحص قبل الرفع: المنصة بترفض أي حاجة أكبر من كده قبل ما توصل
+    // السيرفر، فالرسالة اللي كانت بتطلع مكنتش ليها علاقة بالسبب
+    if (tooBig(file)) { setError(sizeError(file)); return; }
     try {
       const fd = new FormData();
       fd.append('file', file);
@@ -49,7 +53,7 @@ export default function MusicPage() {
         setForm((f) => ({ ...f, title: file.name.replace(/\.[^.]+$/, '').slice(0, 120) }));
       }
     } catch (err) {
-      setError(err?.data?.error || 'الرفع فشل — اتأكد إن الملف صوت حقيقي (MP3/M4A/OGG) وأقل من 10 ميجا.');
+      setError(uploadError(err));
     }
   }
 
@@ -77,7 +81,7 @@ export default function MusicPage() {
       {error && <div className="rounded-xl bg-error/15 px-4 py-3 text-[12.5px] text-error">{error}</div>}
 
       {/* الرفع */}
-      <Panel title="ضيف أغنية" subtitle="MP3 أو M4A أو OGG — لحد 10 ميجا">
+      <Panel title="ضيف أغنية" subtitle={`MP3 أو M4A أو OGG — لحد ${MAX_UPLOAD_LABEL}`}>
         <input ref={fileRef} type="file" accept="audio/*" onChange={onPickFile} hidden />
 
         {!pending ? (

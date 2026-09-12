@@ -12,8 +12,18 @@
 //  5) إعادة ترميز الصور في Cloudinary، فأي كود مدسوس جوه الصورة بيموت.
 //  6) رفع كـ "غير معروف النوع" ممنوع.
 
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 ميجا
-const MAX_AUDIO_BYTES = 10 * 1024 * 1024; // 10 ميجا
+// الحد الأقصى للرفع.
+//
+// الرقم ده مش اختيار حر: المنصة اللي الموقع شغال عليها (Vercel) بترفض
+// أي طلب جسمه أكبر من ~4.5 ميجا **قبل ما يوصل للكود ده أصلًا**، وبترد
+// 413 FUNCTION_PAYLOAD_TOO_LARGE كنص عادي مش JSON. يعني أي حد أعلى من
+// كده بيبقى كذب على العميل: بيختار الملف، يستنى، وياخد رسالة فشل
+// مالهاش معنى. فبنقف تحت الحد بهامش أمان (الهامش للـ multipart overhead
+// واسم الملف والهيدرات).
+const PLATFORM_LIMIT_BYTES = 4 * 1024 * 1024; // 4 ميجا
+
+const MAX_IMAGE_BYTES = PLATFORM_LIMIT_BYTES;
+const MAX_AUDIO_BYTES = PLATFORM_LIMIT_BYTES;
 
 // الأنواع المسموحة بس — أي حاجة تانية مرفوضة
 const ALLOWED_IMAGE_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -39,7 +49,7 @@ async function detectRealType(buffer) {
 async function validateImage(buffer) {
   if (!buffer || !buffer.length) return { ok: false, error: 'الملف فاضي.' };
   if (buffer.length > MAX_IMAGE_BYTES) {
-    return { ok: false, error: 'حجم الصورة أكبر من 5 ميجا.' };
+    return { ok: false, error: 'حجم الصورة أكبر من 4 ميجا.' };
   }
 
   const { mime } = await detectRealType(buffer);
@@ -67,7 +77,7 @@ async function validateImage(buffer) {
 async function validateAudio(buffer) {
   if (!buffer || !buffer.length) return { ok: false, error: 'الملف فاضي.' };
   if (buffer.length > MAX_AUDIO_BYTES) {
-    return { ok: false, error: 'حجم ملف الصوت أكبر من 10 ميجا.' };
+    return { ok: false, error: 'حجم ملف الصوت أكبر من 4 ميجا.' };
   }
 
   const { mime } = await detectRealType(buffer);
@@ -84,4 +94,5 @@ module.exports = {
   detectRealType,
   MAX_IMAGE_BYTES,
   MAX_AUDIO_BYTES,
+  PLATFORM_LIMIT_BYTES,
 };

@@ -32,6 +32,7 @@ import {
 import MusicPanel from '../components/editor/MusicPanel.jsx';
 import BigScreenNotice, { hintDismissed } from '../components/editor/BigScreenNotice.jsx';
 import useIsCompact from '../hooks/useIsCompact.js';
+import { tooBig, sizeError, uploadError } from '../lib/uploadLimits.js';
 
 const SHELL = 'mithaq-shell';
 const RUNTIME = 'mithaq-editor';
@@ -463,6 +464,7 @@ export default function EditorPage() {
     e.target.value = '';
     if (!file || !pickedImage) return;
     setError('');
+    if (tooBig(file)) { setError(sizeError(file)); return; }
     try {
       const fd = new FormData();
       fd.append('file', file);
@@ -471,8 +473,8 @@ export default function EditorPage() {
       setDraft((d) => ({ ...d, images: { ...d.images, [pickedImage]: res.url } }));
       post('set-image', { id: pickedImage, url: res.url });
       setDirty(true);
-    } catch {
-      setError(t('editor.errorUpload'));
+    } catch (err) {
+      setError(uploadError(err, t));
     }
   }
 
@@ -481,6 +483,9 @@ export default function EditorPage() {
     e.target.value = '';
     if (!file) return;
     setError('');
+    // الفحص هنا قبل ما نبعت: العميل ياخد الرسالة الصح فورًا بدل ما
+    // يستنى الملف يترفع كله وبعدين يترفض
+    if (tooBig(file)) { setError(sizeError(file)); return; }
     try {
       const fd = new FormData();
       fd.append('file', file);
@@ -489,8 +494,8 @@ export default function EditorPage() {
       setDraft((d) => ({ ...d, audioUrl: res.url }));
       post('set-audio', { url: res.url });
       setDirty(true);
-    } catch {
-      setError(t('editor.errorUpload'));
+    } catch (err) {
+      setError(uploadError(err, t));
     }
   }
 

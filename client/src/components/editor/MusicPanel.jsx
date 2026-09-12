@@ -129,6 +129,8 @@ export default function MusicPanel({
         {uploading ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
         {uploading ? t('editor.photoUploading') : t('editor.musicUpload')}
       </button>
+      {/* الحد لازم يبان **قبل** ما يختار ملف — مش بعد ما يستنى الرفع ويفشل */}
+      <p className="mt-2 text-center text-[11.5px] text-ink-dim">{t('editor.musicHint')}</p>
 
       {/* القص */}
       {audioUrl && (
