@@ -17,7 +17,7 @@ import {
   ChevronLeft, ChevronRight, Upload, AlertCircle, Crown, FileText,
   Rocket, Trash2, ExternalLink, Copy, MousePointerClick, Undo2,
   PlayCircle, RotateCw, Layers, ALargeSmall, Minus, Plus, CalendarDays, Sparkles,
-  MapPin, Redo2, Palette, Stamp, TypeOutline,
+  MapPin, Redo2, Palette, Stamp, TypeOutline, Share2,
 } from 'lucide-react';
 import {
   useGetEditorQuery,
@@ -30,6 +30,7 @@ import {
   useUploadAudioMutation,
 } from '../store/api.js';
 import MusicPanel from '../components/editor/MusicPanel.jsx';
+import SharePanel from '../components/editor/SharePanel.jsx';
 import BigScreenNotice, { hintDismissed } from '../components/editor/BigScreenNotice.jsx';
 import useIsCompact from '../hooks/useIsCompact.js';
 import { tooBig, sizeError, uploadError } from '../lib/uploadLimits.js';
@@ -57,6 +58,9 @@ const TABS = [
   { id: 'photos', icon: ImageIcon, feature: 'images', label: 'editor.tabPhotos' },
   { id: 'music', icon: Music, feature: 'music', label: 'editor.tabMusic' },
   { id: 'layout', icon: Move, feature: 'drag', label: 'editor.tabLayout' },
+  // كارت المشاركة مش ميزة باقة: كل صاحب دعوة مميزة لازم يقدر يظبط
+  // شكل لينكه على واتساب — ده جزء من دعوته مش إضافة
+  { id: 'share', icon: Share2, feature: null, label: 'editor.tabShare' },
 ];
 
 /** الكلام ده تاريخ؟ (فيه سنة زي 2027) — ساعتها بنفتحله نتيجة بدل كتابة */
@@ -221,6 +225,11 @@ export default function EditorPage() {
         colors: c.colors || {},
         added: c.added || [],
         hidden: c.hidden || [],
+        share: {
+          title: (c.share && c.share.title) || '',
+          description: (c.share && c.share.description) || '',
+          image: (c.share && c.share.image) || '',
+        },
       });
     }
   }, [data, draft]);
@@ -431,6 +440,7 @@ export default function EditorPage() {
         body.hidden = draft.hidden;
         body.sizes = draft.sizes;
         body.added = draft.added;
+        body.share = draft.share;
         await saveCustomizations({ shortId, ...body }).unwrap();
         setDirty(false);
         setError('');
@@ -493,6 +503,25 @@ export default function EditorPage() {
       remember();
       setDraft((d) => ({ ...d, audioUrl: res.url }));
       post('set-audio', { url: res.url });
+      setDirty(true);
+    } catch (err) {
+      setError(uploadError(err, t));
+    }
+  }
+
+  /** صورة كارت المشاركة — بتترفع زي أي صورة بس مبتتحطش في التصميم */
+  async function onShareImage(e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setError('');
+    if (tooBig(file)) { setError(sizeError(file)); return; }
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await uploadImage(fd).unwrap();
+      remember();
+      setDraft((d) => ({ ...d, share: { ...(d.share || {}), image: res.url } }));
       setDirty(true);
     } catch (err) {
       setError(uploadError(err, t));
@@ -1556,6 +1585,22 @@ export default function EditorPage() {
                       onPick={pickTrack}
                       onTrim={setTrim}
                       onUpload={onAudioFile}
+                    />
+                  )}
+
+                  {/* ---- كارت المشاركة ---- */}
+                  {tab === 'share' && (
+                    <SharePanel
+                      share={draft.share || {}}
+                      defaults={data.shareDefaults || {}}
+                      canImages={has('images')}
+                      uploading={uploadingImage}
+                      onUploadImage={onShareImage}
+                      onChange={(next) => {
+                        remember();
+                        setDraft((d) => ({ ...d, share: next }));
+                        setDirty(true);
+                      }}
                     />
                   )}
 

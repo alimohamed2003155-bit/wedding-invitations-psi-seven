@@ -163,8 +163,12 @@ router.get('/i/:shortId', async (req, res) => {
       Invitation.updateOne({ _id: invitation._id }, { $inc: { viewCount: 1 } }).catch(() => {});
     }
 
+    // اللينك الكامل — بيتحط في كارت المشاركة عشان واتساب يعرف يرجّع
+    // للصفحة نفسها لما حد يضغط على الكارت
+    const pageUrl = `${req.protocol}://${req.get('host')}/i/${invitation.shortId}`;
+
     const html = invitation.templateId
-      ? renderNewPathHtml(invitation, { editMode })
+      ? renderNewPathHtml(invitation, { editMode, pageUrl })
       : renderLegacyHtml(invitation);
 
     res.set('Content-Type', 'text/html; charset=utf-8');

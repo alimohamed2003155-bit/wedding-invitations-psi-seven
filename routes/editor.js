@@ -18,6 +18,7 @@ const {
   ALLOWED_FONTS, isAllowedFont, isAllowedMediaUrl, isSafeElemId, isSafeColor,
   sanitizeAddedItem, BUILT_IN_SEALS, SEAL_ELEM_ID,
 } = require('../utils/customizations');
+const { sanitizeShare, defaultShare } = require('../utils/shareTags');
 
 const router = express.Router();
 
@@ -208,6 +209,10 @@ router.get('/api/editor/:shortId', requireAuth, async (req, res) => {
       // أختام التصاميم التلاتة — العميل يبدّل ختم دعوته بأي واحد فيهم
       seals: BUILT_IN_SEALS,
       sealElemId: SEAL_ELEM_ID,
+      // العنوان والوصف اللي هيظهروا على واتساب لو العميل مكتبش حاجة —
+      // المحرر بيعرضهم كـ placeholder فالعميل شايف الكارت الحقيقي من
+      // غير ما يكتب حرف
+      shareDefaults: defaultShare(invitation),
       invitationsLeft: (req.user.subscription && req.user.subscription.invitationsLeft) || 0,
     });
   } catch (err) {
@@ -315,6 +320,7 @@ router.patch('/api/editor/:shortId/text', requireAuth, async (req, res) => {
         added: [...(c.added || [])],
         texts: { ...(c.texts || {}), [id]: newText },
         hidden: [...(c.hidden || [])],
+        share: { ...(c.share || {}) },
       };
       invitation.markModified('customizations');
     }
@@ -423,7 +429,18 @@ router.patch('/api/editor/:shortId', requireAuth, async (req, res) => {
       colors: { ...(current.colors || {}) },
       added: [...(current.added || [])],
       hidden: [...(current.hidden || [])],
+      share: { ...(current.share || {}) },
     };
+
+    // كارت المشاركة (اللي بيظهر على واتساب)
+    if (body.share !== undefined) {
+      const clean = sanitizeShare(body.share);
+      // الصورة بتترفع زي أي صورة تانية، فبتتبع نفس صلاحية الصور
+      if (clean && clean.image && !allowed.includes('images')) {
+        return res.status(403).json({ error: 'باقتك مافيهاش تغيير الصور.' });
+      }
+      next.share = clean || { title: '', description: '', image: '' };
+    }
 
     // الخط
     if (body.fontFamily !== undefined) {

@@ -69,6 +69,15 @@ const invitationSchema = new mongoose.Schema({
 
     // عناصر العميل اختار يخفيها
     hidden: { type: [String], default: [] },
+
+    // كارت المشاركة — اللي بيظهر لما اللينك يتبعت على واتساب أو فيسبوك.
+    // لو فاضي، بيتبني تلقائيًا من أسماء العروسين والتاريخ والمكان
+    // (utils/shareTags.js). الصورة لازم تعدي نفس فحص الروابط المسموحة.
+    share: {
+      title: { type: String, default: '', maxlength: 120 },
+      description: { type: String, default: '', maxlength: 300 },
+      image: { type: String, default: '', maxlength: 500 },
+    },
   },
 
   brideName: { type: String, required: true, maxlength: 80 },

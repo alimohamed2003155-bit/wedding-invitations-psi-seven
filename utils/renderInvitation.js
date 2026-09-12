@@ -15,6 +15,7 @@ const { getTemplate, getDefaultTemplate } = require('../templates/registry');
 const { safeJsonForScript } = require('./sanitize');
 const { injectTemplateFixes, injectBeforeBodyEnd } = require('./templateFixes');
 const { buildCustomizationTags } = require('./customizations');
+const { buildShareTags, injectShareTags } = require('./shareTags');
 
 // بيتحقن بس في وضع التحرير (routes/invitations.js بيتأكد إن اللي فاتح هو
 // صاحب الدعوة فعلاً) — الضيوف عمرهم ما يشوفوا الملفات دي.
@@ -172,6 +173,16 @@ function renderNewPathHtml(data, options) {
     safeJsonForScript(config)
   );
   html = injectTemplateFixes(html);
+
+  // كارت المشاركة (واتساب/فيسبوك). لازم يتحقن حتى لو العميل مغيّرش
+  // حاجة: ملفات التصاميم جواها وسوم Tilda الأصلية، فمن غير ده كل
+  // دعوة بتظهر باسم التصميم وصورة شعار مالهاش علاقة بالعروسين.
+  html = injectShareTags(html, buildShareTags(
+    data,
+    (options && options.pageUrl) || '',
+    (options && options.shareFallbackImage) || (template && template.preview) || ''
+  ));
+
   // تخصيصات العميل (خط/صور/موسيقى/إزاحات) بتتحقن كطبقة فوق التصميم
   html = injectBeforeBodyEnd(html, buildCustomizationTags(data.customizations, options));
   if (options && options.editMode) {
