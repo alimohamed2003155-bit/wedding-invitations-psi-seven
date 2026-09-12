@@ -8,6 +8,7 @@ import {
   Search, Music, Upload, Loader2, Play, Pause, Check, Scissors, RotateCcw,
 } from 'lucide-react';
 import { useGetLibraryTracksQuery } from '../../store/api.js';
+import { claimAudio, registerAudio } from '../../lib/soloAudio.js';
 
 /** ثواني → د:ث */
 function fmt(sec) {
@@ -48,9 +49,20 @@ export default function MusicPanel({
       setPlayingId(null);
       return;
     }
-    if (!audioRef.current) audioRef.current = new Audio();
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      // العنصر ده مش في الصفحة (new Audio)، فحارس "صوت واحد" مش
+      // بيشوفه من الـ DOM — بنسجّله عنده بإيدينا.
+      registerAudio(audioRef.current);
+      // وأول ما يقف لأي سبب (حد شغّل حاجة تانية، أو الأغنية خلصت)
+      // الزرار يرجع لشكله الصح
+      audioRef.current.addEventListener('pause', () => setPlayingId(null));
+      audioRef.current.addEventListener('ended', () => setPlayingId(null));
+    }
+    // أي صوت تاني شغال (الدعوة نفسها أو مشغّل القص) بيسكت الأول
+    claimAudio(audioRef.current);
     audioRef.current.src = track.url;
-    audioRef.current.play().catch(() => {});
+    audioRef.current.play().catch(() => setPlayingId(null));
     setPlayingId(track.id);
   }
 

@@ -34,6 +34,7 @@ import SharePanel from '../components/editor/SharePanel.jsx';
 import BigScreenNotice, { hintDismissed } from '../components/editor/BigScreenNotice.jsx';
 import useIsCompact from '../hooks/useIsCompact.js';
 import { tooBig, sizeError, uploadError } from '../lib/uploadLimits.js';
+import { installSoloAudio, setFramePauser } from '../lib/soloAudio.js';
 
 const SHELL = 'mithaq-shell';
 const RUNTIME = 'mithaq-editor';
@@ -251,6 +252,16 @@ export default function EditorPage() {
     if (playing) setSheetOpen(false);
   }, [playing]);
 
+  // ===== صوت واحد بس في نفس الوقت =====
+  // في المحرر تلات مصادر صوت: موسيقى الدعوة جوه الـ iframe، معاينة
+  // أغاني المكتبة، ومشغّل القص. من غير الحارس ده كانوا بيشتغلوا فوق
+  // بعض والعميل مش عارف يسكّت أنهي واحدة.
+  useEffect(() => {
+    setFramePauser(() => postRef.current('pause-audio', {}));
+    const remove = installSoloAudio();
+    return () => { setFramePauser(null); remove(); };
+  }, []);
+
   // قياس الجزء الظاهر من الدرج (المقبض + التبويبات)
   useEffect(() => {
     const el = peekRef.current;
@@ -287,6 +298,13 @@ export default function EditorPage() {
       if (msg.type === 'loaded') setRuntimeReady(true);
       if (msg.type === 'ready') setCounts({ texts: p.textCount, images: p.imageCount });
       if (msg.type === 'cover') { setCoverOpen(!!p.visible); setHasCover(!!p.exists); }
+
+      // الدعوة بدأت تشغّل موسيقاها — نسكّت أي معاينة شغالة في الشريط
+      if (msg.type === 'audio-playing') {
+        document.querySelectorAll('audio, video').forEach((el) => {
+          if (!el.paused && !el.muted) { try { el.pause(); } catch { /* */ } }
+        });
+      }
       if (msg.type === 'selected') {
         setSelected(p.id
           ? {

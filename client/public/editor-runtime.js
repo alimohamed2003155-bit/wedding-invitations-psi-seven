@@ -701,6 +701,25 @@
   window.addEventListener('scroll', function () { rescan(); }, { passive: true });
   setInterval(rescan, 1200);
 
+  // ===== صوت واحد بس في نفس الوقت =====
+  // الدعوة فيها موسيقاها، والشريط الجانبي فيه معاينة المكتبة ومشغّل
+  // القص. الكل كان بيشتغل مع بعض ويطلع صوتين فوق بعض. بنبلّغ الصفحة
+  // الأم أول ما أي صوت هنا يبدأ، وهي بتسكّت اللي عندها.
+  document.addEventListener('play', function (e) {
+    var el = e && e.target;
+    if (!el || (el.tagName !== 'AUDIO' && el.tagName !== 'VIDEO')) return;
+    // الفيديوهات الصامتة (خلفيات التصميم) مالهاش دعوة
+    if (el.muted || el.volume === 0) return;
+    send('audio-playing', {});
+    // ولو فيه صوت تاني هنا نفسه شغال، بنوقفه
+    var all = document.querySelectorAll('audio, video');
+    for (var i = 0; i < all.length; i++) {
+      if (all[i] !== el && !all[i].paused && !all[i].muted) {
+        try { all[i].pause(); } catch (err) { /* */ }
+      }
+    }
+  }, true);
+
   // ===== أوامر جاية من الصفحة الأم =====
   window.addEventListener('message', function (event) {
     if (event.origin !== window.location.origin) return;
@@ -819,6 +838,15 @@
         if (src) src.src = p.url;
         audio.src = p.url;
         audio.load();
+      }
+    }
+
+    // الشريط الجانبي بيشغّل أغنية (معاينة أو قص) — بنسكّت اللي جوه
+    // الدعوة عشان مايبقاش فيه صوتين مع بعض
+    if (msg.type === 'pause-audio') {
+      var all = document.querySelectorAll('audio, video');
+      for (var ai = 0; ai < all.length; ai++) {
+        try { if (!all[ai].paused) all[ai].pause(); } catch (e) { /* */ }
       }
     }
 
