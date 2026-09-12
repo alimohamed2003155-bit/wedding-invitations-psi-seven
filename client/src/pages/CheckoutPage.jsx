@@ -180,8 +180,10 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-ivory">
-      {/* pb للشريط الثابت تحت على الموبايل */}
-      <div className="mx-auto max-w-2xl px-4 pb-40 pt-6 sm:px-6 sm:pb-16">
+      {/* pb للشريط الثابت تحت على الموبايل.
+          على الشاشة الكبيرة الصفحة بتبقى عمودين: الخطوات في ناحية
+          والملخص ثابت جنبها — بدل عمود ضيق في النص وفضا على الجنبين. */}
+      <div className="mx-auto max-w-2xl px-4 pb-40 pt-6 sm:px-6 sm:pb-16 lg:max-w-5xl lg:pb-20">
         <Link
           to="/packages"
           className="mb-5 inline-flex items-center gap-1.5 text-[13px] text-ink-dim hover:text-rose"
@@ -200,12 +202,14 @@ export default function CheckoutPage() {
           </div>
         )}
 
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-7">
         {/* ===== ملخص الطلب ===== */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="mb-5 overflow-hidden rounded-[22px] border border-brass/40 bg-gradient-to-b from-[#0d1f18] to-night text-ivory"
+          className="mb-5 overflow-hidden rounded-[22px] border border-brass/40 bg-gradient-to-b from-[#0d1f18] to-night text-ivory
+            lg:order-2 lg:mb-0 lg:sticky lg:top-6"
         >
           <div className="relative p-6">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(120%_90%_at_50%_0%,rgba(230,198,132,.16),transparent)]" />
@@ -231,7 +235,7 @@ export default function CheckoutPage() {
           </div>
         </motion.div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 lg:order-1">
           {/* ===== 1) التحويل ===== */}
           <Step n="1" title={t('checkout.step1')}>
             {payLoading ? (
@@ -349,6 +353,7 @@ export default function CheckoutPage() {
               {t('checkout.goDashboard')}
             </button>
           </Step>
+        </div>
         </div>
       </div>
 

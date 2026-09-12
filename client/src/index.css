@@ -37,6 +37,17 @@
 
 html {
   scroll-behavior: smooth;
+  /* الصفحة عمرها ما تتحرك يمين وشمال.
+     clip مش hidden: hidden بتعمل حاوية تمرير وبتكسر position: sticky
+     (شريط المبلغ الثابت في صفحة الدفع مثلًا)، وclip بتقص من غير كده.
+     وoverscroll-behavior-x بتوقف السحب الجانبي المطاطي بتاع iOS —
+     اللي بيخلي الصفحة تتزحلق وتبان وراها مساحة فاضية. */
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+}
+body {
+  overflow-x: clip;
+  overscroll-behavior-x: none;
 }
 body {
   background: var(--color-ivory);

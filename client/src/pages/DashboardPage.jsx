@@ -12,6 +12,7 @@ import {
   useGetSupportQuery,
   useSendSupportMessageMutation,
 } from '../store/api.js';
+import EditorDemo from '../components/EditorDemo.jsx';
 import Footer from '../components/Footer.jsx';
 
 function StatCard({ icon: Icon, value, label, gold }) {
@@ -175,6 +176,26 @@ export default function DashboardPage() {
             </Link>
           )}
         </motion.div>
+
+        {/* العميل المجاني بيدخل لوحته كل شوية يتابع دعوته — فده أكتر
+            مكان بيشوفه. الفيديو هنا بيوريه اللي فايته من غير ما نقاطعه */}
+        {!isPremium && (
+          <div className="mb-8 overflow-hidden rounded-[22px] border border-brass/35 bg-gradient-to-b from-[#0d1f18] to-night p-5 sm:p-6">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="font-serif text-[17px] font-bold text-brass-soft">{t('demo.title')}</h2>
+                <p className="mt-1 text-[12.5px] text-ivory/60">{t('demo.dashNote')}</p>
+              </div>
+              <Link
+                to="/packages"
+                className="shrink-0 rounded-full bg-gradient-to-l from-brass to-brass-soft px-5 py-2.5 text-[12.5px] font-extrabold text-[#241608] hover:brightness-105"
+              >
+                {t('demo.cta')}
+              </Link>
+            </div>
+            <EditorDemo variant="compact" />
+          </div>
+        )}
 
         {/* الإحصائيات */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useGetPackagesQuery, useGetMeQuery } from '../store/api.js';
 import { openAuthModal } from '../store/uiSlice.js';
+import EditorDemo from '../components/EditorDemo.jsx';
 import Footer from '../components/Footer.jsx';
 
 /** بيرجّع مميزات الباقة دي اللي مش في اللي قبلها */
@@ -251,6 +252,13 @@ export default function PackagesPage() {
             <span dangerouslySetInnerHTML={{ __html: t('packages.activeNotice', { count: sub.invitationsLeft }) }} />
           </div>
         )}
+
+        {/* الفيديو قبل الأسعار: العميل لازم يشوف اللي هيدفع عشانه قبل
+            ما يشوف الرقم — مش بعده */}
+        <div className="mx-auto mb-8 max-w-3xl sm:mb-11">
+          <EditorDemo />
+          <p className="mt-3 text-center text-[12.5px] text-ink-dim">{t('demo.underPrices')}</p>
+        </div>
 
         {isLoading ? (
           <p className="py-10 text-center text-ink-dim">{t('packages.loading')}</p>
