@@ -5,6 +5,7 @@ import AuthModal from './components/AuthModal.jsx';
 import GalleryPage from './pages/GalleryPage.jsx';
 import CreateInvitationPage from './pages/CreateInvitationPage.jsx';
 import PackagesPage from './pages/PackagesPage.jsx';
+import CheckoutPage from './pages/CheckoutPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import EditorPage from './pages/EditorPage.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/" element={<GalleryPage />} />
         <Route path="/create/:templateId" element={<CreateInvitationPage />} />
         <Route path="/packages" element={<PackagesPage />} />
+        <Route path="/checkout/:packageId" element={<CheckoutPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/editor/:shortId" element={<EditorPage />} />
         <Route
