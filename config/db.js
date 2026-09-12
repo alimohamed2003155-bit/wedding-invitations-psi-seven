@@ -35,6 +35,9 @@ async function connectDB() {
       })
       .then((m) => {
         console.log('✅ MongoDB متصل بنجاح');
+        // تصليح أي فهرس قديم مخالف للسكيما الحالية — بيشتغل مرة واحدة
+        // لكل نسخة سيرفر، وفشله مايأثرش على أي طلب (utils/ensureIndexes.js)
+        require('../utils/ensureIndexes')().catch(() => {});
         return m;
       })
       .catch((err) => {

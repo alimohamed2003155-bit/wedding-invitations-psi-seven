@@ -23,6 +23,13 @@ const { attachUser } = require('./middleware/auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// الموقع شغال ورا بروكسي (Vercel/Cloudflare). من غير السطر ده، Express
+// بيشوف IP البروكسي لكل الناس — يعني كل الزوار بيتحسبوا شخص واحد في
+// حدود عدد المحاولات، فزائر واحد نشيط كان ممكن يستهلك الحد ويخلي باقي
+// الناس تتحجب. و1 معناها "بروكسي واحد بينا وبين العميل" (مش true
+// المفتوحة، اللي بتخلي أي حد يقدر يزوّر IP من هيدر X-Forwarded-For).
+app.set('trust proxy', 1);
+
 // أمان أساسي على مستوى الـ HTTP headers، بما فيها Content-Security-Policy
 // مضبوطة فعليًا (مش متقفلة) — بتسمح بس بالمصادر الخارجية اللي التصميم
 // فعلاً محتاجها (سكريبت/تنسيق Tilda الأساسي للتصميم، خطوط جوجل، خريطة
@@ -207,17 +214,35 @@ const adminApiLimiter = rateLimit({
 });
 app.use('/admin/api', adminApiLimiter);
 
-// 4) تسجيل/دخول: حد صارم لكل IP عشان يصعب تخمين باسورد حساب حد (brute force)
-//    أو عمل حسابات وهمية بالجملة — أشد بكتير من أي limiter تاني في الموقع
-//    لأن الاستخدام الطبيعي لصفحة الدخول قليل جدًا مقارنة ببقية الموقع.
-const authLimiter = rateLimit({
+// 4) تسجيل/دخول: حد صارم عشان يصعب تخمين باسورد حساب حد (brute force)
+//    أو عمل حسابات وهمية بالجملة.
+//
+//    ⚠ الحد ده على **بيانات الدخول بس** (login/register) — مش على
+//    /api/auth/me. سبب مهم جدًا: /api/auth/me بتتنادى مع كل فتحة صفحة
+//    عشان الموقع يعرف مين الداخل. لما كانت داخلة تحت نفس الحد، العميل
+//    اللي بيتصفح عادي كان بيستهلك الـ 20 محاولة من غير ما يعمل حاجة،
+//    وبعدها الطلب بيرجع 429 والموقع بيقراه كأنه مش مسجّل — فيلاقي نفسه
+//    مطرود من غير سبب. وده اللي كان بيحصل "كل ما أعمل ريفرش".
+const credentialsLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'عدد كبير جدًا من المحاولات، حاول تاني بعد شوية.' },
 });
-app.use('/api/auth', authLimiter);
+app.use('/api/auth/login', credentialsLimiter);
+app.use('/api/auth/register', credentialsLimiter);
+
+// قراءة حالة الدخول والخروج: حد واسع — دول مش بيتخمّن فيهم أي سر،
+// و/me بتتنادى مع كل صفحة. الحد هنا لمنع الإغراق بس.
+const sessionReadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 600,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'عدد كبير جدًا من الطلبات، استنى شوية.' },
+});
+app.use('/api/auth', sessionReadLimiter);
 
 // 5) الرفع: حد لكل IP عشان محدش يغرق مساحة التخزين (وفاتورتها) بملفات
 //    كتير. الفحص الأمني نفسه في utils/uploadSecurity.js — ده حد الكمية بس.
