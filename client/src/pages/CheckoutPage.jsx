@@ -14,10 +14,10 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import {
-  ArrowRight, Check, Copy, Upload, Loader2, Phone,
+  ArrowRight, Check, Copy, Upload, Loader2,
   ShieldCheck, Clock, AlertCircle, Sparkles,
 } from 'lucide-react';
-import { VodafoneMark, BankMark } from '../components/PayBrand.jsx';
+import { VodafoneCashLogo, BankMark } from '../components/PayBrand.jsx';
 import {
   useGetPackagesQuery, useGetPaymentInfoQuery, useOrderPackageMutation,
   useUploadPaymentProofMutation, useGetMeQuery,
@@ -270,12 +270,11 @@ export default function CheckoutPage() {
               <>
                 {/* ===== كارت فودافون كاش ===== */}
                 <div className="overflow-hidden rounded-2xl border-2 border-[#E60000]/25 bg-[#E60000]/[0.04]">
-                  <div className="flex items-center gap-3 border-b border-[#E60000]/15 bg-[#E60000]/[0.07] px-4 py-3">
-                    <VodafoneMark size={34} />
-                    <div className="min-w-0">
-                      <div className="text-[14px] font-extrabold text-[#c00]">{t('payment.vodafoneTitle')}</div>
-                      <div className="text-[11.5px] text-ink-dim">{t('checkout.vodafoneNote')}</div>
-                    </div>
+                  {/* اللوجو لوحده كفاية — العميل بيعرفه على طول، ومش
+                      محتاج عنوان مكتوب جنبه يقوله نفس الحاجة */}
+                  <div className="flex flex-col items-center gap-1.5 border-b border-[#E60000]/15 bg-white px-4 py-4">
+                    <VodafoneCashLogo height={38} />
+                    <div className="text-[11.5px] text-ink-dim">{t('checkout.vodafoneNote')}</div>
                   </div>
 
                   {/* الرقم — أكبر حاجة في الصفحة، والكارت كله زرار نسخ */}
@@ -325,31 +324,6 @@ export default function CheckoutPage() {
                         : <Copy size={14} className="text-emerald/60" />}
                     </span>
                   </button>
-                </div>
-
-                {/* ===== إزاي أحوّل؟ ===== */}
-                {/* ده اللي كان ناقص: الناس شايفة رقم ومبلغ بس مش عارفة
-                    الخطوات. الشرح هنا بيشيل التردد اللي بيخلي حد يقفل */}
-                <div className="mt-3.5 rounded-2xl border border-line bg-ivory/60 p-4">
-                  <div className="mb-3 text-[12.5px] font-bold text-ink">{t('checkout.howTitle')}</div>
-                  <ol className="space-y-2.5">
-                    {[1, 2, 3].map((n) => (
-                      <li key={n} className="flex items-start gap-2.5">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-night text-[10.5px] font-bold text-brass-soft">
-                          {n}
-                        </span>
-                        <span className="text-[12.5px] leading-[1.75] text-ink-dim">
-                          {t(`checkout.how${n}`, { number: v.number, amount: `${pkg.price} ${pkg.currencyLabel}` })}
-                        </span>
-                      </li>
-                    ))}
-                  </ol>
-                  <a
-                    href="tel:*9%23"
-                    className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-full border border-[#E60000]/35 bg-[#E60000]/[0.06] py-2.5 text-[12.5px] font-bold text-[#c00] transition active:bg-[#E60000]/[0.12]"
-                  >
-                    <Phone size={13} /> {t('checkout.dialCode')}
-                  </a>
                 </div>
 
                 {v.note && (

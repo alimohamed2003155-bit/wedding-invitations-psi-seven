@@ -154,11 +154,6 @@ export const resources = {
         tapToCopy: 'Tap any box to copy it',
         copied: 'Copied ✓',
         vodafoneNote: 'Send from any Vodafone Cash wallet',
-        howTitle: 'How do I send it?',
-        how1: 'Open the Vodafone Cash app, or dial *9# from your phone.',
-        how2: 'Choose “Transfer” and enter this number: {{number}}',
-        how3: 'Enter the amount {{amount}} and confirm. Then send us the receipt below.',
-        dialCode: 'Dial *9# now',
       },
       upsell: {
         keepFree: '✓ This invitation stays live, free, exactly as it is.',
@@ -601,11 +596,6 @@ export const resources = {
         tapToCopy: 'اضغط على أي خانة تتنسخ',
         copied: 'اتنسخ ✓',
         vodafoneNote: 'التحويل من أي محفظة فودافون كاش',
-        howTitle: 'أحوّل إزاي؟',
-        how1: 'افتح تطبيق فودافون كاش، أو اطلب ‎*9#‎ من موبايلك.',
-        how2: 'اختار «تحويل» واكتب الرقم ده: {{number}}',
-        how3: 'اكتب المبلغ {{amount}} وأكّد. وبعدين ابعتلنا الإيصال تحت.',
-        dialCode: 'اطلب ‎*9#‎ دلوقتي',
       },
       upsell: {
         keepFree: '✓ الدعوة دي هتفضل شغالة مجانًا زي ما هي، مش هتروح.',
