@@ -74,6 +74,26 @@ const TEMPLATES = [
     extraFields: [],
     isPremium: false,
   },
+  {
+    id: 'royal-maroon',
+    name: 'Royal Maroon',
+    description: 'تصميم ملكي بالأحمر العنابي والذهبي — ظرف يتفتح، ألبوم صور، تقويم، وسجل تهاني',
+    file: 'royal-maroon.html',
+    languages: SUPPORTED_LANGUAGES,
+    occasionTypes: SUPPORTED_OCCASIONS,
+    optionalSections: [
+      { key: 'countdown', label: 'العداد التنازلي' },
+      { key: 'timeline', label: 'برنامج اليوم' },
+      { key: 'dressCode', label: 'قواعد اللباس' },
+      { key: 'rsvp', label: 'تأكيد الحضور (RSVP)' },
+      { key: 'map', label: 'مكان الحفل' },
+    ],
+    timelineStages: ['reception', 'ceremony', 'cocktail', 'dinner', 'party'],
+    extraFields: [],
+    // التصميم ده للمشتركين بس — أغنى تصميم في الموقع وفيه أكتر تفاصيل
+    // قابلة للتعديل، فمنطقي يكون جزء من الباقة
+    isPremium: true,
+  },
 ];
 
 function getTemplate(templateId) {

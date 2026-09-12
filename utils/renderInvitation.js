@@ -156,6 +156,16 @@ function renderNewPathHtml(data, options) {
     scratchDay: String(display.countdown.day),
     scratchMonthName: getMonthName(display.countdown.monthIndex, data.language),
     scratchYear: String(display.countdown.year),
+    // حقول بيحتاجها قالب Royal Maroon (والقوالب التانية بتتجاهلها):
+    // التاريخ بصيغة قياسية للعد التنازلي وإضافة الحدث للتقويم، واسم
+    // الشهر واليوم بلغة الدعوة
+    weddingDateTimeISO: (() => {
+      const d = new Date(data.weddingDateTime);
+      return Number.isNaN(d.getTime()) ? '' : d.toISOString();
+    })(),
+    monthName: getMonthName(display.countdown.monthIndex, data.language),
+    weekdayName: data.language === 'ar' ? display.dayNameAr : display.dayNameEn,
+    language: data.language,
     hiddenSections: data.hiddenSections || [],
     // بيخلي شاشة "اضغط للفتح" تتخطى نفسها تلقائيًا — مستخدم بس في صفحات
     // المعاينة (زي كروت المعرض) اللي محدش هيضغط عليها فعليًا

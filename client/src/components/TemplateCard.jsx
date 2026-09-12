@@ -39,13 +39,21 @@ export default function TemplateCard({ template, index }) {
 
   return (
     <motion.div
-      className="flex flex-col overflow-hidden rounded-[22px] border border-line bg-card transition-shadow hover:shadow-2xl hover:shadow-ink/10"
+      className="relative flex flex-col overflow-hidden rounded-[22px] border border-line bg-card transition-shadow hover:shadow-2xl hover:shadow-ink/10"
       initial={{ opacity: 0, y: 26 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.45, delay: index * 0.06 }}
       whileHover={{ y: -6 }}
     >
+      {/* شريط أحمر مايل على ركن الكارت — العميل يعرف من نظرة إن
+          التصميم ده للمشتركين، قبل ما يقرا أي كلام */}
+      {template.isPremium && (
+        <div className="pointer-events-none absolute -end-12 top-6 z-10 w-44 rotate-45 bg-gradient-to-l from-[#a01020] to-[#e0142c] py-1.5 text-center text-[11px] font-extrabold tracking-wide text-white shadow-[0_6px_16px_-6px_rgba(160,16,32,.8)]">
+          {t('gallery.premiumRibbon')}
+        </div>
+      )}
+
       <div className="flex justify-center bg-gradient-to-b from-emerald/[0.06] to-transparent px-7 pt-7">
         <div className="relative aspect-[320/850] w-[64%] overflow-hidden rounded-[26px] border-[6px] border-[#050b08] bg-[#050b08]">
           {imgError ? (
