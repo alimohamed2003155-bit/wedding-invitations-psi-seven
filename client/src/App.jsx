@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import AuthBar from './components/AuthBar.jsx';
 import AuthModal from './components/AuthModal.jsx';
 import WelcomeGate from './components/WelcomeGate.jsx';
+import SupportLauncher from './components/SupportLauncher.jsx';
 import GalleryPage from './pages/GalleryPage.jsx';
 import CreateInvitationPage from './pages/CreateInvitationPage.jsx';
 import PackagesPage from './pages/PackagesPage.jsx';
@@ -68,6 +69,9 @@ export default function App() {
       {!isFullScreen && <AuthModal />}
       {/* برّه الشرط بالقصد: التسجيل ممكن يحصل وهو في المحرر أو لوحته */}
       <WelcomeGate />
+      {/* زرار التواصل في كل صفحة — إلا المحرر (شاشة شغل كاملة وعنده
+          درج أدوات تحت) ولوحة التحكم (دي بتاعتك إنت مش بتاعة العميل) */}
+      {!isFullScreen && <SupportLauncher />}
     </ErrorBoundary>
   );
 }

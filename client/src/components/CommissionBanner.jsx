@@ -1,8 +1,9 @@
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Sparkle, MessageCircle } from 'lucide-react';
+import { whatsappLink, WHATSAPP_MESSAGES, phoneDisplay } from '../lib/contact.js';
 
-const PHONE = '01035225735';
+const PHONE = phoneDisplay;
 
 export default function CommissionBanner() {
   const { t } = useTranslation();
@@ -33,7 +34,7 @@ export default function CommissionBanner() {
             ))}
           </ul>
           <a
-            href={`https://wa.me/2${PHONE}`}
+            href={whatsappLink(WHATSAPP_MESSAGES.custom)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2.5 rounded-full bg-brass-soft px-8.5 py-4 font-extrabold text-[#241608] shadow-[0_16px_34px_-14px_rgba(0,0,0,0.35)] hover:bg-[#f3d789]"
