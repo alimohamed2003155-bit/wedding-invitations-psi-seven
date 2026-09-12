@@ -14,9 +14,10 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import {
-  ArrowRight, Check, Copy, Smartphone, Landmark, Upload, Loader2,
+  ArrowRight, Check, Copy, Upload, Loader2, Phone,
   ShieldCheck, Clock, AlertCircle, Sparkles,
 } from 'lucide-react';
+import { VodafoneMark, BankMark } from '../components/PayBrand.jsx';
 import {
   useGetPackagesQuery, useGetPaymentInfoQuery, useOrderPackageMutation,
   useUploadPaymentProofMutation, useGetMeQuery,
@@ -104,6 +105,16 @@ export default function CheckoutPage() {
   const [uploaded, setUploaded] = useState(false);
   const [error, setError] = useState('');
   const [orderReady, setOrderReady] = useState(false);
+  // أنهي حاجة اتنسخت آخر مرة — عشان التأكيد يبان في مكانها بالظبط
+  const [copied, setCopied] = useState('');
+
+  function copy(value, key) {
+    if (!value) return;
+    navigator.clipboard.writeText(String(value)).then(
+      () => { setCopied(key); setTimeout(() => setCopied(''), 2000); },
+      () => {}
+    );
+  }
 
   const user = meData?.user ?? null;
   const pkg = pkgData?.packages?.find((p) => p.id === packageId) || null;
@@ -191,10 +202,15 @@ export default function CheckoutPage() {
           <ArrowRight size={15} /> {t('checkout.backToPackages')}
         </Link>
 
-        <h1 className="mb-1 font-serif text-[clamp(22px,5vw,30px)] font-bold text-ink">
+        {/* المقدمة مضغوطة على الموبايل: كل سطر هنا بيزقّ بيانات التحويل
+            تحت الشاشة، وده بالظبط اللي كان بيخلي الناس تقفل قبل ما
+            توصلها */}
+        <h1 className="mb-1 font-serif text-[20px] font-bold text-ink sm:text-[clamp(22px,5vw,30px)]">
           {t('checkout.title')}
         </h1>
-        <p className="mb-6 text-[13.5px] leading-relaxed text-ink-dim">{t('checkout.subtitle')}</p>
+        <p className="mb-4 hidden text-[13.5px] leading-relaxed text-ink-dim sm:mb-6 sm:block">
+          {t('checkout.subtitle')}
+        </p>
 
         {error && (
           <div className="mb-5 flex items-start gap-2 rounded-xl bg-error/10 px-4 py-3 text-[12.5px] text-error">
@@ -202,41 +218,45 @@ export default function CheckoutPage() {
           </div>
         )}
 
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-7">
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-7">
         {/* ===== ملخص الطلب ===== */}
+        {/* سطر واحد على الموبايل، وكارت كامل على الشاشة الكبيرة.
+            السبب: ده مش اللي العميل محتاجه دلوقتي — هو محتاج يعرف
+            يحوّل فين. الملخص كان بياخد نص الشاشة وبيزقّ بيانات
+            التحويل تحت، فالناس كانت بتقفل قبل ما توصلها. */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="mb-5 overflow-hidden rounded-[22px] border border-brass/40 bg-gradient-to-b from-[#0d1f18] to-night text-ivory
-            lg:order-2 lg:mb-0 lg:sticky lg:top-6"
+          className="mb-4 overflow-hidden rounded-[18px] border border-brass/40 bg-gradient-to-l from-[#0d1f18] to-night text-ivory
+            lg:order-2 lg:mb-0 lg:rounded-[22px] lg:sticky lg:top-6"
         >
-          <div className="relative p-6">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(120%_90%_at_50%_0%,rgba(230,198,132,.16),transparent)]" />
-            <div className="relative">
-              <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-brass/15 px-3 py-1 text-[11px] font-bold text-brass-soft">
+          <div className="flex items-center justify-between gap-3 px-4 py-3 lg:flex-col lg:items-stretch lg:p-6">
+            <div className="min-w-0">
+              <div className="hidden lg:mb-3 lg:inline-flex lg:items-center lg:gap-1.5 lg:rounded-full lg:bg-brass/15 lg:px-3 lg:py-1 lg:text-[11px] lg:font-bold lg:text-brass-soft">
                 <Sparkles size={11} /> {t('checkout.summary')}
               </div>
-              <h2 className="mt-3 font-serif text-[22px] font-bold text-ivory">{pkg.name}</h2>
-              <p className="mt-1 text-[13px] text-ivory/65">
-                {t('packages.invitations', { count: pkg.invitations })}
-              </p>
-
-              <div className="mt-5 flex items-end justify-between border-t border-ivory/12 pt-4">
-                <span className="text-[13px] text-ivory/65">{t('checkout.total')}</span>
-                <span className="flex items-baseline gap-1.5">
-                  <span className="font-serif text-[34px] font-bold leading-none text-brass-soft">
-                    {pkg.price}
-                  </span>
-                  <span className="text-[13px] text-ivory/70">{pkg.currencyLabel}</span>
-                </span>
+              <div className="truncate font-serif text-[15px] font-bold text-ivory lg:text-[22px]">
+                {pkg.name}
               </div>
+              <div className="text-[11.5px] text-ivory/55 lg:mt-1 lg:text-[13px]">
+                {t('packages.invitations', { count: pkg.invitations })}
+              </div>
+            </div>
+            <div className="flex shrink-0 items-baseline gap-1.5 lg:mt-5 lg:justify-between lg:border-t lg:border-ivory/12 lg:pt-4">
+              <span className="hidden text-[13px] text-ivory/65 lg:inline">{t('checkout.total')}</span>
+              <span className="flex items-baseline gap-1.5">
+                <span className="font-serif text-[22px] font-bold leading-none text-brass-soft lg:text-[34px]">
+                  {pkg.price}
+                </span>
+                <span className="text-[12px] text-ivory/70 lg:text-[13px]">{pkg.currencyLabel}</span>
+              </span>
             </div>
           </div>
         </motion.div>
 
         <div className="space-y-4 lg:order-1">
-          {/* ===== 1) التحويل ===== */}
+          {/* ===== 1) التحويل — أول وأهم حاجة على الشاشة ===== */}
           <Step n="1" title={t('checkout.step1')}>
             {payLoading ? (
               <p className="flex items-center gap-2 text-[13px] text-ink-dim">
@@ -246,33 +266,116 @@ export default function CheckoutPage() {
               <p className="rounded-xl bg-brass/10 px-4 py-3 text-[12.5px] text-[#7a5a1a]">
                 {t('checkout.noPayData')}
               </p>
+            ) : isVodafone ? (
+              <>
+                {/* ===== كارت فودافون كاش ===== */}
+                <div className="overflow-hidden rounded-2xl border-2 border-[#E60000]/25 bg-[#E60000]/[0.04]">
+                  <div className="flex items-center gap-3 border-b border-[#E60000]/15 bg-[#E60000]/[0.07] px-4 py-3">
+                    <VodafoneMark size={34} />
+                    <div className="min-w-0">
+                      <div className="text-[14px] font-extrabold text-[#c00]">{t('payment.vodafoneTitle')}</div>
+                      <div className="text-[11.5px] text-ink-dim">{t('checkout.vodafoneNote')}</div>
+                    </div>
+                  </div>
+
+                  {/* الرقم — أكبر حاجة في الصفحة، والكارت كله زرار نسخ */}
+                  <button
+                    type="button"
+                    onClick={() => copy(v.number, 'number')}
+                    className="flex w-full items-center justify-between gap-3 px-4 py-4 text-start transition active:bg-[#E60000]/[0.06]"
+                  >
+                    <span className="min-w-0">
+                      <span className="block text-[11.5px] text-ink-dim">
+                        {copied === 'number' ? t('checkout.copied') : t('payment.vodafoneNumber')}
+                      </span>
+                      <span className="block font-mono text-[26px] font-bold leading-tight text-ink" dir="ltr">
+                        {v.number}
+                      </span>
+                    </span>
+                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${
+                      copied === 'number' ? 'bg-ok text-white' : 'bg-night text-ivory'
+                    }`}
+                    >
+                      {copied === 'number' ? <Check size={18} /> : <Copy size={17} />}
+                    </span>
+                  </button>
+
+                  {v.holderName && (
+                    <div className="flex items-center justify-between gap-3 border-t border-[#E60000]/12 px-4 py-2.5">
+                      <span className="text-[11.5px] text-ink-dim">{t('payment.vodafoneHolder')}</span>
+                      <span className="truncate text-[13px] font-bold text-ink">{v.holderName}</span>
+                    </div>
+                  )}
+
+                  {/* المبلغ — لازم يبان جنب الرقم بالظبط */}
+                  <button
+                    type="button"
+                    onClick={() => copy(String(pkg.price), 'amount')}
+                    className="flex w-full items-center justify-between gap-3 border-t border-[#E60000]/12 bg-emerald/[0.06] px-4 py-3.5 text-start"
+                  >
+                    <span className="text-[12.5px] font-bold text-emerald">
+                      {copied === 'amount' ? t('checkout.copied') : t('checkout.amountToSend')}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span className="font-serif text-[22px] font-bold leading-none text-emerald">
+                        {pkg.price} <span className="text-[13px]">{pkg.currencyLabel}</span>
+                      </span>
+                      {copied === 'amount'
+                        ? <Check size={15} className="text-ok" />
+                        : <Copy size={14} className="text-emerald/60" />}
+                    </span>
+                  </button>
+                </div>
+
+                {/* ===== إزاي أحوّل؟ ===== */}
+                {/* ده اللي كان ناقص: الناس شايفة رقم ومبلغ بس مش عارفة
+                    الخطوات. الشرح هنا بيشيل التردد اللي بيخلي حد يقفل */}
+                <div className="mt-3.5 rounded-2xl border border-line bg-ivory/60 p-4">
+                  <div className="mb-3 text-[12.5px] font-bold text-ink">{t('checkout.howTitle')}</div>
+                  <ol className="space-y-2.5">
+                    {[1, 2, 3].map((n) => (
+                      <li key={n} className="flex items-start gap-2.5">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-night text-[10.5px] font-bold text-brass-soft">
+                          {n}
+                        </span>
+                        <span className="text-[12.5px] leading-[1.75] text-ink-dim">
+                          {t(`checkout.how${n}`, { number: v.number, amount: `${pkg.price} ${pkg.currencyLabel}` })}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                  <a
+                    href="tel:*9%23"
+                    className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-full border border-[#E60000]/35 bg-[#E60000]/[0.06] py-2.5 text-[12.5px] font-bold text-[#c00] transition active:bg-[#E60000]/[0.12]"
+                  >
+                    <Phone size={13} /> {t('checkout.dialCode')}
+                  </a>
+                </div>
+
+                {v.note && (
+                  <p className="mt-3 rounded-xl bg-brass/[0.09] px-3.5 py-3 text-[12.5px] leading-relaxed text-[#7a5a1a]">
+                    {v.note}
+                  </p>
+                )}
+              </>
             ) : (
               <>
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[12px] font-bold text-ink">
-                  {isVodafone ? <Smartphone size={13} className="text-rose" /> : <Landmark size={13} className="text-rose" />}
-                  {isVodafone ? t('payment.vodafoneTitle') : t('payment.bankTitle')}
+                <div className="mb-3 inline-flex items-center gap-2.5 rounded-full border border-line px-3 py-2 text-[12.5px] font-bold text-ink">
+                  <BankMark size={26} />
+                  {t('payment.bankTitle')}
                 </div>
 
                 {/* الخانات جنب بعض — عمودين حتى على الموبايل. الطويل
                     (الأسماء، IBAN، العنوان) بياخد العرض كله عشان
                     مايتقصّش */}
                 <div className="grid grid-cols-2 gap-2.5">
-                  {isVodafone ? (
-                    <>
-                      <CopyTile label={t('payment.vodafoneNumber')} value={v.number} />
-                      <CopyTile label={t('payment.vodafoneHolder')} value={v.holderName} />
-                    </>
-                  ) : (
-                    <>
-                      <CopyTile label={t('payment.bank')} value={b.bankName} />
-                      <CopyTile label={t('payment.accountNumber')} value={b.accountNumber} />
-                      <CopyTile label={t('payment.accountNameAr')} value={b.accountNameAr} wide />
-                      <CopyTile label={t('payment.accountNameEn')} value={b.accountNameEn} wide />
-                      <CopyTile label={t('payment.iban')} value={b.iban} wide />
-                      <CopyTile label={t('payment.swift')} value={b.swift} />
-                      <CopyTile label={t('payment.address')} value={b.address} />
-                    </>
-                  )}
+                  <CopyTile label={t('payment.bank')} value={b.bankName} />
+                  <CopyTile label={t('payment.accountNumber')} value={b.accountNumber} />
+                  <CopyTile label={t('payment.accountNameAr')} value={b.accountNameAr} wide />
+                  <CopyTile label={t('payment.accountNameEn')} value={b.accountNameEn} wide />
+                  <CopyTile label={t('payment.iban')} value={b.iban} wide />
+                  <CopyTile label={t('payment.swift')} value={b.swift} />
+                  <CopyTile label={t('payment.address')} value={b.address} />
                 </div>
                 <p className="mt-2.5 text-center text-[11.5px] text-ink-dim">{t('checkout.tapToCopy')}</p>
 
@@ -285,10 +388,8 @@ export default function CheckoutPage() {
                   </span>
                 </div>
 
-                {(isVodafone ? v.note : b.note) && (
-                  <p className="mt-3 text-[12.5px] leading-relaxed text-ink-dim">
-                    {isVodafone ? v.note : b.note}
-                  </p>
+                {b.note && (
+                  <p className="mt-3 text-[12.5px] leading-relaxed text-ink-dim">{b.note}</p>
                 )}
               </>
             )}
