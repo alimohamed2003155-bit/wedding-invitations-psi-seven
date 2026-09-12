@@ -25,31 +25,45 @@ import { openAuthModal } from '../store/uiSlice.js';
 import { tooBig, sizeError, uploadError } from '../lib/uploadLimits.js';
 import Footer from '../components/Footer.jsx';
 
-/** صف بيانات مع زرار نسخ — الأرقام دي بتتكتب غلط بسهولة */
-function CopyRow({ label, value }) {
+/**
+ * خانة بيانات جنب بعضها — كل واحدة كارت مستقل فيه العنوان فوق والقيمة
+ * تحته كاملة، والكارت كله زرار نسخ.
+ *
+ * ليه كارت مش صف: الأرقام دي (حساب بنكي، IBAN، محفظة) بتتكتب غلط
+ * بسهولة، والصف الأفقي كان بيزنق الرقم في نص المساحة ويقصّه. الكارت
+ * بيدّي الرقم السطر بتاعه كامل، والمساحة كلها هدف للضغط — وده أهم حاجة
+ * على الموبايل.
+ */
+function CopyTile({ label, value, wide }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   if (!value) return null;
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-line py-3 last:border-b-0">
-      <span className="mt-0.5 shrink-0 text-[12.5px] text-ink-dim">{label}</span>
-      <button
-        type="button"
-        onClick={() => navigator.clipboard.writeText(value).then(
-          () => { setCopied(true); setTimeout(() => setCopied(false), 1800); },
-          () => {}
-        )}
-        className="flex min-w-0 items-start gap-2 rounded-lg px-1.5 py-1 text-end transition active:bg-ink/5"
+    <button
+      type="button"
+      onClick={() => navigator.clipboard.writeText(value).then(
+        () => { setCopied(true); setTimeout(() => setCopied(false), 1800); },
+        () => {}
+      )}
+      className={`group relative flex min-w-0 flex-col gap-1.5 rounded-2xl border p-3 text-start transition ${
+        copied ? 'border-ok bg-ok/[0.07]' : 'border-line bg-ivory/60 hover:border-ink/25 active:bg-ink/5'
+      } ${wide ? 'col-span-2' : ''}`}
+    >
+      {/* العنوان بيتحول لـ"اتنسخ" مكانه — من غير سطر زيادة فاضي ولا
+          قفزة في التصميم وقت الضغط */}
+      <span className={`flex items-center justify-between gap-2 text-[11.5px] font-bold ${
+        copied ? 'text-ok' : 'text-ink-dim'
+      }`}
       >
-        {/* من غير قص: رقم الحساب أو الـ IBAN لازم يبان كامل — العميل
-            بيراجعه بعينه حتى لو نسخه */}
-        <span className="min-w-0 break-all text-[14.5px] font-bold leading-snug text-ink" dir="auto">
-          {value}
-        </span>
+        <span className="truncate">{copied ? t('checkout.copied') : label}</span>
         {copied
-          ? <Check size={15} className="mt-0.5 shrink-0 text-ok" />
-          : <Copy size={15} className="mt-0.5 shrink-0 text-ink-dim" />}
-      </button>
-    </div>
+          ? <Check size={14} className="shrink-0 text-ok" />
+          : <Copy size={14} className="shrink-0 text-ink-dim/70 transition group-hover:text-rose" />}
+      </span>
+      <span className="break-all font-mono text-[14.5px] font-bold leading-snug text-ink" dir="auto">
+        {value}
+      </span>
+    </button>
   );
 }
 
@@ -235,24 +249,28 @@ export default function CheckoutPage() {
                   {isVodafone ? t('payment.vodafoneTitle') : t('payment.bankTitle')}
                 </div>
 
-                <div className="rounded-2xl border border-line/70 px-4">
+                {/* الخانات جنب بعض — عمودين حتى على الموبايل. الطويل
+                    (الأسماء، IBAN، العنوان) بياخد العرض كله عشان
+                    مايتقصّش */}
+                <div className="grid grid-cols-2 gap-2.5">
                   {isVodafone ? (
                     <>
-                      <CopyRow label={t('payment.vodafoneNumber')} value={v.number} />
-                      <CopyRow label={t('payment.vodafoneHolder')} value={v.holderName} />
+                      <CopyTile label={t('payment.vodafoneNumber')} value={v.number} />
+                      <CopyTile label={t('payment.vodafoneHolder')} value={v.holderName} />
                     </>
                   ) : (
                     <>
-                      <CopyRow label={t('payment.bank')} value={b.bankName} />
-                      <CopyRow label={t('payment.accountNameAr')} value={b.accountNameAr} />
-                      <CopyRow label={t('payment.accountNameEn')} value={b.accountNameEn} />
-                      <CopyRow label={t('payment.accountNumber')} value={b.accountNumber} />
-                      <CopyRow label={t('payment.iban')} value={b.iban} />
-                      <CopyRow label={t('payment.swift')} value={b.swift} />
-                      <CopyRow label={t('payment.address')} value={b.address} />
+                      <CopyTile label={t('payment.bank')} value={b.bankName} />
+                      <CopyTile label={t('payment.accountNumber')} value={b.accountNumber} />
+                      <CopyTile label={t('payment.accountNameAr')} value={b.accountNameAr} wide />
+                      <CopyTile label={t('payment.accountNameEn')} value={b.accountNameEn} wide />
+                      <CopyTile label={t('payment.iban')} value={b.iban} wide />
+                      <CopyTile label={t('payment.swift')} value={b.swift} />
+                      <CopyTile label={t('payment.address')} value={b.address} />
                     </>
                   )}
                 </div>
+                <p className="mt-2.5 text-center text-[11.5px] text-ink-dim">{t('checkout.tapToCopy')}</p>
 
                 {/* المبلغ مكرر هنا بالقصد: ده آخر حاجة بيشوفها قبل ما
                     يفتح تطبيق التحويل */}
