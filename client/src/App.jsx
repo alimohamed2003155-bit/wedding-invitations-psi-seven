@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import AuthBar from './components/AuthBar.jsx';
 import AuthModal from './components/AuthModal.jsx';
+import WelcomeGate from './components/WelcomeGate.jsx';
 import GalleryPage from './pages/GalleryPage.jsx';
 import CreateInvitationPage from './pages/CreateInvitationPage.jsx';
 import PackagesPage from './pages/PackagesPage.jsx';
@@ -65,6 +66,8 @@ export default function App() {
         />
       </Routes>
       {!isFullScreen && <AuthModal />}
+      {/* برّه الشرط بالقصد: التسجيل ممكن يحصل وهو في المحرر أو لوحته */}
+      <WelcomeGate />
     </ErrorBoundary>
   );
 }

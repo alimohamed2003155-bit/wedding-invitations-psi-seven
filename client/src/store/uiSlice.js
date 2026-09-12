@@ -9,6 +9,9 @@ const uiSlice = createSlice({
   initialState: {
     authModalOpen: false,
     authModalTab: 'login', // 'login' | 'register'
+    // اسم العميل اللي لسه مسجّل — وجوده معناه نعرض شاشة الترحيب.
+    // في الحالة مش في localStorage: دي لحظة واحدة مش تفضيل بيتحفظ.
+    welcomeFor: null,
   },
   reducers: {
     openAuthModal(state, action) {
@@ -18,8 +21,16 @@ const uiSlice = createSlice({
     closeAuthModal(state) {
       state.authModalOpen = false;
     },
+    showWelcome(state, action) {
+      state.welcomeFor = action.payload || '';
+    },
+    hideWelcome(state) {
+      state.welcomeFor = null;
+    },
   },
 });
 
-export const { openAuthModal, closeAuthModal } = uiSlice.actions;
+export const {
+  openAuthModal, closeAuthModal, showWelcome, hideWelcome,
+} = uiSlice.actions;
 export default uiSlice.reducer;

@@ -9,6 +9,7 @@ const User = require('../models/User');
 const { sanitizeText } = require('../utils/sanitize');
 const { isValidEmail, isValidPassword, isValidCountryCode } = require('../utils/validators');
 const { createSession, destroySession } = require('../middleware/auth');
+const { sendWelcomeMessage } = require('../utils/welcomeMessage');
 
 const router = express.Router();
 
@@ -54,7 +55,16 @@ router.post('/api/auth/register', async (req, res) => {
     }
 
     await createSession(res, user._id);
-    return res.status(201).json({ user: { id: String(user._id), email: user.email, name: user.name, country: user.country } });
+
+    // رسالة ترحيب تستناه في صندوق رسايله. مش بننتظرها (ولا بنوقف عليها
+    // لو فشلت) — الحساب اتعمل خلاص والرد لازم يوصل له فورًا.
+    sendWelcomeMessage(user);
+
+    return res.status(201).json({
+      user: { id: String(user._id), email: user.email, name: user.name, country: user.country },
+      // الواجهة بتستخدمها عشان تعرض شاشة الترحيب مرة واحدة بس
+      isNew: true,
+    });
   } catch (err) {
     console.error('Error registering user:', err);
     return res.status(500).json({ error: 'حصل خطأ في السيرفر، حاول تاني بعد شوية.' });

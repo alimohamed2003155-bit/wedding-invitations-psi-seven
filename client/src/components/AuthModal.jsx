@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
 import { useLoginMutation, useRegisterMutation } from '../store/api.js';
-import { closeAuthModal, openAuthModal } from '../store/uiSlice.js';
+import { closeAuthModal, openAuthModal, showWelcome } from '../store/uiSlice.js';
 import CountrySelect from './form/CountrySelect.jsx';
 
 const inputClass =
@@ -61,8 +61,10 @@ function RegisterForm() {
 
   async function onSubmit(values) {
     try {
-      await doRegister(values).unwrap();
+      const res = await doRegister(values).unwrap();
       dispatch(closeAuthModal());
+      // شاشة الترحيب مكان فورم التسجيل على طول — من غير أي فراغ بينهم
+      dispatch(showWelcome((res && res.user && res.user.name) || values.name || ''));
     } catch {
       /* الخطأ بيتعرض من error.data.error تحت */
     }
