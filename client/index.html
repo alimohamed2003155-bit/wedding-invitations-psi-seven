@@ -18,6 +18,77 @@
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600&family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <!--
+      شبكة أمان ضد "الشاشة البيضا" بعد أي رفع جديد.
+
+      المشكلة: أسماء ملفات /assets/ فيها بصمة المحتوى، فبتتغيّر مع كل
+      رفع. متصفّح فاتح الموقع من قبل الرفع (أو عنده نسخة مخزّنة من
+      الصفحة) بيفضل يطلب ملفات النسخة القديمة — واللي اتشالت. ساعتها
+      مفيش أي كود بيشتغل والصفحة بتفضل بيضا فاضية من غير ولا رسالة.
+
+      الحل: السكريبت ده عادي (مش module) فبيشتغل قبل أي حاجة. بيسمع على
+      فشل تحميل أي سكريبت أو ستايل، ويعيد تحميل الصفحة من السيرفر مرة
+      واحدة بس (sessionStorage بيمنع أي لفة لا نهائية). النتيجة: المستخدم
+      بيشوف رفّة وترجع تشتغل، بدل ما يقعد قصاد شاشة بيضا.
+    -->
+    <script>
+      (function () {
+        var KEY = 'mithaq:asset-reload';
+        var done = false;
+
+        function recover(what) {
+          if (done) return;
+          done = true;
+          var already = false;
+          try { already = sessionStorage.getItem(KEY) === '1'; } catch (e) { /* تصفح خاص */ }
+          if (already) {
+            // جرّبنا مرة وفشلت — نقول للمستخدم بدل ما نفضل نلف
+            document.addEventListener('DOMContentLoaded', function () {
+              document.body.innerHTML = '<div style="font-family:system-ui,sans-serif;'
+                + 'display:flex;min-height:100vh;align-items:center;justify-content:center;'
+                + 'text-align:center;padding:24px;color:#0f1d18">'
+                + '<div><p style="font-size:17px;font-weight:700;margin:0 0 8px">'
+                + 'في مشكلة في تحميل الصفحة</p>'
+                + '<p style="color:#5c6b64;margin:0 0 18px;font-size:14px">'
+                + 'جرّب تقفل الصفحة وتفتحها تاني، أو امسح بيانات الموقع من المتصفح.</p>'
+                + '<button onclick="location.reload(true)" style="background:#0f1d18;color:#faf5ec;'
+                + 'border:0;border-radius:999px;padding:11px 26px;font-size:14px;font-weight:700;'
+                + 'cursor:pointer">حاول تاني</button></div></div>';
+            });
+            return;
+          }
+          try { sessionStorage.setItem(KEY, '1'); } catch (e) { /* */ }
+          // كسر الكاش: بارامتر بيخلي المتصفح يجيب الصفحة من السيرفر
+          var u = location.href.split('#')[0];
+          location.replace(u + (u.indexOf('?') === -1 ? '?' : '&') + '_r=' + Date.now());
+        }
+
+        // فشل تحميل ملف (سكريبت/ستايل) — بيتبلّغ في مرحلة الالتقاط بس
+        window.addEventListener('error', function (e) {
+          var el = e && e.target;
+          if (!el || !el.tagName) return;
+          var tag = el.tagName.toUpperCase();
+          if (tag === 'SCRIPT' || tag === 'LINK') recover(tag);
+        }, true);
+
+        // استيراد كسول فشل (زي ملف لوحة التحكم)
+        window.addEventListener('unhandledrejection', function (e) {
+          var m = e && e.reason && (e.reason.message || String(e.reason));
+          if (m && /dynamically imported module|Importing a module script failed|Failed to fetch/i.test(m)) {
+            recover('chunk');
+          }
+        });
+
+        // التحميل عدى بنجاح؟ نصفّر العلامة عشان الرفع الجاي يبدأ نضيف
+        window.addEventListener('load', function () {
+          setTimeout(function () {
+            if (document.getElementById('root') && document.getElementById('root').childElementCount) {
+              try { sessionStorage.removeItem(KEY); } catch (e) { /* */ }
+            }
+          }, 2500);
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

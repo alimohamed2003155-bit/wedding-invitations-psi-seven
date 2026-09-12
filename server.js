@@ -128,7 +128,20 @@ app.use(['/api/preview', '/preview-sample', '/api/invitations', '/api/auth', '/a
 // (ملحوظة: لو استضفت المشروع على Vercel، الفولدر ده بيتقدّم من الـ CDN
 // بتاعهم مباشرة وبيتجاهل السطر ده تلقائيًا — راجع README لو مش فاهم ليه)
 const CLIENT_DIST = path.join(__dirname, 'client', 'dist');
-app.use(express.static(CLIENT_DIST));
+app.use(express.static(CLIENT_DIST, {
+  // ملفات /assets/ اسمها فيه بصمة محتواها (index-BEQg6LwI.js) — يعني أي
+  // تعديل بيغيّر الاسم. فنقدر نخليها تتخزّن للأبد بأمان.
+  // index.html بالعكس: لازم المتصفح يسأل عنها كل مرة، لأنها هي اللي
+  // بتقول أسماء الملفات الحالية. لو اتخزّنت، المتصفح هيفضل يطلب ملفات
+  // نسخة قديمة بعد كل رفع — وده اللي كان بيدي شاشة بيضا.
+  setHeaders(res, filePath) {
+    if (/[\\/]assets[\\/]/.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (filePath.endsWith('index.html')) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    }
+  },
+}));
 
 // ====== الحماية من إساءة الاستخدام ======
 
@@ -236,9 +249,24 @@ const CLIENT_ROUTE_EXCLUDED_PREFIXES = [
   '/api', '/admin/api', '/admin/login', '/admin/logout', '/admin/session',
   '/i/', '/preview-sample',
 ];
+// طلب ملف (فيه امتداد) مش موجود لازم يرجّع 404 — مش صفحة React.
+//
+// ليه ده مهم جدًا: بعد أي رفع جديد، أسماء ملفات /assets/ بتتغيّر. لو
+// متصفّح عنده نسخة قديمة من index.html وطلب ملف اتشال، السطر اللي تحت
+// كان بيرجّعله **صفحة HTML** بحالة 200 مكان ملف الجافاسكريبت. المتصفح
+// بيرفضها ("Expected a JavaScript module but got text/html") ومبيشتغلش
+// أي كود — يعني شاشة بيضا فاضية من غير ولا رسالة خطأ.
+// دلوقتي بيرجّع 404 صريح، والصفحة بتعرف تتصرف وتعيد التحميل (client/index.html).
+const FILE_LIKE = /\.[a-z0-9]{2,6}$/i;
+
 app.get('*', (req, res, next) => {
   if (CLIENT_ROUTE_EXCLUDED_PREFIXES.some((p) => req.path.startsWith(p))) return next();
-  res.sendFile(path.join(CLIENT_DIST, 'index.html'));
+  if (req.path.startsWith('/assets/') || FILE_LIKE.test(req.path)) {
+    return res.status(404).type('text/plain').send('Not found');
+  }
+  // الصفحة نفسها عمرها ما تتخزّن: هي اللي بتقول أسماء الملفات الحالية
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  return res.sendFile(path.join(CLIENT_DIST, 'index.html'));
 });
 
 // صفحة 404 بسيطة لأي مسار تاني مش موجود (POST لمسار غلط، إلخ)
