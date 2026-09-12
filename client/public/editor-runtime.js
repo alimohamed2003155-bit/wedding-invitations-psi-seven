@@ -140,6 +140,25 @@
     return false;
   }
 
+  /**
+   * عنصر لون خالص: مربّع/دايرة ملوّنة من غير نص ولا صورة — زي مربعات
+   * الزي المقترح (Dress Code).
+   *
+   * ليه محتاج حالة خاصة: كل باقي الكود بيدوّر على نص أو صورة، والعناصر
+   * دي مالهاش لا ده ولا ده — فكانت بتتستبعد خالص والعميل مش قادر
+   * يضغط عليها ولا يغيّر لونها، مع إنها أكتر حاجة بيحب يظبطها على
+   * ألوان فرحه.
+   */
+  function isColorSwatch(el) {
+    if (el.children.length) return false;
+    if ((el.textContent || '').trim()) return false;
+    if (el.offsetWidth < 8 || el.offsetHeight < 8) return false;
+    if (el.offsetWidth > 260 || el.offsetHeight > 260) return false;
+    var bg = getComputedStyle(el).backgroundColor;
+    // خلفية شفافة = مش مربع لون
+    return !!bg && bg !== 'transparent' && !/rgba\(0,\s*0,\s*0,\s*0\)/.test(bg);
+  }
+
   function elementKind(el) {
     if (isMapElement(el)) return 'map';
     if (isLiveElement(el)) return 'live';
@@ -148,6 +167,7 @@
     var img = el.tagName === 'IMG' ? el : el.querySelector('img');
     // الحد 12 مش 40: الزخارف الصغيرة (16px) كانت مستبعدة خالص
     if (img && img.offsetHeight > 12) return 'image';
+    if (isColorSwatch(el)) return 'color';
     if (isRichElement(el)) return 'rich';
     return 'text';
   }
@@ -188,7 +208,7 @@
       // لازم يكون فيه نص أو صورة أو فيديو — العناصر الفاضية مالهاش لازمة.
       // الفيديو كان مستبعد خالص قبل كده (مالوش نص ولا img)، عشان كده
       // خلفية أول سيكشن مكانش ينفع يتعمل فيها أي حاجة.
-      if (!text && !video && !(img && img.offsetHeight > 12)) continue;
+      if (!text && !video && !(img && img.offsetHeight > 12) && !isColorSwatch(el)) continue;
       if (text.length > 600) continue;
       out.push(el);
     }

@@ -994,6 +994,21 @@ html, body{ overflow-x: clip; overscroll-behavior-x: none; }
     if (cover) cover.style.display = 'none';
     if (main) main.classList.add('show');
     document.body.style.overflow = '';
+
+    // عناصر أول قسم بتبدأ شفافة، وبتظهر لما العميل يضغط "فتح" في
+    // الغلاف. إحنا شايلين الغلاف هنا، فلو مظهّرناهاش بإيدينا القسم
+    // الأول بيفضل فاضي تمامًا — والمحرر مش لاقي فيه حاجة يعدّلها.
+    // (المراقب اللي بيظهّر باقي الأقسام بيستثني الهيرو بالقصد.)
+    setTimeout(function () {
+      document.querySelectorAll('.hero .reveal').forEach(function (el) {
+        el.classList.add('in');
+      });
+      var pol = document.getElementById('polaroid');
+      if (pol) {
+        pol.style.opacity = '1';
+        pol.style.transform = 'translateX(-46%) rotate(7deg)';
+      }
+    }, 60);
   }
 })();
 
