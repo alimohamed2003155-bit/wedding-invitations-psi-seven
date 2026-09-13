@@ -120,6 +120,7 @@ const requireDB = async (req, res, next) => {
   }
 };
 app.use('/api/invitations', requireDB);
+app.use('/api/free-quota', requireDB);
 app.use('/api/public-stats', requireDB);
 app.use('/i', requireDB);
 app.use('/i', attachUser);
@@ -135,7 +136,7 @@ app.use('/api/editor', requireDB);
 // بالمسارات اللي فعلاً محتاجة تعرف حالة الدخول — مش عالميًا على كل الموقع
 // (زي الملفات الثابتة أو صفحة الدعوة نفسها)، عشان نفس فلسفة الأداء
 // والمرونة اللي requireDB بتتبعها.
-app.use(['/api/preview', '/preview-sample', '/api/invitations', '/api/auth', '/api/packages', '/api/uploads', '/api/dashboard', '/api/editor'], attachUser);
+app.use(['/api/preview', '/preview-sample', '/api/invitations', '/api/free-quota', '/api/auth', '/api/packages', '/api/uploads', '/api/dashboard', '/api/editor'], attachUser);
 
 // الموقع التسويقي/فورم الإنشاء بقى React (client/) مبني بـ Vite — الملفات
 // الثابتة الناتجة (client/dist) هي اللي بتتقدم هنا بدل public/ القديم.
@@ -172,6 +173,10 @@ const ipLimiter = rateLimit({
 // 2) خط الدفاع الأساسي والدقيق: حد لكل جهاز (متخزن في قاعدة البيانات، فبيشتغل
 //    صح حتى لو السيرفر شغال على منصة سيرفرلس زي Vercel أو خلف أكتر من نسخة)
 app.use('/api/invitations', ipLimiter, ensureDeviceId, deviceInvitationLimiter);
+
+// قراءة الرصيد المجاني محتاجة كود الجهاز كمان — من غير الليميتر
+// (دي قراءة، والفورم بينادي عليها عادي وهو بيفتح)
+app.use('/api/free-quota', ensureDeviceId);
 
 // حد خفيف على مستوى الـ IP لردود تأكيد الحضور — أعلى بكتير من حد الجهاز
 // (middleware/deviceLimiter.js: rsvpLimiter) عمدًا، عشان ضيوف كتير بيردوا

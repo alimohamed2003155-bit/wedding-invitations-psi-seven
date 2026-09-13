@@ -7,19 +7,61 @@ const WINDOW_MS = 60 * 60 * 1000; // نافذة الساعة
 const MAX_PER_WINDOW = 6;         // 6 دعوات كحد أقصى لكل جهاز في الساعة (عدّلها براحتك)
 const MAX_RSVP_PER_WINDOW = 8;    // 8 ردود تأكيد حضور كحد أقصى لكل جهاز في الساعة
 
+// مفتاح توقيع كود الجهاز. مشتق من سر الأدمن بملح ثابت عشان مانضيفش
+// متغيّر بيئة جديد لازم يتحط على Vercel. لو السر اتغيّر، كل الأكواد
+// القديمة بتبقى غير صالحة والأجهزة بتاخد أكواد جديدة — أسوأ نتيجة إن
+// الناس تاخد رصيدها المجاني من أول وجديد، وده مش ضرر.
+const DEVICE_SECRET = crypto.createHash('sha256')
+  .update(`mithaq:device:${process.env.ADMIN_SECRET || 'local-dev-secret'}`)
+  .digest();
+
+/** توقيع قصير (HMAC) للكود — 22 حرف كفاية وميكبّرش الكوكي */
+function signDeviceId(id) {
+  return crypto.createHmac('sha256', DEVICE_SECRET).update(id).digest('base64url').slice(0, 22);
+}
+
+/**
+ * بيقرا كود الجهاز من الكوكي ويتأكد إنه بتاعنا إحنا.
+ *
+ * ليه التوقيع أصلًا: من غيره أي حد يقدر يكتب أي قيمة في الكوكي —
+ * يعني قيمة جديدة مع كل طلب، والرصيد المجاني اليومي مايخلصش أبدًا.
+ * التوقيع بيخلي الكود الوحيد المقبول هو اللي إحنا أصدرناه.
+ *
+ * @returns {{ id: string|null, needsReissue: boolean }}
+ */
+function readDeviceId(raw) {
+  const value = String(raw || '');
+  // الشكل القديم: 32 حرف hex من غير توقيع. بنقبله ونوقّعه عشان
+  // الناس اللي على الموقع دلوقتي ماتتصفّرش عدّاداتهم فجأة.
+  if (/^[a-f0-9]{32}$/.test(value)) return { id: value, needsReissue: true };
+
+  const dot = value.indexOf('.');
+  if (dot <= 0) return { id: null, needsReissue: true };
+  const id = value.slice(0, dot);
+  const mac = value.slice(dot + 1);
+  if (!/^[a-f0-9]{32}$/.test(id)) return { id: null, needsReissue: true };
+
+  const expected = signDeviceId(id);
+  if (mac.length !== expected.length) return { id: null, needsReissue: true };
+  const ok = crypto.timingSafeEqual(Buffer.from(mac), Buffer.from(expected));
+  return ok ? { id, needsReissue: false } : { id: null, needsReissue: true };
+}
+
 /**
  * بيدي كل جهاز/متصفح كوكي فريد (لو مش موجود) عشان نقدر نتعرف عليه لاحقًا،
  * حتى لو أكتر من جهاز شغالين على نفس الـ IP (زي شبكة بيت أو شركة).
  */
 function ensureDeviceId(req, res, next) {
-  let deviceId = req.cookies && req.cookies[COOKIE_NAME];
-  if (!deviceId) {
-    deviceId = crypto.randomBytes(16).toString('hex');
-    res.cookie(COOKIE_NAME, deviceId, {
+  const { id, needsReissue } = readDeviceId(req.cookies && req.cookies[COOKIE_NAME]);
+  const deviceId = id || crypto.randomBytes(16).toString('hex');
+
+  if (needsReissue) {
+    res.cookie(COOKIE_NAME, `${deviceId}.${signDeviceId(deviceId)}`, {
       httpOnly: true,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
       maxAge: 365 * 24 * 60 * 60 * 1000, // سنة
+      path: '/',
     });
   }
   req.deviceId = deviceId;
@@ -91,4 +133,7 @@ async function rsvpLimiter(req, res, next) {
   }
 }
 
-module.exports = { ensureDeviceId, deviceInvitationLimiter, rsvpLimiter, COOKIE_NAME };
+module.exports = {
+  ensureDeviceId, deviceInvitationLimiter, rsvpLimiter, COOKIE_NAME,
+  signDeviceId, readDeviceId,
+};

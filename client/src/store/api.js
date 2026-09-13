@@ -11,7 +11,7 @@ const baseQuery = fetchBaseQuery({ baseUrl: '/api', credentials: 'include' });
 export const api = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['Me', 'Packages', 'Dashboard', 'Support', 'Editor'],
+  tagTypes: ['Me', 'Packages', 'Dashboard', 'Support', 'Editor', 'Quota'],
   endpoints: (builder) => ({
     // بنبعت اللغة عشان أسماء التصاميم وأوصافها وأسماء الأقسام ترجع مترجمة
     getTemplates: builder.query({
@@ -48,7 +48,14 @@ export const api = createApi({
     }),
     createInvitation: builder.mutation({
       query: (body) => ({ url: '/invitations', method: 'POST', body }),
-      invalidatesTags: ['Packages'],
+      // Quota عشان العدّاد اللي فوق الفورم ينقص فورًا بعد كل دعوة
+      invalidatesTags: ['Packages', 'Quota'],
+    }),
+    // رصيد الدعوات المجانية اليومي لجهاز الزائر. مربوط بـ Me كمان عشان
+    // أول ما يشترك (أو يسجّل خروج) الرصيد يتحدّث لوحده.
+    getFreeQuota: builder.query({
+      query: () => '/free-quota',
+      providesTags: ['Quota', 'Me'],
     }),
     // الباقات بتتقفل على حالة تسجيل الدخول (العملة والرصيد بيتغيروا)،
     // فبنربطها بـ Me عشان تتحدّث لوحدها بعد الدخول أو الخروج.
@@ -140,6 +147,7 @@ export const api = createApi({
 export const {
   useGetTemplatesQuery,
   useGetPublicStatsQuery,
+  useGetFreeQuotaQuery,
   useGetMeQuery,
   useLoginMutation,
   useRegisterMutation,

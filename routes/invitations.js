@@ -7,7 +7,8 @@ const User = require('../models/User');
 const { sanitizeText, escapeHtml } = require('../utils/sanitize');
 const { generateShortId } = require('../utils/idGenerator');
 const { renderNewPathHtml, renderLegacyHtml } = require('../utils/renderInvitation');
-const { buildInvitationDataFromRequest } = require('../utils/invitationData');
+const { buildInvitationDataFromRequest, hasActivePackage } = require('../utils/invitationData');
+const { requireFreeQuota, freeQuotaFor } = require('../middleware/freeQuota');
 const SiteTotals = require('../models/SiteTotals');
 const { getTemplate, TEMPLATES } = require('../templates/registry');
 const { localizeTemplate } = require('../templates/i18n');
@@ -74,8 +75,32 @@ router.post('/api/preview', async (req, res) => {
   }
 });
 
-// POST /api/invitations — إنشاء دعوة فعلية (بتتحفظ في قاعدة البيانات)
-router.post('/api/invitations', async (req, res) => {
+// GET /api/free-quota — رصيد الدعوات المجانية اليومي للجهاز ده.
+// الفورم بيعرضه للعميل قبل ما يملا، فمحدش بيتفاجئ في الآخر.
+router.get('/api/free-quota', async (req, res) => {
+  try {
+    if (hasActivePackage(req.user)) {
+      return res.json({ subscribed: true, limit: 0, used: 0, remaining: 0, resetsInHours: 0 });
+    }
+    const q = await freeQuotaFor(req.deviceId, req.user && req.user.id);
+    return res.json({
+      subscribed: false,
+      limit: q.limit,
+      used: Math.min(q.used, q.limit),
+      remaining: q.blocked ? 0 : q.remaining,
+      resetsInHours: Math.max(1, Math.ceil(q.resetsInMs / 3600000)),
+    });
+  } catch (err) {
+    console.error('Error reading free quota:', err);
+    // مش سبب نوقف الفورم — بنرجّع الحد الكامل ونسيب السيرفر يحكم عند الإنشاء
+    return res.json({ subscribed: false, limit: 3, used: 0, remaining: 3, resetsInHours: 24 });
+  }
+});
+
+// POST /api/invitations — إنشاء دعوة فعلية (بتتحفظ في قاعدة البيانات).
+// requireFreeQuota قبل أي شغل: لو رصيده المجاني خلص، مالوش لازمة
+// نستنى التحقق من الفورم ولا نجيب لينك الخريطة من جوجل.
+router.post('/api/invitations', requireFreeQuota(hasActivePackage), async (req, res) => {
   try {
     const data = await buildInvitationDataFromRequest(req.body || {}, { user: req.user });
 
@@ -104,6 +129,9 @@ router.post('/api/invitations', async (req, res) => {
         invitation = await Invitation.create({
           shortId,
           creatorDeviceId: req.deviceId || null,
+          // بصمة الشبكة — بتتحسب في فحص الرصيد، وبتتخزن هنا عشان
+          // الفحص اللي بعده يعرف يعدّ. مفيش عنوان حقيقي بيتخزن.
+          creatorIpHash: req.ipHash || null,
           ownerId,
           isPremium,
           ...data,

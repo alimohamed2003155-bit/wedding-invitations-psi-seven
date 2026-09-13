@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Lock } from 'lucide-react';
+import { ArrowRight, Lock, Clock, Crown, Check, Sparkles } from 'lucide-react';
 import {
   useGetTemplatesQuery,
   usePreviewMutation,
   useCreateInvitationMutation,
   useGetMeQuery,
+  useGetFreeQuotaQuery,
 } from '../store/api.js';
 import ChoiceCards from '../components/form/ChoiceCards.jsx';
 import TimelineFields from '../components/form/TimelineFields.jsx';
@@ -80,6 +81,42 @@ function buildPayload(values, template, { withPlaceholders }) {
   return payload;
 }
 
+/**
+ * خلصت الدعوات المجانية النهارده.
+ *
+ * الرسالة هنا مش "ممنوع" — هي "خلصت النهارده، وفيه طريق أحسن".
+ * فبنقول بالظبط امتى بيرجع الرصيد، وبنحط الترقية جنبها بميزتها
+ * الحقيقية (تعديل أكبر) مش مجرد زرار "اشترك".
+ */
+function QuotaExhausted({ hours }) {
+  const { t } = useTranslation();
+  return (
+    <div className="rounded-[20px] border border-brass/40 bg-brass/[0.07] p-5 text-center">
+      <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-brass/20 text-brass">
+        <Clock size={19} />
+      </span>
+      <h3 className="mb-1.5 font-serif text-[17px] font-bold text-ink">{t('create.quotaOutTitle')}</h3>
+      <p className="mx-auto mb-4 max-w-[40ch] text-[13px] leading-[1.9] text-ink-dim">
+        {t('create.quotaOutBody', { count: hours })}
+      </p>
+      <div className="mb-4 space-y-1.5 text-start">
+        {['quotaPerk1', 'quotaPerk2', 'quotaPerk3'].map((k) => (
+          <div key={k} className="flex items-start gap-2 text-[12.5px] text-ink">
+            <Check size={13} className="mt-1 shrink-0 text-emerald" />
+            {t(`create.${k}`)}
+          </div>
+        ))}
+      </div>
+      <Link
+        to="/packages"
+        className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-gradient-to-l from-brass to-brass-soft py-3.5 text-[14px] font-extrabold text-[#241608] hover:brightness-105"
+      >
+        <Crown size={15} /> {t('create.quotaOutCta')}
+      </Link>
+    </div>
+  );
+}
+
 export default function CreateInvitationPage() {
   const { templateId } = useParams();
   const navigate = useNavigate();
@@ -94,6 +131,11 @@ export default function CreateInvitationPage() {
   const { register, watch, reset, handleSubmit, formState } = useForm({ defaultValues: {} });
   const [submitError, setSubmitError] = useState('');
   const [result, setResult] = useState(null);
+  // الرصيد المجاني اليومي. بنقراه من السيرفر (مش من الكوكي) — الواجهة
+  // للشكل بس، القرار الحقيقي عند السيرفر في كل الأحوال.
+  const { data: quota } = useGetFreeQuotaQuery();
+  // لو السيرفر رفض بسبب الرصيد، بنعتمد على رده هو
+  const [quotaError, setQuotaError] = useState(null);
 
   // التصميم المدفوع للمشتركين بس — مش لأي حساب مجاني. لو حد فتح
   // اللينك ده مباشرة من غير باقة، بنوديه صفحة الباقات بدل ما يقعد
@@ -102,6 +144,11 @@ export default function CreateInvitationPage() {
   const subscribed = !!sub && !!sub.packageId && sub.status !== 'suspended'
     && (sub.invitationsLeft || 0) > 0;
   const locked = !!template?.isPremium && !subscribed;
+
+  // المشترك مالوش دعوة بالرصيد المجاني — دعواته من باقته
+  const showQuota = !!quota && !quota.subscribed && !subscribed;
+  const quotaOut = !!quotaError || (showQuota && quota.remaining <= 0);
+  const quotaHours = quotaError?.resetsInHours || quota?.resetsInHours || 24;
 
   useEffect(() => {
     if (template) reset(defaultsFor(template));
@@ -132,6 +179,12 @@ export default function CreateInvitationPage() {
       const data = await createInvitation(buildPayload(vals, template, { withPlaceholders: false })).unwrap();
       setResult(data);
     } catch (err) {
+      // رصيده المجاني خلص؟ ده مش خطأ — ده عرض ترقية
+      if (err?.data?.code === 'FREE_QUOTA') {
+        setQuotaError(err.data);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
       setSubmitError(err?.data?.error || t('create.genericError'));
     }
   }
@@ -196,8 +249,19 @@ export default function CreateInvitationPage() {
           {t('create.subtitle')}
         </p>
 
+        {/* الرصيد المجاني اليومي — فوق خالص، قبل ما يملا أي حاجة.
+            محدش يستاهل يملا فورم كامل وبعدين يتقاله "خلص رصيدك". */}
+        {showQuota && !quotaOut && !result && (
+          <p className="mb-6 flex items-center justify-center gap-1.5 rounded-xl bg-emerald/[0.07] px-4 py-2.5 text-[12.5px] text-emerald">
+            <Sparkles size={13} />
+            {t('create.quotaLeft', { count: quota.remaining, limit: quota.limit })}
+          </p>
+        )}
+
         {result ? (
           <ResultCard path={result.path} onReset={() => setResult(null)} />
+        ) : quotaOut ? (
+          <QuotaExhausted hours={quotaHours} />
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <fieldset className="mb-7 border-0 p-0">

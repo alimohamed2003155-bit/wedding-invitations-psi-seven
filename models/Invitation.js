@@ -20,8 +20,13 @@ const invitationSchema = new mongoose.Schema({
   },
 
   // كود الجهاز اللي أنشأ الدعوة (نفس الكوكي المستخدم في الليميتر) — بيسمحلنا
-  // نحسب عدد المستخدمين الفريدين اللي استخدموا الموقع فعليًا وعملوا دعوة.
+  // نحسب عدد المستخدمين الفريدين اللي استخدموا الموقع فعليًا وعملوا دعوة،
+  // وكمان نحسب رصيد الدعوات المجانية اليومي (middleware/freeQuota.js).
   creatorDeviceId: { type: String, default: null },
+  // بصمة الـIP مش الـIP نفسه — sha256 بمفتاح السيرفر. الغرض منها حاجة
+  // واحدة: إن مسح الكوكيز مايديش رصيد مجاني جديد على طول. عمرنا ما
+  // بنخزّن عنوان حقيقي، والبصمة مالهاش أي استخدام تاني.
+  creatorIpHash: { type: String, default: null },
 
   // صاحب الدعوة لو كان مسجّل دخول وقت إنشائها — ده اللي بيسمح له يفتح
   // المحرر بعدين. الدعوات المجانية (من غير حساب) بتفضل ownerId = null.
@@ -129,5 +134,10 @@ invitationSchema.index({ createdAt: -1 });
 // بيبقى full collection scan مع تزايد عدد الدعوات (وده فعلاً بيهم مع
 // آلاف/عشرات آلاف المستخدمين).
 invitationSchema.index({ creatorDeviceId: 1 });
+// فحص الرصيد المجاني بيتنادى مع كل محاولة إنشاء: "كام دعوة مجانية من
+// الجهاز ده / الشبكة دي النهارده؟". من غير الفهارس المركّبة دي كل
+// محاولة كانت هتمسح الكوليكشن كله.
+invitationSchema.index({ creatorDeviceId: 1, createdAt: -1 });
+invitationSchema.index({ creatorIpHash: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Invitation', invitationSchema);
