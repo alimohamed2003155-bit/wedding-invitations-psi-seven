@@ -162,6 +162,8 @@ export default function EditorPage() {
   const [selected, setSelected] = useState(null);
   const [pickedImage, setPickedImage] = useState(null);
   const [counts, setCounts] = useState(null);
+  // كل صور الدعوة بترتيبها — الدعوة نفسها هي اللي بتقولنا بيها
+  const [photos, setPhotos] = useState([]);
   const [runtimeReady, setRuntimeReady] = useState(false);
   const [error, setError] = useState('');
   const [dirty, setDirty] = useState(false);
@@ -305,7 +307,11 @@ export default function EditorPage() {
       // الدعوة خلّصت تحميل — التجهيز نفسه في useEffect تحت، لأن ممكن
       // الـ iframe يخلص قبل ما بيانات المحرر توصل من السيرفر (أو العكس)
       if (msg.type === 'loaded') setRuntimeReady(true);
-      if (msg.type === 'ready') setCounts({ texts: p.textCount, images: p.imageCount });
+      if (msg.type === 'ready') {
+        setCounts({ texts: p.textCount, images: p.imageCount });
+        // شبكة الصور المرقّمة في تبويب الصور بتتبني من هنا
+        if (Array.isArray(p.photos)) setPhotos(p.photos);
+      }
       if (msg.type === 'cover') { setCoverOpen(!!p.visible); setHasCover(!!p.exists); }
 
       // الدعوة بدأت تشغّل موسيقاها — نسكّت أي معاينة شغالة في الشريط
@@ -807,6 +813,26 @@ export default function EditorPage() {
     } finally {
       setSectionsBusy(false);
     }
+  }
+
+  /** اختار صورة من الشبكة المرقّمة وافتح ملف الرفع على طول */
+  function pickPhoto(id) {
+    setError('');
+    setPickedImage(id);
+    // مفيش داعي لخطوة زيادة: اللي ضغط "غيّر" عايز يختار صورة دلوقتي
+    setTimeout(() => imageInputRef.current?.click(), 0);
+  }
+
+  /** شيل صورة من الدعوة (بتفضل في الشبكة باهتة عشان ترجّعها) */
+  function hidePhoto(id) {
+    remember();
+    setDraft((d) => {
+      if (!d || d.hidden.includes(id)) return d;
+      const next = [...d.hidden, id];
+      post('apply-hidden', { hidden: next });
+      return { ...d, hidden: next };
+    });
+    setDirty(true);
   }
 
   /** رجّع جزء اتحذف */
@@ -1697,11 +1723,55 @@ export default function EditorPage() {
                         </div>
                       )}
 
-                      {Object.keys(draft.images).length > 0 && (
-                        <div className="mt-5 grid grid-cols-3 gap-2">
-                          {Object.entries(draft.images).map(([id, url]) => (
-                            <img key={id} src={url} alt="" className="aspect-square rounded-lg border border-line object-cover" />
-                          ))}
+                      {/* ===== كل صور الدعوة مرقّمة ===== */}
+                      {/* ده اللي بيحل مشكلة الألبوم: صوره بتبان واحدة
+                          واحدة في شريط متحرّك، فالعميل مش شايف إن فيه
+                          8 صور ولا قادر يمسك واحدة. هنا كلهم قدامه
+                          مرقّمين — يضغط على رقم يغيّره، أو يشيله. */}
+                      {photos.length > 0 && (
+                        <div className="mt-6">
+                          <h3 className="mb-1 flex items-center gap-1.5 text-[12.5px] font-bold text-ink">
+                            <ImageIcon size={13} /> {t('editor.allPhotos', { count: photos.length })}
+                          </h3>
+                          <p className="mb-3 text-[11.5px] text-ink-dim">{t('editor.allPhotosHint')}</p>
+                          <div className="grid grid-cols-3 gap-2">
+                            {photos.map((ph, i) => (
+                              <div
+                                key={ph.id}
+                                className={`group relative overflow-hidden rounded-xl border transition ${
+                                  pickedImage === ph.id ? 'border-rose ring-2 ring-rose/30' : 'border-line'
+                                } ${ph.hidden ? 'opacity-40' : ''}`}
+                              >
+                                <img
+                                  src={draft.images?.[ph.id] || ph.src}
+                                  alt=""
+                                  className="aspect-square w-full object-cover"
+                                />
+                                <span className="absolute start-1 top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-night/85 px-1 text-[10px] font-bold text-ivory">
+                                  {i + 1}
+                                </span>
+
+                                <div className="absolute inset-x-0 bottom-0 flex">
+                                  <button
+                                    type="button"
+                                    onClick={() => pickPhoto(ph.id)}
+                                    title={t('editor.photoChange')}
+                                    className="flex flex-1 items-center justify-center gap-1 bg-night/85 py-1.5 text-[10.5px] font-bold text-ivory hover:bg-night"
+                                  >
+                                    <Upload size={11} /> {t('editor.photoChange')}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => (ph.hidden ? restoreHidden(ph.id) : hidePhoto(ph.id))}
+                                    title={ph.hidden ? t('editor.restore') : t('editor.photoRemove')}
+                                    className="flex items-center justify-center bg-night/85 px-2 py-1.5 text-ivory hover:bg-error/80"
+                                  >
+                                    {ph.hidden ? <Undo2 size={11} /> : <Trash2 size={11} />}
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </>

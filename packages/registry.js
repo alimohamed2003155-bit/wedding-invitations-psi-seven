@@ -78,14 +78,18 @@ const PACKAGES = [
     name: { ar: 'الباقة الأساسية', en: 'Essential' },
     invitations: 4,
     price: { EGP: 400, USD: 15 },
-    features: ['fonts', 'images', 'music'],
+    // "إخفاء الأقسام" في كل الباقات: ده مش رفاهية، ده إن العميل يشيل
+    // قسم مالوش لازمة في فرحه. لو قفلناه على الباقة الأعلى، اللي دافع
+    // بيبص على دعوته وفيها جزء مش عايزه ومش قادر يشيله — وده إحساس
+    // وحش عن حق.
+    features: ['fonts', 'images', 'music', 'sections'],
   },
   {
     id: 'plus',
     name: { ar: 'الباقة المتقدمة', en: 'Plus' },
     invitations: 9,
     price: { EGP: 600, USD: 30 },
-    features: ['fonts', 'images', 'music', 'drag', 'videoToImage'],
+    features: ['fonts', 'images', 'music', 'drag', 'videoToImage', 'sections'],
   },
   {
     id: 'pro',

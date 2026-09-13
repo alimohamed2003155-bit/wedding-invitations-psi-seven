@@ -27,22 +27,20 @@ export default function Hero() {
       }}
     >
       <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-[1.02fr_0.98fr] items-center gap-x-3 gap-y-5 sm:gap-x-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-x-14 lg:gap-y-6">
-        {/* ===== اللوجو ===== */}
-        {/* فوق كل حاجة وبعرض الشبكة كلها. من غير أي خلفية وراه —
-            اللوجو متصمم على غامق أصلاً (ذهب وعنابي)، فالخلفية الفاتحة
-            كانت بتقطعه عن الصفحة بدل ما تخدمه. */}
-        <div className="col-span-2 flex justify-center lg:justify-start">
+        {/* ===== الكلام ===== */}
+        <div className="text-start text-ivory">
+          {/* اللوجو فوق سطر "استوديو الدعوات الرقمي" على طول — جوه عمود
+              الكلام نفسه، مش معلّق فوق الشبكة كلها. من غير أي خلفية
+              وراه: اللوجو متصمم على غامق أصلاً (ذهب وعنابي)، فالخلفية
+              الفاتحة كانت بتقطعه عن الصفحة بدل ما تخدمه. */}
           <img
             src="/img/logo.png"
             alt={t('nav.brand')}
             width="315"
             height="180"
-            className="h-14 w-auto drop-shadow-[0_10px_26px_rgba(0,0,0,.55)] sm:h-16 lg:h-20"
+            className="mb-3 h-12 w-auto drop-shadow-[0_10px_26px_rgba(0,0,0,.55)] sm:h-16 lg:mb-4 lg:h-20"
           />
-        </div>
 
-        {/* ===== الكلام ===== */}
-        <div className="text-start text-ivory">
           <div className="mb-2 text-[9.5px] font-bold uppercase tracking-[0.22em] text-rose-bright sm:text-[11px] sm:tracking-[0.3em]">
             {t('hero.eyebrow')}
           </div>

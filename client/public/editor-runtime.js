@@ -113,8 +113,12 @@
    * فبنسمح بتحريكه وتكبيره، بس مش بالكتابة فيه.
    */
   function isLiveElement(el) {
-    if (['days', 'hours', 'minutes', 'seconds'].indexOf(el.id) !== -1) return true;
-    return !!el.querySelector('#days, #hours, #minutes, #seconds');
+    if (['days', 'hours', 'minutes', 'seconds', 'countdown'].indexOf(el.id) !== -1) return true;
+    // القالب الملكي بيعرض العد التنازلي في عنصر واحد اسمه countdown،
+    // مش أربع خانات زي قوالب Tilda — من غير السطر ده كان بيتعامل معاه
+    // كنص عادي، والعميل يكتب فيه والسكريبت يمسح كلامه بعد ثانية.
+    if (el.classList && el.classList.contains('countdown')) return true;
+    return !!el.querySelector('#days, #hours, #minutes, #seconds, #countdown');
   }
 
   /** عنصر الخريطة — ليه تحكّم خاص (لينك مكان) مش كتابة */
@@ -722,8 +726,11 @@
    * تصاميم كلها بتستخدم نفس الكلاس ده، فمفيش داعي نعرف رقم كل سجل.
    */
   function coverRecord() {
+    // قوالب Tilda: شاشة الغلاف جوه سجل .t-rec فيه .popup-enter
     var enter = document.querySelector('.popup-enter');
-    return enter ? enter.closest('.t-rec') : null;
+    if (enter) return enter.closest('.t-rec');
+    // القوالب المكتوبة بإيدينا: شاشة الغلاف عنصر واحد بمعرّف معروف
+    return document.getElementById('coverScreen');
   }
 
   function setCoverVisible(on) {
@@ -731,7 +738,12 @@
     if (!rec) return;
     state.coverVisible = !!on;
     rec.classList.toggle('wda-cover-off', !on);
-    if (on) window.scrollTo({ top: 0, behavior: 'smooth' });
+    // بعض القوالب بتخفي غلافها بنفسها بـstyle مباشر وقت التحرير —
+    // والـinline style بيغلب أي كلاس، فلازم نشيله عشان الزرار يرجّعه
+    if (on) {
+      rec.style.removeProperty('display');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     // عناصر الغلاف بتدخل وتخرج من دايرة التحرير مع الزرار ده
     select(null);
     rescan();
@@ -748,11 +760,56 @@
     // الشريط الجانبي بس لما الرقم يتغيّر فعلاً.
     var texts = document.querySelectorAll('.wda-editable').length;
     var imgs = document.querySelectorAll('.wda-img-editable').length;
-    var key = texts + '/' + imgs;
+    var photos = photoList();
+    // البصمة فيها الصور كمان مش العدد بس: لو العميل غيّر صورة، العدد
+    // مابيتغيّرش لكن الشبكة لازم تعرض الصورة الجديدة
+    var key = texts + '/' + imgs + '/' + photos.map(function (p) {
+      return p.id + (p.hidden ? 'h' : '') + String(p.src).slice(-16);
+    }).join(',');
     if (key !== lastCounts) {
       lastCounts = key;
-      send('ready', { textCount: texts, imageCount: imgs });
+      send('ready', { textCount: texts, imageCount: imgs, photos: photos });
     }
+  }
+
+  /**
+   * كل صور الدعوة بترتيبها في الصفحة — الشريط الجانبي بيبني منها شبكة
+   * مصغّرات مرقّمة.
+   *
+   * ليه: صور الألبوم في القالب الملكي بتبان واحدة واحدة في شريط متحرّك،
+   * فالعميل كان لازم يستنى الصورة تيجي قدامه عشان يضغط عليها — وأصلاً
+   * مش شايف إن فيه 8 صور. بالشبكة بيشوفهم كلهم مرة واحدة ومرقّمين،
+   * ويغيّر أو يشيل أي واحدة من غير ما يلاحق الشريط.
+   */
+  function photoList() {
+    var out = [];
+    var nodes = document.querySelectorAll('[data-elem-id]');
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var id = elemId(el);
+      if (!id || el.closest('.wda-tools')) continue;
+      var img = el.tagName === 'IMG' ? el : el.querySelector('img');
+      if (!img) continue;
+      var isHidden = el.classList.contains('wda-hidden-el');
+      // الصورة المشيلة ارتفاعها صفر، فبنعفيها من شرط المقاس — لازم
+      // تفضل في الشبكة عشان العميل يقدر يرجّعها
+      if (!isHidden && img.offsetHeight <= 40) continue;
+      var r = el.getBoundingClientRect();
+      out.push({
+        id: id,
+        src: img.currentSrc || img.src || '',
+        hidden: isHidden,
+        // مكان الصورة في الصفحة — الترتيب بيمشي مع عين العميل
+        top: Math.round(r.top + window.scrollY),
+        // صور شريط الألبوم بنعلّمها عشان تتجمّع مع بعض في الأول
+        group: el.classList.contains('slide') ? 'album' : '',
+      });
+    }
+    out.sort(function (a, b) {
+      if (a.group !== b.group) return a.group ? -1 : 1;
+      return a.top - b.top;
+    });
+    return out.slice(0, 60);
   }
 
   document.addEventListener('click', function () { setTimeout(rescan, 400); }, true);

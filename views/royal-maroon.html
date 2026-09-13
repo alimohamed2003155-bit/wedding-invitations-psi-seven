@@ -1347,6 +1347,9 @@ window.ASSETS = {
   function isRTLLayout(){ return true; }
   window.addEventListener('resize', function(){ goTo(current); });
   goTo(0);
+  // في وضع التحرير الشريط مايلفّش لوحده — العميل بيحاول يضغط على صورة
+  // وهي ماشية فمش بيقدر يمسكها
+  var EDIT_MODE = /(?:^|[?&])edit=1(?:&|$)/.test(location.search);
   // الصور المخفية بتتحدد من طبقة التخصيص اللي بتتحقن بعد السكريبت ده
   // (وفي المحرر بتتغيّر لحظيًا) — فبنعيد الحساب بعد التحميل وكمان مع
   // أي تغيير في الشريط. من غير كده بيفضل سايب فراغ مكان الصورة المشيلة.
@@ -1356,7 +1359,7 @@ window.ASSETS = {
     new MutationObserver(function(){ goTo(current); })
       .observe(track, { attributes:true, subtree:true, attributeFilter:['style','class'] });
   }
-  var autoTimer = setInterval(function(){ goTo(current+1); }, 4200);
+  var autoTimer = EDIT_MODE ? null : setInterval(function(){ goTo(current+1); }, 4200);
   carouselEl.addEventListener('mouseenter', function(){ clearInterval(autoTimer); });
 
   /* touch swipe support */
