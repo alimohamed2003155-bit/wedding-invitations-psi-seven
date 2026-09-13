@@ -209,6 +209,8 @@ section{position:relative;padding:56px 0;}
   padding:5px 5px 12px;
   border-radius:2px;
   box-shadow:0 12px 24px rgba(0,0,0,0.25);
+  /* الأساس بـ transform عشان المتصفحات القديمة (سفاري أقدم من 14.4)
+     تفضل شايفة الصورة في مكانها ومايلة زي التصميم */
   transform:translateX(-46%) rotate(7deg);
   z-index:2;
   transition:transform 1s cubic-bezier(.22,1,.36,1), opacity 1s ease;
@@ -375,6 +377,29 @@ section{position:relative;padding:56px 0;}
   opacity:0.14;z-index:0;
 }
 .location-section .section-title{margin-bottom:8px;}
+/* الخريطة: كارت بحواف ناعمة بنفس إطار باقي التصميم، ونسبة ثابتة
+   عشان الطول ميقلقش بين الموبايل والشاشة الكبيرة */
+.venue-map{
+  position:relative;z-index:1;
+  max-width:520px;margin:22px auto 0;
+  border-radius:16px;overflow:hidden;
+  border:1px solid var(--line-on-maroon);
+  box-shadow:var(--shadow-card);
+  background:rgba(255,255,255,0.5);
+}
+.venue-map iframe{
+  display:block;width:100%;height:260px;border:0;
+}
+.venue-map-link{
+  position:relative;z-index:1;
+  display:inline-block;margin-top:14px;
+  font-size:14px;font-weight:600;color:var(--maroon);
+  text-decoration:none;border-bottom:1px solid var(--gold);
+  padding-bottom:2px;
+}
+@media (max-width:520px){
+  .venue-map iframe{height:210px;}
+}
 
 /* ============================================================
    DRESS CODE
@@ -518,10 +543,27 @@ section{position:relative;padding:56px 0;}
 }
 
 /* ===== إصلاحات التنسيق (طبقة فوق تصميم القالب) ===== */
-/* الورود زينة — تفضل ورا أي كلام مهما كان ترتيبها في الـ HTML */
-.floral{ z-index:0 !important; pointer-events:none; }
+/* الورود اللي جوه الكروت زينة — تفضل ورا أي كلام مهما كان ترتيبها.
+   وردة أول قسم مستثناة: دي المفروض تبقى قدّام الظرف (زي التصميم
+   الأصلي)، والقاعدة العامة كانت بتوديها وراه فبيبان نصها بس. */
+.floral:not(.flower-hero){ z-index:0 !important; pointer-events:none; }
+/* غطا الظرف عنده z-index:3 — الوردة فوقه بواحد */
+.flower-hero{ z-index:4 !important; }
 .dark-card > *:not(.floral), .light-card > *:not(.floral){ position:relative; z-index:1; }
 .timeline, .tl-item, .tl-label, .tl-time{ position:relative; z-index:2; }
+
+/* في وضع التحرير بس: الورود بتبقى قابلة للضغط عشان صاحب الدعوة
+   يقدر يغيّرها أو يشيلها. الضيف مبيقدرش يضغط عليها زي ما كانت. */
+.floral.wda-editable{ pointer-events:auto !important; }
+
+/* ===== صورة البولارويد: توسيط وميل كل واحد في خاصية لوحده =====
+   المحرر بيكتب transform على العنصر لما العميل يسحبه، وبيكتب rotate
+   لما يظبط الميل. لو التلاتة (توسيط + ميل + سحب) في transform واحدة،
+   كل واحد بيمسح اللي قبله. الخصائص المستقلة بتخلّيهم يعيشوا مع بعض.
+   المتصفحات القديمة بتتجاهل البلوك ده وبتفضل على transform الأصلية. */
+@supports (rotate: 1deg) and (translate: 0 0){
+  .polaroid{ transform:none; translate:-46% 0; rotate:7deg; }
+}
 
 /* على الموبايل الورود بتاخد مساحة كبيرة نسبة للشاشة فبتزاحم النص */
 @media (max-width: 520px){
@@ -695,6 +737,20 @@ html, body{ overflow-x: clip; overscroll-behavior-x: none; }
     <div class="location-watermark"></div>
     <h2 data-elem-id="7000000000009" class="section-title reveal">مكان حفل الاستقبال</h2>
     <p data-elem-id="7000000000015" class="section-sub reveal">قصر الأفراح - القاعة الملكية، الرياض</p>
+
+    <!-- خريطة المكان. اللينك بيتحط من بيانات الدعوة، وصاحب الدعوة
+         يقدر يغيّره من المحرر (بيتعامل معاه كعنصر "خريطة"). -->
+    <div data-elem-id="7000000000051" class="venue-map reveal">
+      <iframe
+        title="خريطة مكان الحفل"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        allowfullscreen
+      ></iframe>
+    </div>
+    <a data-elem-id="7000000000052" class="venue-map-link reveal" href="#" target="_blank" rel="noopener">
+      افتح في خرائط جوجل
+    </a>
   </section>
 
   <!-- DRESS CODE -->
@@ -744,7 +800,7 @@ html, body{ overflow-x: clip; overscroll-behavior-x: none; }
     <div class="sparkle s3">✧</div>
     <h2 data-elem-id="7000000000013" class="section-title reveal">صندوق الهدية</h2>
     <div class="gift-box-wrap reveal">
-      <button class="gift-box-btn" id="giftBtn">
+      <button data-elem-id="7000000000053" class="gift-box-btn" id="giftBtn">
         <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="var(--maroon)" stroke-width="1.4">
           <rect x="3" y="8" width="18" height="12" rx="1.5"/>
           <path d="M3 12h18"/>
@@ -752,7 +808,7 @@ html, body{ overflow-x: clip; overscroll-behavior-x: none; }
           <path d="M12 8c-1.8 0-3.6-1.6-3.6-3.4C8.4 3 9.6 2 11 2.4c1.2.3 1 2 1 2s-.2-1.7 1-2c1.4-.4 2.6.6 2.6 2.2C15.6 6.4 13.8 8 12 8z"/>
         </svg>
       </button>
-      <p class="gift-tap-label">اضغط للفتح</p>
+      <p data-elem-id="7000000000054" class="gift-tap-label">اضغط للفتح</p>
     </div>
     <p data-elem-id="7000000000044" class="gift-thanks reveal" id="giftThanks">شكرًا لحضوركم الذي زيّن ليلتنا.</p>
     <div data-elem-id="7000000000045" class="site-footer"> ♡</div>
@@ -780,6 +836,14 @@ html, body{ overflow-x: clip; overscroll-behavior-x: none; }
   var C = window.__INVITATION_CONFIG__ || {};
   var hidden = C.hiddenSections || [];
   var isAr = String(C.language || 'ar').toLowerCase() === 'ar';
+
+  /* المتصفح بيدعم خصائص التحويل المستقلة (translate/rotate)؟
+     لو أيوه، توسيط صورة البولارويد وميلها بيقعدوا في خصائصهم
+     وtransform بتفضل سايبة للحركة وللسحب في المحرر. لو لأ (سفاري
+     أقدم من 14.4)، لازم نكتب التلاتة مع بعض في transform زي الأول. */
+  window.__WDA_SPLIT_TF__ = !!(window.CSS && CSS.supports
+    && CSS.supports('rotate: 1deg') && CSS.supports('translate: 0 0'));
+  var SPLIT_TRANSFORM = window.__WDA_SPLIT_TF__;
 
   function text(sel, value) {
     if (value === undefined || value === null) return;
@@ -846,6 +910,22 @@ html, body{ overflow-x: clip; overscroll-behavior-x: none; }
     loc.textContent = [C.venueName, C.venueCity].filter(Boolean).join(isAr ? '، ' : ', ');
   }
 
+  /* ---------- خريطة المكان ---------- */
+  // اللينكين دول السيرفر بيحسبهم مسبقًا من مكان الحفل (utils/mapsLink.js)
+  var mapFrame = document.querySelector('.venue-map iframe');
+  var mapLink = document.querySelector('.venue-map-link');
+  if (mapFrame && C.venueMapEmbedSrc) mapFrame.src = C.venueMapEmbedSrc;
+  if (mapLink) {
+    if (C.venueMapDirectLink) mapLink.href = C.venueMapDirectLink;
+    if (C.openInMapsText) mapLink.textContent = C.openInMapsText;
+  }
+  // مفيش لينك خريطة أصلًا؟ نشيل الكارت بدل ما يفضل مربع فاضي
+  if (!C.venueMapEmbedSrc) {
+    var mapBox = document.querySelector('.venue-map');
+    if (mapBox) mapBox.style.display = 'none';
+    if (mapLink) mapLink.style.display = 'none';
+  }
+
   /* ---------- العد التنازلي ---------- */
   var target = C.weddingDateTimeISO ? new Date(C.weddingDateTimeISO) : null;
   var cdEl = document.getElementById('countdown');
@@ -881,13 +961,21 @@ html, body{ overflow-x: clip; overscroll-behavior-x: none; }
     dressCode: ['.dress-section'],
     rsvp: ['.rsvp-btn'],
     map: ['.location-section'],
+    album: ['.album-section'],
+    guestbook: ['.guestbook-section'],
+    gift: ['.gift-section'],
+  };
+  // الأقسام الكاملة بنشيل الـ<section> بتاعها؛ العناصر المفردة
+  // (زرار تأكيد الحضور، سطر العداد) بنشيلها هي بس
+  var WHOLE_SECTION = {
+    '#programCard': 1, '.dress-section': 1, '.location-section': 1,
+    '.album-section': 1, '.guestbook-section': 1, '.gift-section': 1,
   };
   hidden.forEach(function (key) {
     (SECTION_OF[key] || []).forEach(function (sel) {
       document.querySelectorAll(sel).forEach(function (el) {
         var card = el.closest('.container') || el;
-        (sel === '#programCard' || sel === '.dress-section' || sel === '.location-section'
-          ? card : el).style.display = 'none';
+        (WHOLE_SECTION[sel] ? card : el).style.display = 'none';
       });
     });
   });
@@ -1006,7 +1094,7 @@ html, body{ overflow-x: clip; overscroll-behavior-x: none; }
       var pol = document.getElementById('polaroid');
       if (pol) {
         pol.style.opacity = '1';
-        pol.style.transform = 'translateX(-46%) rotate(7deg)';
+        pol.style.transform = SPLIT_TRANSFORM ? '' : 'translateX(-46%) rotate(7deg)';
       }
     }, 60);
   }
@@ -1035,6 +1123,9 @@ window.ASSETS = {
 
 (function(){
   "use strict";
+
+  /* اتحسبت مرة واحدة في سكريبت الربط اللي فوق */
+  var SPLIT_TRANSFORM = !!window.__WDA_SPLIT_TF__;
 
   /* ---------- inject watermark image vars ---------- */
   document.documentElement.style.setProperty('--img-castle', 'url(' + ASSETS.castle + ')');
@@ -1095,11 +1186,14 @@ window.ASSETS = {
   function playHeroEntrance(){
     var polaroid = document.getElementById('polaroid');
     polaroid.style.opacity = '0';
-    polaroid.style.transform = 'translateX(-46%) translateY(30px) rotate(7deg)';
+    // المتصفحات الحديثة: التوسيط والميل في translate/rotate، فهنا
+    // الحركة بس. القديمة: لازم نكتب التلاتة مع بعض في transform.
+    var base = SPLIT_TRANSFORM ? '' : 'translateX(-46%) rotate(7deg) ';
+    polaroid.style.transform = base + 'translateY(30px)';
     requestAnimationFrame(function(){
       setTimeout(function(){
         polaroid.style.opacity = '1';
-        polaroid.style.transform = 'translateX(-46%) translateY(0) rotate(7deg)';
+        polaroid.style.transform = base + 'translateY(0)';
       }, 80);
     });
     document.querySelectorAll('.hero .reveal').forEach(function(el, i){
@@ -1165,10 +1259,18 @@ window.ASSETS = {
       empty.className = 'cal-day empty';
       grid.appendChild(empty);
     }
+    // اليوم المعلّم: يوم الفرح افتراضيًا، إلا لو صاحب الدعوة ضغط على
+    // رقم تاني في المحرر (بيتحفظ في تخصيصات الدعوة)
+    var marked = Number(window.__WDA_CAL_DAY__) || CAL.day;
+    var CAL_ID_BASE = 7000000000080;
     for(var day=1; day<=daysInMonth; day++){
       var cell = document.createElement('div');
-      var isToday = (day === CAL.day);
+      var isToday = (day === marked);
       cell.className = 'cal-day' + (isToday ? ' today' : '');
+      // معرّف ثابت لكل يوم — بيخلي المحرر يقدر يحدّده، والضغط عليه
+      // في وضع التحرير بينقل العلامة عليه على طول
+      cell.setAttribute('data-elem-id', String(CAL_ID_BASE + day));
+      cell.setAttribute('data-cal-day', String(day));
       var span = document.createElement('span');
       span.className = 'hd';
       span.textContent = day;
@@ -1194,30 +1296,45 @@ window.ASSETS = {
      ============================================================ */
   var track = document.getElementById('carouselTrack');
   var dotsWrap = document.getElementById('carouselDots');
+  // كل صورة في الألبوم بتاخد معرّف ثابت — وده اللي بيخلي المحرر يشوفها:
+  // صاحب الدعوة يقدر يضغط على أي صورة ويغيّرها، أو يشيلها خالص
+  // فالألبوم يبقى 4 بدل 5 (أو أي عدد يحبه).
+  var ALBUM_ID_BASE = 7000000000060;
   ASSETS.photos.forEach(function(src, i){
     var slide = document.createElement('div');
     slide.className = 'slide';
+    slide.setAttribute('data-elem-id', String(ALBUM_ID_BASE + i));
     var img = document.createElement('img');
     img.src = src;
     img.loading = 'lazy';
     img.alt = 'صورة الزفاف ' + (i+1);
     slide.appendChild(img);
     track.appendChild(slide);
-
-    var dot = document.createElement('span');
-    if(i===0) dot.classList.add('active');
-    dotsWrap.appendChild(dot);
   });
 
-  var slideCount = ASSETS.photos.length;
   var current = 0;
   var carouselEl = document.getElementById('carousel');
+
+  /** الصور الظاهرة بس — أي صورة صاحب الدعوة شالها بتخرج من الحسبة */
+  function visibleSlides(){
+    return Array.prototype.filter.call(track.children, function(s){
+      return getComputedStyle(s).display !== 'none';
+    });
+  }
   function getSlideStep(){
-    var slide = track.querySelector('.slide');
+    var slide = visibleSlides()[0];
     return slide ? slide.getBoundingClientRect().width : 0;
   }
+  /** النقط بتتبني من عدد الصور الظاهر دلوقتي، مش من عددها الأصلي */
+  function syncDots(count){
+    while(dotsWrap.children.length > count) dotsWrap.removeChild(dotsWrap.lastChild);
+    while(dotsWrap.children.length < count) dotsWrap.appendChild(document.createElement('span'));
+  }
   function goTo(i){
-    current = (i + slideCount) % slideCount;
+    var count = visibleSlides().length;
+    syncDots(count);
+    if(!count){ track.style.transform = ''; return; }
+    current = (i + count) % count;
     var step = getSlideStep();
     var centering = (carouselEl.clientWidth - step) / 2;
     track.style.transform = 'translateX(' + (current * step - centering) * (isRTLLayout()?1:-1) + 'px)';
@@ -1226,6 +1343,15 @@ window.ASSETS = {
   function isRTLLayout(){ return true; }
   window.addEventListener('resize', function(){ goTo(current); });
   goTo(0);
+  // الصور المخفية بتتحدد من طبقة التخصيص اللي بتتحقن بعد السكريبت ده
+  // (وفي المحرر بتتغيّر لحظيًا) — فبنعيد الحساب بعد التحميل وكمان مع
+  // أي تغيير في الشريط. من غير كده بيفضل سايب فراغ مكان الصورة المشيلة.
+  window.addEventListener('load', function(){ goTo(current); });
+  [300, 900, 2000].forEach(function(ms){ setTimeout(function(){ goTo(current); }, ms); });
+  if (window.MutationObserver) {
+    new MutationObserver(function(){ goTo(current); })
+      .observe(track, { attributes:true, subtree:true, attributeFilter:['style','class'] });
+  }
   var autoTimer = setInterval(function(){ goTo(current+1); }, 4200);
   carouselEl.addEventListener('mouseenter', function(){ clearInterval(autoTimer); });
 
@@ -1253,7 +1379,12 @@ window.ASSETS = {
     {label:'ختام الحفل', time:'21:00'}
   ];
   var timelineEl = document.getElementById('timeline');
-  programItems.forEach(function(item){
+  // معرّفات ثابتة لكل سطر في برنامج اليوم — من غيرها المحرر مكانش
+  // شايف الكلام ده أصلًا وصاحب الدعوة مش قادر يغيّر ولا كلمة فيه.
+  // الرقم بعيد عن أرقام النتيجة (81–111) بالقصد: أي تداخل معناه إن
+  // تعديل على يوم في النتيجة يروح لسطر في البرنامج.
+  var TL_ID_BASE = 7000000000200;
+  programItems.forEach(function(item, idx){
     var row = document.createElement('div');
     row.className = 'tl-item';
     var line = document.createElement('div');
@@ -1266,11 +1397,13 @@ window.ASSETS = {
 
     var label = document.createElement('div');
     label.className = 'tl-label';
+    label.setAttribute('data-elem-id', String(TL_ID_BASE + idx * 2));
     label.textContent = item.label;
     row.appendChild(label);
 
     var time = document.createElement('div');
     time.className = 'tl-time';
+    time.setAttribute('data-elem-id', String(TL_ID_BASE + idx * 2 + 1));
     time.textContent = item.time;
     row.appendChild(time);
 

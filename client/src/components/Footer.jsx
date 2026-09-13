@@ -12,15 +12,21 @@ export default function Footer() {
   return (
     <footer className="bg-ivory px-5 pb-14 pt-12 sm:px-6">
       <div className="mx-auto max-w-3xl text-center">
+        {/* هنا بنستخدم اللوجو الكامل بالسطر التحتاني ("موقع دعوات
+            افراح") — المساحة تسمح، والفوتر أنسب مكان للتعريف الكامل */}
         {!logoFailed && (
           <img
-            src="/img/logo.png"
+            src="/img/logo-full.png"
             alt={t('nav.brand')}
-            className="mx-auto mb-3 h-16 w-16 rounded-full object-cover"
+            width="566"
+            height="360"
+            className="mx-auto mb-3 h-24 w-auto sm:h-28"
             onError={() => setLogoFailed(true)}
           />
         )}
-        <div className="mb-1 font-serif text-lg font-bold text-ink">{t('footer.brand')}</div>
+        {logoFailed && (
+          <div className="mb-1 font-serif text-lg font-bold text-ink">{t('footer.brand')}</div>
+        )}
         <p className="text-[13px] text-ink-dim">{t('footer.tagline')}</p>
 
         {/* ===== التواصل ===== */}

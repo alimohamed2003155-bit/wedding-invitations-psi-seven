@@ -14,6 +14,9 @@
 
   var state = {
     offsets: {}, selected: null,
+    // { elemId: degrees } — زاوية ميل كل عنصر. في خاصية rotate
+    // المستقلة مش جوه transform، عشان الميل والسحب يعيشوا مع بعض.
+    rotations: {},
     // التحرير (اختيار وكتابة) منفصل عن السحب: الباقة الأساسية عندها
     // التحرير من غير السحب
     editingOn: false, dragEnabled: false, imagesEnabled: false,
@@ -159,6 +162,19 @@
     return !!bg && bg !== 'transparent' && !/rgba\(0,\s*0,\s*0,\s*0\)/.test(bg);
   }
 
+  /**
+   * فيه رسمة (svg) بمقاس محترم جواه؟
+   * الرسمات مش عناصر HTML عادية فمالهاش offsetHeight — بنقيسها
+   * بالمستطيل بتاعها. ده اللي بيخلي زرار زي صندوق الهدية (رسمة جوه
+   * زرار، من غير نص ولا صورة) عنصر يتحدد ويتحرك ويتشال.
+   */
+  function hasIcon(el) {
+    var svg = el.tagName === 'svg' ? el : el.querySelector('svg');
+    if (!svg) return false;
+    var r = svg.getBoundingClientRect();
+    return r.height > 12 && r.width > 12;
+  }
+
   function elementKind(el) {
     if (isMapElement(el)) return 'map';
     if (isLiveElement(el)) return 'live';
@@ -205,10 +221,15 @@
       var text = (el.innerText || '').trim();
       var img = el.tagName === 'IMG' ? el : el.querySelector('img');
       var video = el.querySelector('video');
-      // لازم يكون فيه نص أو صورة أو فيديو — العناصر الفاضية مالهاش لازمة.
-      // الفيديو كان مستبعد خالص قبل كده (مالوش نص ولا img)، عشان كده
-      // خلفية أول سيكشن مكانش ينفع يتعمل فيها أي حاجة.
-      if (!text && !video && !(img && img.offsetHeight > 12) && !isColorSwatch(el)) continue;
+      // لازم يكون فيه نص أو صورة أو فيديو أو رسمة — العناصر الفاضية
+      // مالهاش لازمة. الفيديو كان مستبعد خالص قبل كده (مالوش نص ولا
+      // img)، عشان كده خلفية أول سيكشن مكانش ينفع يتعمل فيها أي حاجة.
+      // والرسمات (svg) كانت مستبعدة كمان — وعشان كده زرار صندوق
+      // الهدية مكانش بيتحدد بالمرة، هو رسمة جوه زرار من غير ولا كلمة.
+      // الخريطة كمان: جواها iframe بس — مفيش نص ولا صورة ولا رسمة،
+      // فكانت بتتستبعد والعميل مش قادر يضغط عليها يغيّر المكان
+      if (!text && !video && !(img && img.offsetHeight > 12)
+        && !isColorSwatch(el) && !hasIcon(el) && !isMapElement(el)) continue;
       if (text.length > 600) continue;
       out.push(el);
     }
@@ -245,6 +266,19 @@
   function applyOffset(el, dx, dy) {
     el.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
     el.style.transition = 'none';
+  }
+
+  /** زاوية الميل الحالية بالدرجات — من التخصيص أو من التصميم نفسه */
+  function currentRotation(el) {
+    var id = elemId(el);
+    if (id && typeof state.rotations[id] === 'number') return state.rotations[id];
+    var css = getComputedStyle(el).rotate;   // "none" أو "12deg"
+    var m = String(css || '').match(/(-?[\d.]+)deg/);
+    return m ? Math.round(parseFloat(m[1]) * 10) / 10 : 0;
+  }
+
+  function applyRotation(el, deg) {
+    el.style.setProperty('rotate', deg + 'deg', 'important');
   }
 
   // ===== السحب =====
@@ -604,6 +638,10 @@
         isImage: !!el.getAttribute('data-wda-img'),
         // لون الخلفية الحالي بصيغة hex — عشان منتقي اللون يبدأ صح
         bgColor: rgbToHex(getComputedStyle(el.querySelector('.tn-atom') || el).backgroundColor),
+        // زاوية الميل الحالية — عشان السلايدر يبدأ من مكانه الصح
+        rotation: currentRotation(el),
+        // يوم في نتيجة الشهر؟ الشريط بيقول لصاحب الدعوة إنه اتعلّم
+        calDay: Number(el.getAttribute('data-cal-day')) || 0,
       });
     } else {
       hideTools();
@@ -795,6 +833,13 @@
         var el = document.querySelector('[data-elem-id="' + id + '"]');
         if (el) applyOffset(el, state.offsets[id].dx, state.offsets[id].dy);
       });
+      // وزوايا الميل كمان (زي المقاسات: inline عشان السلايدر يقدر
+      // يغيّرها لحظيًا من غير ما تغلبه قاعدة !important المحقونة)
+      state.rotations = p.rotations || {};
+      Object.keys(state.rotations).forEach(function (rid) {
+        var el = document.querySelector('[data-elem-id="' + rid + '"]');
+        if (el) applyRotation(el, state.rotations[rid]);
+      });
       // النصوص المضافة بتتبني من سكريبت التخصيصات وقت التحميل —
       // هنا بنفتح التفاعل معاها عشان تتمسك وتتعدّل
       document.querySelectorAll('[data-wda-added]').forEach(function (el) {
@@ -826,7 +871,11 @@
         document.head.appendChild(link);
         var st = document.createElement('style');
         st.id = id;
-        st.textContent = ".t-text,.t-title,.t-descr,.t-name,.tn-atom{font-family:'" + p.font + "',sans-serif !important;}";
+        // السطر الأول لقوالب Tilda (كلاساتها)، والتاني للقوالب
+        // المكتوبة بإيدينا اللي بتقرا خطوطها من متغيّرات CSS —
+        // من غيره تغيير الخط مكانش بيعمل أي حاجة فيها
+        st.textContent = ".t-text,.t-title,.t-descr,.t-name,.tn-atom{font-family:'" + p.font + "',sans-serif !important;}"
+          + ":root{--serif-ar:'" + p.font + "',serif !important;--sans-ar:'" + p.font + "',sans-serif !important;}";
         document.head.appendChild(st);
       }
     }
@@ -1019,7 +1068,31 @@
         }
       });
 
-      // 7) النصوص المضافة (إضافة أو حذف بيترجعوا من هنا)
+      // 7) زوايا الميل
+      Object.keys(state.rotations).forEach(function (rid) {
+        if (!((c.rotations || {})[rid] !== undefined)) {
+          var stale = document.querySelector('[data-elem-id="' + rid + '"]');
+          if (stale) stale.style.removeProperty('rotate');
+        }
+      });
+      state.rotations = c.rotations || {};
+      Object.keys(state.rotations).forEach(function (rid) {
+        var el = document.querySelector('[data-elem-id="' + rid + '"]');
+        if (el) applyRotation(el, state.rotations[rid]);
+      });
+
+      // 8) اليوم المعلّم في نتيجة الشهر
+      if (c.calDay) {
+        var wanted = document.querySelector('.cal-day[data-cal-day="' + c.calDay + '"]');
+        if (wanted) {
+          document.querySelectorAll('.cal-day.today').forEach(function (x) {
+            x.classList.remove('today');
+          });
+          wanted.classList.add('today');
+        }
+      }
+
+      // 9) النصوص المضافة (إضافة أو حذف بيترجعوا من هنا)
       if (typeof window.__wdaApplyAdded === 'function') {
         window.__wdaApplyAdded(c.added || []);
         document.querySelectorAll('[data-wda-added]').forEach(function (el) {
@@ -1048,6 +1121,21 @@
       }
     }
 
+    // معاينة لحظية لزاوية الميل وإنت بتحرّك السلايدر
+    if (msg.type === 'set-rotation' && p.id) {
+      var rHost = document.querySelector('[data-elem-id="' + p.id + '"]');
+      if (rHost) {
+        if (p.deg === null || p.deg === undefined || p.deg === '') {
+          delete state.rotations[p.id];
+          rHost.style.removeProperty('rotate');   // رجّعه لميل التصميم الأصلي
+        } else {
+          state.rotations[p.id] = Number(p.deg);
+          applyRotation(rHost, Number(p.deg));
+        }
+        if (state.selected === rHost) showTools(rHost, state.writing ? 'writing' : 'idle');
+      }
+    }
+
     if (msg.type === 'reset-offsets') {
       Object.keys(state.offsets).forEach(function (oid) {
         var el = document.querySelector('[data-elem-id="' + oid + '"]');
@@ -1057,6 +1145,22 @@
       send('offsets', { offsets: {} });
     }
   });
+
+  // ===== نتيجة الشهر: الضغط على الرقم بيعلّمه =====
+  // العلامة بتتنقل فورًا في الدعوة، والشريط بيحفظها. الضغطة العادية
+  // بتفضل شغالة كمان (العنصر بيتحدد زي أي عنصر تاني) — الاتنين مع بعض.
+  document.addEventListener('click', function (e) {
+    if (!state.editingOn || !e.isTrusted) return;
+    var cell = e.target.closest && e.target.closest('.cal-day[data-cal-day]');
+    if (!cell) return;
+    var day = Number(cell.getAttribute('data-cal-day'));
+    if (!day) return;
+    document.querySelectorAll('.cal-day.today').forEach(function (c) {
+      c.classList.remove('today');
+    });
+    cell.classList.add('today');
+    send('cal-day', { day: day });
+  }, true);
 
   // ===== التبليغ إن السكريبت جاهز =====
   // مانستناش حدث load: تصاميم Tilda بتفضل بتحمّل موارد خارجية (خطوط،

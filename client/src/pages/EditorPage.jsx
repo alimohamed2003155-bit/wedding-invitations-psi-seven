@@ -17,7 +17,7 @@ import {
   ChevronLeft, ChevronRight, Upload, AlertCircle, Crown, FileText,
   Rocket, Trash2, ExternalLink, Copy, MousePointerClick, Undo2,
   PlayCircle, RotateCw, Layers, ALargeSmall, Minus, Plus, CalendarDays, Sparkles,
-  MapPin, Redo2, Palette, Stamp, TypeOutline, Share2,
+  MapPin, Redo2, Palette, Stamp, TypeOutline, Share2, Eye, EyeOff,
 } from 'lucide-react';
 import {
   useGetEditorQuery,
@@ -59,6 +59,9 @@ const TABS = [
   { id: 'photos', icon: ImageIcon, feature: 'images', label: 'editor.tabPhotos' },
   { id: 'music', icon: Music, feature: 'music', label: 'editor.tabMusic' },
   { id: 'layout', icon: Move, feature: 'drag', label: 'editor.tabLayout' },
+  // أقسام الدعوة: إظهار وإخفاء قسم كامل بضغطة — نفس فكرة "طبقات"
+  // في أي برنامج تصميم: القسم المخفي بيفضل في القايمة عشان يرجع
+  { id: 'sections', icon: Layers, feature: 'sections', label: 'editor.tabSections' },
   // كارت المشاركة مش ميزة باقة: كل صاحب دعوة مميزة لازم يقدر يظبط
   // شكل لينكه على واتساب — ده جزء من دعوته مش إضافة
   { id: 'share', icon: Share2, feature: null, label: 'editor.tabShare' },
@@ -162,6 +165,7 @@ export default function EditorPage() {
   const [runtimeReady, setRuntimeReady] = useState(false);
   const [error, setError] = useState('');
   const [dirty, setDirty] = useState(false);
+  const [sectionsBusy, setSectionsBusy] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [textSaving, setTextSaving] = useState(false);
 
@@ -186,6 +190,9 @@ export default function EditorPage() {
 
   const features = useMemo(() => data?.features || [], [data]);
   const has = useCallback((f) => features.includes(f), [features]);
+  // أقسام القالب اللي ينفع تتشال، وأنهي واحد مشيل دلوقتي
+  const optionalSections = useMemo(() => data?.optionalSections || [], [data]);
+  const hiddenSections = useMemo(() => data?.details?.hiddenSections || [], [data]);
 
   /** لقطة من كل حاجة ممكن تتغيّر */
   const snapshot = useCallback(() => ({
@@ -224,6 +231,8 @@ export default function EditorPage() {
         texts: c.texts || {},
         sizes: c.sizes || {},
         colors: c.colors || {},
+        rotations: c.rotations || {},
+        calDay: c.calDay || 0,
         added: c.added || [],
         hidden: c.hidden || [],
         share: {
@@ -369,6 +378,14 @@ export default function EditorPage() {
         saveTextRef.current(p);
       }
 
+      // ضغط على رقم في نتيجة الشهر — العلامة اتنقلت عليه جوه الدعوة
+      // وإحنا بنحفظ اليوم ده
+      if (msg.type === 'cal-day' && p.day) {
+        rememberRef.current();
+        setDraft((d) => (d ? { ...d, calDay: p.day } : d));
+        setDirty(true);
+      }
+
       // العميل ضغط على أيقونة الحذف
       if (msg.type === 'hide' && p.id) {
         rememberRef.current();
@@ -392,6 +409,7 @@ export default function EditorPage() {
   // آخر عنصر اتغيّر مقاسه — عشان سحبة السلايدر تتسجّل كخطوة واحدة
   const sizeAnchorRef = useRef(null);
   const colorAnchorRef = useRef(null);
+  const rotateAnchorRef = useRef(null);
   const trimAnchorRef = useRef(null);
   const undoRef = useRef(() => {});
   const redoRef = useRef(() => {});
@@ -431,7 +449,7 @@ export default function EditorPage() {
     if (!runtimeReady || !draft) return;
     post('init', {
       offsets: draft.offsets, hidden: draft.hidden, sizes: draft.sizes,
-      colors: draft.colors, features,
+      colors: draft.colors, rotations: draft.rotations, features,
     });
     if (draft.fontFamily) post('set-font', { font: draft.fontFamily });
     // مرة واحدة بس عند الجاهزية — بعد كده كل تغيير بيتبعت لحظيًا لوحده
@@ -454,9 +472,12 @@ export default function EditorPage() {
         if (has('drag')) body.offsets = draft.offsets;
         if (has('images')) body.images = draft.images;
         if (has('colors')) body.colors = draft.colors;
-        // الإخفاء والمقاس مش مميزات باقة — دول تنسيق العميل في دعوته هو
+        // الإخفاء والمقاس والميل مش مميزات باقة — دول تنسيق العميل في
+        // دعوته هو
         body.hidden = draft.hidden;
         body.sizes = draft.sizes;
+        body.rotations = draft.rotations;
+        body.calDay = draft.calDay || 0;
         body.added = draft.added;
         body.share = draft.share;
         await saveCustomizations({ shortId, ...body }).unwrap();
@@ -580,6 +601,8 @@ export default function EditorPage() {
         shortId,
         hidden: snap.customizations.hidden,
         sizes: snap.customizations.sizes,
+        rotations: snap.customizations.rotations || {},
+        calDay: snap.customizations.calDay || 0,
         added: snap.customizations.added,
       };
       if (has('fonts')) body.fontFamily = snap.customizations.fontFamily;
@@ -689,6 +712,27 @@ export default function EditorPage() {
     }
   }
 
+  /**
+   * زاوية ميل العنصر المختار بالدرجات — null يعني رجّعه لميل التصميم.
+   * زي المقاس: سحبة السلايدر كلها بتتسجّل كخطوة رجوع واحدة.
+   */
+  function setRotation(deg) {
+    if (!selected) return;
+    if (rotateAnchorRef.current !== selected.id) {
+      rotateAnchorRef.current = selected.id;
+      remember();
+    }
+    post('set-rotation', { id: selected.id, deg });
+    setDraft((d) => {
+      const rotations = { ...(d.rotations || {}) };
+      if (deg === null) delete rotations[selected.id];
+      else rotations[selected.id] = deg;
+      return { ...d, rotations };
+    });
+    setSelected((s) => (s ? { ...s, rotation: deg === null ? 0 : deg } : s));
+    setDirty(true);
+  }
+
   /** لون خلفية العنصر المختار (مربعات الزي المقترح مثلاً) */
   function setColor(hex) {
     if (!selected) return;
@@ -732,6 +776,37 @@ export default function EditorPage() {
     post('set-image', { id: data.sealElemId, url });
     setDraft((d) => ({ ...d, images: { ...d.images, [data.sealElemId]: url } }));
     setDirty(true);
+  }
+
+  /**
+   * إظهار/إخفاء قسم كامل من الدعوة.
+   *
+   * ده مش نفس "احذف العنصر" اللي في السلة: ده بيشيل القسم كله من
+   * التصميم (العنوان والمحتوى والمسافات)، والدعوة بتتبني من جديد من
+   * غيره — زي بالظبط لو العميل مااختارهوش وهو بيعمل الدعوة. ولأن
+   * التصميم بيتبني على السيرفر، لازم نعيد تحميل الإطار بعد الحفظ.
+   *
+   * القسم المخفي بيفضل في القايمة عشان يرجع بضغطة تانية (نفس أسلوب
+   * الطبقات في برامج التصميم — الحاجة المخفية مبتختفيش من اللستة).
+   */
+  async function toggleSection(key) {
+    if (!data?.details) return;
+    const current = data.details.hiddenSections || [];
+    const next = current.includes(key)
+      ? current.filter((k) => k !== key)
+      : [...current, key];
+    remember();
+    setError('');
+    setSectionsBusy(true);
+    try {
+      await saveDetails({ shortId, ...data.details, hiddenSections: next }).unwrap();
+      await refetch();
+      reloadFrame();
+    } catch (err) {
+      setError(err?.data?.error || t('editor.errorSave'));
+    } finally {
+      setSectionsBusy(false);
+    }
   }
 
   /** رجّع جزء اتحذف */
@@ -1411,6 +1486,45 @@ export default function EditorPage() {
                               </div>
                             )}
 
+                            {/* الميل — أي عنصر ينفع يتمايل شوية، والصور
+                                بالذات (صورة البولارويد في القالب
+                                الملكي مثلاً بتبقى شكلها أحلى مايلة) */}
+                            <div className="mb-4 rounded-xl border border-line bg-card p-3">
+                              <div className="mb-2.5 flex items-center justify-between">
+                                <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-ink">
+                                  <RotateCw size={13} /> {t('editor.rotateTitle')}
+                                </span>
+                                <span className="font-mono text-[12px] text-ink-dim">
+                                  {Math.round(selected.rotation || 0)}°
+                                </span>
+                              </div>
+                              <input
+                                type="range"
+                                min="-45"
+                                max="45"
+                                step="1"
+                                value={Math.round(selected.rotation || 0)}
+                                onChange={(e) => setRotation(Number(e.target.value))}
+                                className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-line accent-rose"
+                              />
+                              {draft.rotations?.[selected.id] !== undefined && (
+                                <button
+                                  type="button"
+                                  onClick={() => setRotation(null)}
+                                  className="mt-2.5 inline-flex items-center gap-1.5 text-[11.5px] font-bold text-ink-dim hover:text-rose"
+                                >
+                                  <RotateCcw size={11} /> {t('editor.rotateReset')}
+                                </button>
+                              )}
+                            </div>
+
+                            {/* يوم في نتيجة الشهر — الضغط عليه علّمه */}
+                            {selected.calDay > 0 && (
+                              <p className="mb-4 rounded-xl bg-emerald/[0.08] px-3.5 py-2.5 text-[11.5px] text-emerald">
+                                {t('editor.calDayHint', { day: selected.calDay })}
+                              </p>
+                            )}
+
                             {/* مقاس الخط */}
                             {selected.kind !== 'image' && selected.kind !== 'video' && (
                               <>
@@ -1664,6 +1778,63 @@ export default function EditorPage() {
                       >
                         <RotateCcw size={13} /> {t('editor.layoutReset')}
                       </button>
+                    </>
+                  )}
+
+                  {/* ---- أقسام الدعوة ---- */}
+                  {tab === 'sections' && (
+                    <>
+                      <h2 className="mb-1.5 font-serif text-[16px] font-bold text-ink">
+                        {t('editor.sectionsTitle')}
+                      </h2>
+                      <p className="mb-4 text-[12.5px] text-ink-dim">{t('editor.sectionsHint')}</p>
+
+                      {!has('sections') ? (
+                        <LockedPanel />
+                      ) : optionalSections.length === 0 ? (
+                        <p className="rounded-2xl border border-dashed border-line px-4 py-5 text-center text-[12px] text-ink-dim">
+                          {t('editor.sectionsEmpty')}
+                        </p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {optionalSections.map(({ key, label }) => {
+                            const off = hiddenSections.includes(key);
+                            return (
+                              <button
+                                key={key}
+                                type="button"
+                                disabled={sectionsBusy}
+                                onClick={() => toggleSection(key)}
+                                className={`flex w-full items-center gap-3 rounded-xl border px-3.5 py-3 text-start transition disabled:opacity-50 ${
+                                  off
+                                    ? 'border-line bg-ivory/50'
+                                    : 'border-emerald/35 bg-emerald/[0.06]'
+                                }`}
+                              >
+                                <span
+                                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                                    off ? 'bg-ink/[0.06] text-ink-dim' : 'bg-emerald/15 text-emerald'
+                                  }`}
+                                >
+                                  {off ? <EyeOff size={14} /> : <Eye size={14} />}
+                                </span>
+                                <span className={`flex-1 text-[13px] ${off ? 'text-ink-dim line-through' : 'font-bold text-ink'}`}>
+                                  {label}
+                                </span>
+                                <span className={`text-[11px] font-bold ${off ? 'text-ink-dim' : 'text-emerald'}`}>
+                                  {off ? t('editor.sectionOff') : t('editor.sectionOn')}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {has('sections') && optionalSections.length > 0 && (
+                        <p className="mt-3 rounded-xl bg-brass/[0.10] px-3.5 py-2.5 text-[11.5px] text-[#7a5a1a]">
+                          {t('editor.sectionsNote')}
+                        </p>
+                      )}
                     </>
                   )}
                 </motion.div>

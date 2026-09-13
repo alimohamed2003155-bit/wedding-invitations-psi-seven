@@ -205,6 +205,9 @@ router.get('/api/editor/:shortId', requireAuth, async (req, res) => {
       customizations: invitation.customizations || {},
       details: detailsOf(invitation),
       features: featuresFor(req.user),
+      // الأقسام اللي القالب ده بيسمح بشيلها — المحرر بيبني منها لوحة
+      // "أقسام الدعوة" بدل ما يبقى الكلام ده متاح وقت الإنشاء بس
+      optionalSections: (getTemplate(invitation.templateId) || {}).optionalSections || [],
       fonts: ALLOWED_FONTS,
       // أختام التصاميم التلاتة — العميل يبدّل ختم دعوته بأي واحد فيهم
       seals: BUILT_IN_SEALS,
@@ -427,6 +430,8 @@ router.patch('/api/editor/:shortId', requireAuth, async (req, res) => {
       texts: { ...(current.texts || {}) },
       sizes: { ...(current.sizes || {}) },
       colors: { ...(current.colors || {}) },
+      rotations: { ...(current.rotations || {}) },
+      calDay: current.calDay || 0,
       added: [...(current.added || [])],
       hidden: [...(current.hidden || [])],
       share: { ...(current.share || {}) },
@@ -521,6 +526,24 @@ router.patch('/api/editor/:shortId', requireAuth, async (req, res) => {
         if (!isSafeElemId(id) || !isSafeColor(body.colors[id])) return;
         next.colors[id] = String(body.colors[id]).toLowerCase();
       });
+    }
+
+    // زوايا الميل — زي المقاس: تنسيق العميل في دعوته، مش ميزة باقة.
+    // استبدال كامل عشان "رجّع للأصل" يشتغل صح.
+    if (body.rotations !== undefined) {
+      next.rotations = {};
+      Object.keys(body.rotations || {}).forEach((id) => {
+        if (!isSafeElemId(id)) return;
+        const deg = Number(body.rotations[id]);
+        if (!Number.isFinite(deg)) return;
+        next.rotations[id] = Math.max(-180, Math.min(180, Math.round(deg * 10) / 10));
+      });
+    }
+
+    // اليوم المعلّم في نتيجة الشهر (1–31، و0 معناها يوم الفرح زي ما هو)
+    if (body.calDay !== undefined) {
+      const day = Math.round(Number(body.calDay));
+      next.calDay = Number.isFinite(day) && day >= 1 && day <= 31 ? day : 0;
     }
 
     // النصوص المضافة — استبدال كامل، وكل عنصر بيتنضّف ويتحط في حدوده.

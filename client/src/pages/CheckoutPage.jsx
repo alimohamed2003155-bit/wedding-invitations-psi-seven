@@ -341,19 +341,20 @@ export default function CheckoutPage() {
                   {t('payment.bankTitle')}
                 </div>
 
-                {/* التلاتة اللي بيتم التحويل بيهم فعلاً بس. الباقي
-                    (IBAN، SWIFT، العنوان، الاسم بالعربي) بيلزم في
-                    التحويلات الدولية بس، وعرضه كله مع بعض كان بيعمل
-                    حيطة أرقام العميل بيتوه فيها. */}
+                {/* التلاتة اللي بيتم التحويل بيهم فعلاً بس — والأول
+                    فيهم الـIBAN، ده الرقم اللي العميل بيحوّل عليه.
+                    الباقي (رقم الحساب الداخلي، SWIFT، العنوان، الاسم
+                    بالعربي) بيلزم في حالات معيّنة بس، وعرضه كله مع
+                    بعض كان بيعمل حيطة أرقام العميل بيتوه فيها. */}
                 <div className="grid grid-cols-2 gap-2.5">
-                  <CopyTile label={t('payment.accountNumber')} value={b.accountNumber} wide />
+                  <CopyTile label={t('payment.iban')} value={b.iban} wide />
                   <CopyTile label={t('payment.bank')} value={b.bankName} />
                   <CopyTile label={t('payment.accountHolder')} value={b.accountNameEn} />
                 </div>
                 <p className="mt-2.5 text-center text-[11.5px] text-ink-dim">{t('checkout.tapToCopy')}</p>
 
                 {/* الباقي تحت زرار — موجود لما يحتاجه، ومش واقف في وشه */}
-                {(b.iban || b.swift || b.address || b.accountNameAr) && (
+                {(b.accountNumber || b.swift || b.address || b.accountNameAr) && (
                   <>
                     <button
                       type="button"
@@ -371,7 +372,7 @@ export default function CheckoutPage() {
                         className="overflow-hidden"
                       >
                         <div className="mt-2.5 grid grid-cols-2 gap-2.5">
-                          <CopyTile label={t('payment.iban')} value={b.iban} wide />
+                          <CopyTile label={t('payment.accountNumber')} value={b.accountNumber} wide />
                           <CopyTile label={t('payment.accountNameAr')} value={b.accountNameAr} wide />
                           <CopyTile label={t('payment.swift')} value={b.swift} />
                           <CopyTile label={t('payment.address')} value={b.address} />

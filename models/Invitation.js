@@ -61,6 +61,12 @@ const invitationSchema = new mongoose.Schema({
     sizes: { type: mongoose.Schema.Types.Mixed, default: {} },
     // { "data-elem-id": "#c9a24a" } — ألوان (مربعات الزي المقترح مثلاً)
     colors: { type: mongoose.Schema.Types.Mixed, default: {} },
+    // { "data-elem-id": -8 } — زاوية ميل العنصر بالدرجات (صورة
+    // البولارويد في Royal Maroon مثلاً). بتتطبّق بخاصية rotate
+    // المستقلة عشان متتخانقش مع إزاحة السحب (transform).
+    rotations: { type: mongoose.Schema.Types.Mixed, default: {} },
+    // اليوم المعلّم في نتيجة الشهر. 0 = يوم الفرح زي ما هو.
+    calDay: { type: Number, default: 0 },
     // نصوص العميل ضافها بنفسه فوق التصميم.
     // كل واحد بياخد data-elem-id زي أي عنصر أصلي، فالسحب والمقاس واللون
     // والحذف والرجوع للخلف بيشتغلوا عليه من غير أي كود خاص.

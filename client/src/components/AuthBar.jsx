@@ -77,27 +77,36 @@ export default function AuthBar() {
     <div className="relative z-[130]">
       <div className="bg-night px-4 py-2.5 sm:px-6">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+          {/* اللوجو نفسه فيه اسم الموقع مكتوب، فمفيش داعي نكتبه جنبه
+              تاني. النص بيرجع يبان بس لو الصورة مجتش لأي سبب. */}
           <Link to="/" className="flex shrink-0 items-center gap-2.5">
             {logoFailed ? (
-              // ملف اللوجو مش موجود؟ بنرسم ختم نحاسي بحرف الاسم بدل ما
-              // الشريط يفضل نص سايب لوحده. نفس ألوان الموقع، مفيش جديد.
-              <span
-                aria-hidden="true"
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-brass-soft/45 bg-brass-soft/12 font-serif text-[15px] font-bold text-brass-soft"
-              >
-                {t('nav.brandMark')}
-              </span>
+              <>
+                <span
+                  aria-hidden="true"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-brass-soft/45 bg-brass-soft/12 font-serif text-[15px] font-bold text-brass-soft"
+                >
+                  {t('nav.brandMark')}
+                </span>
+                <span className="font-serif text-[16px] font-bold tracking-wide text-brass-soft sm:text-[15px]">
+                  {t('nav.brand')}
+                </span>
+              </>
             ) : (
-              <img
-                src="/img/logo.png"
-                alt={t('nav.brand')}
-                className="h-8 w-8 rounded-full object-cover"
-                onError={() => setLogoFailed(true)}
-              />
+              // اللوجو فيه أحمر عنابي، والشريط أخضر غامق — الأحمر على
+              // الغامق بيختفي تقريبًا. فبنحطه على خلفية عاجية فاتحة
+              // (نفس لون خلفية الموقع) عشان يبان زي ما اتصمم.
+              <span className="flex items-center rounded-xl bg-ivory px-2.5 py-1 shadow-[0_2px_10px_-4px_rgba(0,0,0,.5)]">
+                <img
+                  src="/img/logo.png"
+                  alt={t('nav.brand')}
+                  width="315"
+                  height="180"
+                  className="h-8 w-auto sm:h-9"
+                  onError={() => setLogoFailed(true)}
+                />
+              </span>
             )}
-            <span className="font-serif text-[16px] font-bold tracking-wide text-brass-soft sm:text-[15px]">
-              {t('nav.brand')}
-            </span>
           </Link>
 
           {/* ===== الشاشة الكبيرة: كل حاجة ظاهرة ===== */}
