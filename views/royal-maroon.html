@@ -293,8 +293,47 @@ section{position:relative;padding:56px 0;}
 .mini-value{display:block;font-size:16px;color:var(--text-cream);font-weight:700;}
 
 .countdown{
-  text-align:center;font-size:14px;color:var(--gold-light);font-weight:600;
-  margin-bottom:26px;position:relative;z-index:2;letter-spacing:.3px;
+  display:flex;justify-content:center;align-items:flex-start;
+  gap:6px;
+  /* الاتجاه ثابت من الشمال لليمين عشان ترتيب الخانات يفضل
+     يوم/ساعة/دقيقة/ثانية في اللغتين */
+  direction:ltr;
+  text-align:center;color:var(--gold-light);
+  margin-bottom:26px;position:relative;z-index:2;
+}
+.countdown .cd-unit{
+  flex:0 0 auto;min-width:56px;
+  padding:8px 4px 7px;
+  border-radius:12px;
+  background:rgba(230,201,160,.07);
+  border:1px solid var(--line-on-maroon);
+}
+.countdown .cd-num{
+  display:block;
+  font-family:var(--serif-en);
+  font-size:24px;line-height:1;font-weight:600;
+  color:var(--text-cream);
+  /* lining: خط العناوين اللاتيني بيرسم الأرقام بالطريقة القديمة
+     (الصفر صغير والواحد من غير قاعدة)، فـ"118" كانت بتطلع "ıı8".
+     tabular: عرض كل رقم ثابت فالخانة مابترقصش كل ثانية. */
+  font-variant-numeric:lining-nums tabular-nums;
+}
+.countdown .cd-label{
+  display:block;margin-top:5px;
+  font-size:10.5px;line-height:1.3;font-weight:600;
+  letter-spacing:.2px;
+  color:var(--gold-light);
+  opacity:.85;
+}
+/* خلص العد — الرسالة نص عادي مش خانات */
+.countdown.cd-done{
+  display:block;font-size:14px;font-weight:600;letter-spacing:.3px;
+}
+@media (max-width:360px){
+  .countdown{gap:4px;}
+  .countdown .cd-unit{min-width:48px;padding:7px 3px 6px;}
+  .countdown .cd-num{font-size:20px;}
+  .countdown .cd-label{font-size:9.5px;}
 }
 
 .calendar-card{
@@ -935,14 +974,50 @@ html, body{ overflow-x: clip; overscroll-behavior-x: none; }
   var cdEl = document.getElementById('countdown');
   if (cdEl && target && !isNaN(target)) {
     var L = C.countdownLabels || {};
+
+    // ===== أربع خانات، كل واحدة رقمها فوق واسمها تحت =====
+    //
+    // قبل كده كان سطر واحد طويل: "118 يوم 12 ساعة 54 دقيقة 16 ثانية".
+    // ده بيتبهدل في اللغة الإنجليزية جوه صفحة اتجاهها من اليمين
+    // لليسار: خوارزمية ترتيب الاتجاهات بتفصل الأرقام عن كلماتها
+    // وبتعيد ترتيبهم، فيطلع "Days 12 Hours 54 Minutes 16 118 Seconds".
+    // كل خانة لوحدها معناها مفيش أرقام وكلام مخلوطين في سطر واحد
+    // أصلاً — فمفيش حاجة تتلخبط، وشكله أوضح كمان.
+    var UNITS = [
+      { key: 'days', div: 86400, mod: 0 },
+      { key: 'hours', div: 3600, mod: 86400 },
+      { key: 'minutes', div: 60, mod: 3600 },
+      { key: 'seconds', div: 1, mod: 60 },
+    ];
+    var boxes = [];
+    cdEl.textContent = '';
+    UNITS.forEach(function (u) {
+      var box = document.createElement('div');
+      box.className = 'cd-unit';
+      var num = document.createElement('span');
+      num.className = 'cd-num';
+      var lab = document.createElement('span');
+      lab.className = 'cd-label';
+      lab.textContent = L[u.key] || '';
+      box.appendChild(num);
+      box.appendChild(lab);
+      cdEl.appendChild(box);
+      boxes.push({ num: num, unit: u });
+    });
+
     function tick() {
       var diff = target - new Date();
-      if (diff <= 0) { cdEl.textContent = C.celebrationBegins || ''; return; }
+      if (diff <= 0) {
+        cdEl.textContent = C.celebrationBegins || '';
+        cdEl.classList.add('cd-done');
+        return;
+      }
       var s = Math.floor(diff / 1000);
-      cdEl.textContent = Math.floor(s / 86400) + ' ' + (L.days || '')
-        + '  ' + Math.floor((s % 86400) / 3600) + ' ' + (L.hours || '')
-        + '  ' + Math.floor((s % 3600) / 60) + ' ' + (L.minutes || '')
-        + '  ' + (s % 60) + ' ' + (L.seconds || '');
+      boxes.forEach(function (b) {
+        var v = b.unit.mod ? Math.floor((s % b.unit.mod) / b.unit.div) : Math.floor(s / b.unit.div);
+        var text = String(v);
+        if (b.num.textContent !== text) b.num.textContent = text;
+      });
     }
     tick();
     setInterval(tick, 1000);
