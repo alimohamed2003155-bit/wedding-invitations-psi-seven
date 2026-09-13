@@ -23,9 +23,6 @@ export const resources = {
         signedInAs: 'Signed in as',
       },
       hero: {
-        badge: 'Over {{count}} couples have used the studio',
-        // الرقم لوحده والكلام لوحده — الشارة بقت رقم كبير وكلمة صغيرة
-        badgeLabel: 'users',
         eyebrow: 'Digital Invitation Studio',
         titleLine1: 'Your wedding invitation',
         titleLine2: 'in a single link',
@@ -510,8 +507,6 @@ export const resources = {
         signedInAs: 'مسجّل بحساب',
       },
       hero: {
-        badge: 'أكتر من {{count}} مستخدم جربوا الاستوديو',
-        badgeLabel: 'مستخدم',
         eyebrow: 'استوديو الدعوات الرقمي',
         titleLine1: 'دعوة زفافك',
         titleLine2: 'في لينك واحد',

@@ -93,19 +93,16 @@ export default function AuthBar() {
                 </span>
               </>
             ) : (
-              // اللوجو فيه أحمر عنابي، والشريط أخضر غامق — الأحمر على
-              // الغامق بيختفي تقريبًا. فبنحطه على خلفية عاجية فاتحة
-              // (نفس لون خلفية الموقع) عشان يبان زي ما اتصمم.
-              <span className="flex items-center rounded-xl bg-ivory px-2.5 py-1 shadow-[0_2px_10px_-4px_rgba(0,0,0,.5)]">
-                <img
-                  src="/img/logo.png"
-                  alt={t('nav.brand')}
-                  width="315"
-                  height="180"
-                  className="h-8 w-auto sm:h-9"
-                  onError={() => setLogoFailed(true)}
-                />
-              </span>
+              // اللوجو متصمم أصلاً على خلفية غامقة (ذهب على غامق)،
+              // فبيقعد على الشريط زي ما هو من غير أي خلفية وراه
+              <img
+                src="/img/logo.png"
+                alt={t('nav.brand')}
+                width="315"
+                height="180"
+                className="h-9 w-auto sm:h-10"
+                onError={() => setLogoFailed(true)}
+              />
             )}
           </Link>
 

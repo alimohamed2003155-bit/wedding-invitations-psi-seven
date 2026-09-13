@@ -10,16 +10,11 @@
 // مش الفقرة.
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useGetPublicStatsQuery } from '../store/api.js';
-import StatsRow, { USERS_FLOOR } from './StatsRow.jsx';
+import StatsRow from './StatsRow.jsx';
 import HeroDemo from './HeroDemo.jsx';
-
-const numberFormatter = new Intl.NumberFormat('en-US');
 
 export default function Hero() {
   const { t } = useTranslation();
-  const { data } = useGetPublicStatsQuery();
-  const trustCount = Math.max(USERS_FLOOR, data?.totalUsers || 0);
 
   return (
     <div
@@ -32,22 +27,18 @@ export default function Hero() {
       }}
     >
       <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-[1.02fr_0.98fr] items-center gap-x-3 gap-y-5 sm:gap-x-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-x-14 lg:gap-y-6">
-        {/* ===== الشارة ===== */}
-        {/* فوق الاتنين وبعرض الشبكة كلها: دي أول حاجة العين بتقع عليها،
-            ولو حطيناها في عمود ضيّق هتتكسر على سطرين */}
+        {/* ===== اللوجو ===== */}
+        {/* فوق كل حاجة وبعرض الشبكة كلها. من غير أي خلفية وراه —
+            اللوجو متصمم على غامق أصلاً (ذهب وعنابي)، فالخلفية الفاتحة
+            كانت بتقطعه عن الصفحة بدل ما تخدمه. */}
         <div className="col-span-2 flex justify-center lg:justify-start">
-          <div className="inline-flex items-center gap-2 rounded-full border border-brass-soft/35 bg-ivory/[0.07] py-1.5 ps-2 pe-3.5">
-            <span className="relative flex h-[7px] w-[7px]">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-bright/60" />
-              <span className="relative inline-flex h-[7px] w-[7px] rounded-full bg-emerald-bright" />
-            </span>
-            {/* الرقم كامل هنا بالقصد (مش مختصر): دي أول حاجة العين
-                بتقع عليها، و"200,000" بيوصل أقوى من "200K" */}
-            <span dir="ltr" className="font-serif text-[14px] font-bold leading-none tracking-tight text-brass-soft sm:text-[16px]">
-              {numberFormatter.format(trustCount)}
-            </span>
-            <span className="text-[11px] leading-none text-ivory/65 sm:text-[12px]">{t('hero.badgeLabel')}</span>
-          </div>
+          <img
+            src="/img/logo.png"
+            alt={t('nav.brand')}
+            width="315"
+            height="180"
+            className="h-14 w-auto drop-shadow-[0_10px_26px_rgba(0,0,0,.55)] sm:h-16 lg:h-20"
+          />
         </div>
 
         {/* ===== الكلام ===== */}
