@@ -2,15 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Lock } from 'lucide-react';
 import {
   useGetTemplatesQuery,
   usePreviewMutation,
   useCreateInvitationMutation,
   useGetMeQuery,
 } from '../store/api.js';
-import { openAuthModal } from '../store/uiSlice.js';
 import ChoiceCards from '../components/form/ChoiceCards.jsx';
 import TimelineFields from '../components/form/TimelineFields.jsx';
 import SectionToggles from '../components/form/SectionToggles.jsx';
@@ -85,7 +83,6 @@ function buildPayload(values, template, { withPlaceholders }) {
 export default function CreateInvitationPage() {
   const { templateId } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { t, i18n } = useTranslation();
 
   const { data: templates, isLoading: templatesLoading } = useGetTemplatesQuery(i18n.language);
@@ -98,15 +95,21 @@ export default function CreateInvitationPage() {
   const [submitError, setSubmitError] = useState('');
   const [result, setResult] = useState(null);
 
-  const locked = !!template?.isPremium && !meData?.user;
+  // التصميم المدفوع للمشتركين بس — مش لأي حساب مجاني. لو حد فتح
+  // اللينك ده مباشرة من غير باقة، بنوديه صفحة الباقات بدل ما يقعد
+  // يملا فورم والسيرفر هيرفضه في الآخر.
+  const sub = meData?.user?.subscription;
+  const subscribed = !!sub && !!sub.packageId && sub.status !== 'suspended'
+    && (sub.invitationsLeft || 0) > 0;
+  const locked = !!template?.isPremium && !subscribed;
 
   useEffect(() => {
     if (template) reset(defaultsFor(template));
   }, [template, reset]);
 
-  useEffect(() => {
-    if (locked) dispatch(openAuthModal('register'));
-  }, [locked, dispatch]);
+  // ملحوظة: مفيش نافذة تسجيل بتفتح لوحدها هنا. كانت بتفتح قبل ما رد
+  // السيرفر بحالة الدخول يوصل أصلًا، فكانت بتطلع لعميل داخل فعلاً.
+  // وشاشة القفل نفسها فيها الخطوتين الواضحين (الباقات والمعاينة).
 
   const values = watch();
   useEffect(() => {
@@ -143,8 +146,33 @@ export default function CreateInvitationPage() {
   }
   if (locked) {
     return (
-      <div className="p-10 text-center text-ink-dim">
-        {t('create.lockedMessage')}
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 py-16 text-center">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brass/15 text-brass">
+          <Lock size={20} />
+        </span>
+        <h1 className="font-serif text-[21px] font-bold text-ink">{t('create.lockedTitle')}</h1>
+        <p className="max-w-[42ch] text-[13.5px] leading-[1.9] text-ink-dim">
+          {t('create.lockedMessage')}
+        </p>
+        <div className="mt-2 flex flex-col gap-2.5 sm:flex-row">
+          <Link
+            to="/packages"
+            className="rounded-full bg-gradient-to-l from-brass to-brass-soft px-7 py-3 text-[13.5px] font-extrabold text-[#241608] hover:brightness-105"
+          >
+            {t('create.lockedCta')}
+          </Link>
+          <a
+            href={`/preview-sample/${template.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full border border-ink px-7 py-3 text-[13.5px] font-bold text-ink hover:bg-ink/5"
+          >
+            {t('create.lockedPreviewCta')}
+          </a>
+        </div>
+        <Link to="/" className="mt-1 text-[12.5px] text-ink-dim underline">
+          {t('create.backToGallery')}
+        </Link>
       </div>
     );
   }

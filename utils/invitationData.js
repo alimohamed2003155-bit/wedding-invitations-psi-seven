@@ -18,13 +18,49 @@ const REQUIRED_FIELDS = [
 ];
 
 /**
+ * باقة شغّالة وفيها رصيد؟
+ *
+ * التلات شروط لازمين مع بعض: فيه باقة، مش موقوفة من لوحة التحكم،
+ * وفيه رصيد دعوات فاضل. (الرصيد جزء من الشرط بالقصد — من غيره أي حد
+ * خلص رصيده يفضل قادر يعمل دعوات بالتصميم المدفوع مجانًا.)
+ */
+function hasActivePackage(user) {
+  const sub = user && user.subscription;
+  if (!sub || !sub.packageId) return false;
+  if (sub.status === 'suspended') return false;
+  return ((sub.invitationsLeft || 0) > 0);
+}
+
+/**
+ * بيوقف أي حد مش مشترك عن إنشاء دعوة بتصميم مدفوع.
+ * المعاينة مفتوحة للكل — ده الإنشاء بس.
+ */
+function assertPremiumTemplateAccess(user) {
+  if (!user) {
+    throw Object.assign(
+      new Error('التصميم ده للمشتركين — سجّل دخول الأول.'),
+      { status: 401 }
+    );
+  }
+  if (!hasActivePackage(user)) {
+    throw Object.assign(
+      new Error('التصميم ده في الباقة المميزة — اشترك عشان تستخدمه.'),
+      { status: 403 }
+    );
+  }
+}
+
+/**
  * @param {object} body مدخلات الفورم الخام
- * @param {{skipMapNetwork?: boolean, user?: object}} options
+ * @param {{skipMapNetwork?: boolean, user?: object, ownsTemplate?: boolean}} options
  *   skipMapNetwork: مايتابعش لينكات جوجل المصغّرة (للمعاينة السريعة)
  *   user: المستخدم المسجّل — لازم للقوالب المميزة
+ *   ownsTemplate: الدعوة دي موجودة ومدفوعة أصلًا (تعديل مش إنشاء)،
+ *     فمش بنعيد فحص الباقة. من غير الاستثناء ده، صاحب دعوة خلص رصيده
+ *     كان هيبقى مش قادر يعدّل على دعوته اللي دفع فيها.
  * @returns {Promise<object>} بيانات جاهزة للحفظ في Invitation
  */
-async function buildInvitationDataFromRequest(body, { skipMapNetwork, user } = {}) {
+async function buildInvitationDataFromRequest(body, { skipMapNetwork, user, ownsTemplate } = {}) {
   for (const field of REQUIRED_FIELDS) {
     if (!body[field] || String(body[field]).trim() === '') {
       throw Object.assign(new Error('من فضلك املأ كل الحقول المطلوبة.'), { status: 400 });
@@ -33,13 +69,11 @@ async function buildInvitationDataFromRequest(body, { skipMapNetwork, user } = {
 
   const template = getTemplate(body.templateId) || getDefaultTemplate();
 
-  // القوالب المميزة (templates/registry.js: isPremium) متاحة بس للمستخدمين
-  // المسجلين دخولهم — req.user بيتحط من middleware/auth.js (attachUser)
-  if (template.isPremium && !user) {
-    throw Object.assign(
-      new Error('التصميم ده متاح بس للمستخدمين المسجلين — سجل دخول أو اعمل حساب الأول.'),
-      { status: 401 }
-    );
+  // القوالب المميزة (templates/registry.js: isPremium) للمشتركين بس.
+  // قبل كده كان الشرط "مسجّل دخول" وبس — يعني أي حد يعمل حساب مجاني
+  // كان بياخد التصميم المدفوع ببلاش.
+  if (template.isPremium && !ownsTemplate) {
+    assertPremiumTemplateAccess(user);
   }
 
   // الافتراضي = أول لغة في قايمة القالب (الإنجليزي) مش قيمة ثابتة —
@@ -110,4 +144,7 @@ async function buildInvitationDataFromRequest(body, { skipMapNetwork, user } = {
   };
 }
 
-module.exports = { buildInvitationDataFromRequest, REQUIRED_FIELDS };
+module.exports = {
+  buildInvitationDataFromRequest, REQUIRED_FIELDS,
+  hasActivePackage, assertPremiumTemplateAccess,
+};

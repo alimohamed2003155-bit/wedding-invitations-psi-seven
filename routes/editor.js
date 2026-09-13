@@ -232,10 +232,13 @@ router.patch('/api/editor/:shortId/details', requireAuth, async (req, res) => {
     const invitation = await loadOwnedInvitation(req, res);
     if (!invitation) return undefined;
 
-    // القالب مبيتغيّرش من هنا — اللي عايز قالب تاني يعمل دعوة جديدة
+    // القالب مبيتغيّرش من هنا — اللي عايز قالب تاني يعمل دعوة جديدة.
+    // ownsTemplate: الدعوة دي مدفوعة وبتاعته أصلًا (loadOwnedInvitation
+    // تأكدت من الاتنين)، فمش بنعيد فحص الباقة — غير كده أول ما رصيده
+    // يخلص كان هيقف عن تعديل دعوته اللي دفع فيها.
     const data = await buildInvitationDataFromRequest(
       { ...(req.body || {}), templateId: invitation.templateId },
-      { user: req.user }
+      { user: req.user, ownsTemplate: true }
     );
 
     Object.assign(invitation, data);

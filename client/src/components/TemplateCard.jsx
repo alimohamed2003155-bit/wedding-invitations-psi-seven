@@ -1,25 +1,28 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { Lock, Sparkles, Wand2, Loader2 } from 'lucide-react';
 import { useGetMeQuery, useCreateDraftMutation } from '../store/api.js';
-import { openAuthModal } from '../store/uiSlice.js';
 
 export default function TemplateCard({ template, index }) {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { t } = useTranslation();
   const { data } = useGetMeQuery();
   const [createDraft, { isLoading: startingEditor }] = useCreateDraftMutation();
-  const locked = !!template.isPremium && !data?.user;
   const [imgError, setImgError] = useState(false);
   const [startError, setStartError] = useState('');
 
   // العميل المشترك عنده رصيد ← بيروح المحرر على طول، مش لفورم الإنشاء
   // المجاني. ده أوضح فرق بيحسه بعد ما يدفع.
-  const subscribed = (data?.user?.subscription?.invitationsLeft || 0) > 0;
+  const sub = data?.user?.subscription;
+  const subscribed = !!sub && !!sub.packageId && sub.status !== 'suspended'
+    && (sub.invitationsLeft || 0) > 0;
+
+  // التصميم المدفوع مقفول على أي حد مش مشترك — مش على غير المسجّلين بس.
+  // قبل كده أي حساب مجاني كان بياخده ببلاش. المعاينة بتفضل مفتوحة
+  // للكل (السيرفر كمان: /preview-sample مفتوح).
+  const locked = !!template.isPremium && !subscribed;
 
   async function useTemplate() {
     if (!subscribed) {
@@ -86,19 +89,22 @@ export default function TemplateCard({ template, index }) {
         <div className="flex gap-2.5">
           {locked ? (
             <>
+              {/* المعاينة مفتوحة زي أي تصميم — العميل لازم يشوف اللي
+                  هيدفع فيه. المقفول هو الاستخدام بس. */}
+              <a
+                href={`/preview-sample/${template.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 rounded-full border border-ink px-4 py-3 text-center text-sm font-bold text-ink hover:bg-ink/5"
+              >
+                {t('gallery.lockedPreview')}
+              </a>
               <button
                 type="button"
-                onClick={() => dispatch(openAuthModal('register'))}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-ink px-4 py-3 text-sm font-bold text-ink hover:bg-ink/5"
+                onClick={() => navigate('/packages')}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-gradient-to-l from-brass to-brass-soft px-4 py-3 text-sm font-extrabold text-[#241608] hover:brightness-105"
               >
-                <Lock size={14} /> {t('gallery.lockedPreview')}
-              </button>
-              <button
-                type="button"
-                onClick={() => dispatch(openAuthModal('register'))}
-                className="flex-1 rounded-full bg-night px-4 py-3 text-sm font-bold text-ivory hover:bg-emerald"
-              >
-                {t('gallery.lockedUse')}
+                <Lock size={14} /> {t('gallery.lockedUse')}
               </button>
             </>
           ) : (
@@ -132,6 +138,7 @@ export default function TemplateCard({ template, index }) {
           )}
         </div>
 
+        {locked && <p className="text-[11.5px] text-ink-dim">{t('gallery.lockedNote')}</p>}
         {startError && <p className="text-[12.5px] text-error">{startError}</p>}
       </div>
     </motion.div>

@@ -360,9 +360,9 @@ router.get('/i/:shortId/stats', async (req, res) => {
 router.get('/preview-sample/:templateId', (req, res) => {
   const template = getTemplate(req.params.templateId);
   if (!template) return res.status(404).send('القالب ده مش موجود');
-  if (template.isPremium && !req.user) {
-    return res.status(401).send('التصميم ده متاح بس للمستخدمين المسجلين — سجل دخول أو اعمل حساب الأول.');
-  }
+  // المعاينة مفتوحة للكل حتى في التصاميم المدفوعة — الناس لازم تشوف
+  // اللي هتدفع فيه قبل ما تدفع. المقفول هو **الإنشاء**
+  // (utils/invitationData.js: assertPremiumTemplateAccess).
 
   const now = new Date();
   const sampleDate = new Date(now.getFullYear(), now.getMonth() + 2, 15, 18, 0, 0);
