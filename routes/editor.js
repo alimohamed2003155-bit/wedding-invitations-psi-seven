@@ -323,6 +323,8 @@ router.patch('/api/editor/:shortId/text', requireAuth, async (req, res) => {
         images: { ...(c.images || {}) },
         sizes: { ...(c.sizes || {}) },
         colors: { ...(c.colors || {}) },
+        rotations: { ...(c.rotations || {}) },
+        calDay: c.calDay || 0,
         added: [...(c.added || [])],
         texts: { ...(c.texts || {}), [id]: newText },
         hidden: [...(c.hidden || [])],

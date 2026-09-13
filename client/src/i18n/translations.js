@@ -25,7 +25,7 @@ export const resources = {
       hero: {
         badge: 'Over {{count}} couples have used the studio',
         // الرقم لوحده والكلام لوحده — الشارة بقت رقم كبير وكلمة صغيرة
-        badgeLabel: 'couples have used it',
+        badgeLabel: 'users',
         eyebrow: 'Digital Invitation Studio',
         titleLine1: 'Your wedding invitation',
         titleLine2: 'in a single link',
@@ -511,7 +511,7 @@ export const resources = {
       },
       hero: {
         badge: 'أكتر من {{count}} مستخدم جربوا الاستوديو',
-        badgeLabel: 'عريس وعروسة جرّبوه',
+        badgeLabel: 'مستخدم',
         eyebrow: 'استوديو الدعوات الرقمي',
         titleLine1: 'دعوة زفافك',
         titleLine2: 'في لينك واحد',

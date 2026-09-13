@@ -601,7 +601,10 @@ html, body{ overflow-x: clip; overscroll-behavior-x: none; }
     <div class="cover-heart">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M12 20.5s-7.5-4.6-10-9.3C.4 8.1 1.8 4.6 5 3.6c2.1-.7 4.2.1 5.5 1.9L12 7.1l1.5-1.6c1.3-1.8 3.4-2.6 5.5-1.9 3.2 1 4.6 4.5 3 7.6-2.5 4.7-10 9.3-10 9.3z" fill="var(--cream)"/></svg>
     </div>
-    <div data-elem-id="7000000000000" class="cover-names"><span></span><span class="amp">&amp;</span><span></span></div>
+    <!-- كل اسم عنده معرّفه — من غير كده المحرر بيشوف الغلاف كله عنصر
+         واحد "مركّب" ومبيسمحش بالكتابة جواه، فالعميل مش قادر يغيّر
+         أسماء العروسين. (المعرّفات دي بعيدة عن أرقام النتيجة والبرنامج.) -->
+    <div data-elem-id="7000000000000" class="cover-names"><span data-elem-id="7000000000300"></span><span class="amp">&amp;</span><span data-elem-id="7000000000301"></span></div>
     <div class="cover-divider"><span></span><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 2l2.4 7.4H22l-6.3 4.6 2.4 7.4L12 16.8l-6.1 4.6 2.4-7.4L2 9.4h7.6z"/></svg><span></span></div>
     <div data-elem-id="7000000000001" class="cover-date">18 يونيو 2027</div>
     <div data-elem-id="7000000000002" class="cover-invite-note">بدعوة كريمة</div>
@@ -628,10 +631,11 @@ html, body{ overflow-x: clip; overscroll-behavior-x: none; }
         <img class="env-cover" src="" alt="envelope flap">
       </div>
     </div>
+    <!-- زي الغلاف: كل اسم عنصر لوحده عشان يتضغط عليه ويتكتب فيه -->
     <div data-elem-id="7000000000005" class="couple-names reveal">
-      <span></span>
+      <span data-elem-id="7000000000302"></span>
       <span class="amp-big">&amp;</span>
-      <span></span>
+      <span data-elem-id="7000000000303"></span>
     </div>
   </section>
 
