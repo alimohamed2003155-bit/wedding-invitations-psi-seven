@@ -9,7 +9,7 @@ const numberFormatter = new Intl.NumberFormat('en-US');
 export default function Hero() {
   const { t } = useTranslation();
   const { data } = useGetPublicStatsQuery();
-  const trustCount = Math.max(150000, data?.totalUsers || 0);
+  const trustCount = Math.max(200000, data?.totalUsers || 0);
 
   return (
     <div

@@ -16,6 +16,11 @@ export const resources = {
         dashboard: 'My dashboard',
         greeting: 'Hi, {{name}}',
         language: 'العربية',
+        brandMark: 'M',
+        menu: 'Menu',
+        designs: 'Invitation designs',
+        support: 'Talk to us on WhatsApp',
+        signedInAs: 'Signed in as',
       },
       hero: {
         badge: 'Over {{count}} couples have used the studio',
@@ -155,6 +160,8 @@ export const resources = {
         tapToCopy: 'Tap any box to copy it',
         copied: 'Copied ✓',
         vodafoneNote: 'Send from any Vodafone Cash wallet',
+        moreDetails: 'More account details',
+        lessDetails: 'Hide extra details',
       },
       upsell: {
         keepFree: '✓ This invitation stays live, free, exactly as it is.',
@@ -215,6 +222,9 @@ export const resources = {
         bank: 'Bank',
         accountNameAr: 'Account holder (Arabic)',
         accountNameEn: 'Account holder (English)',
+        // النسخة القصيرة: في الخانات التلاتة الأساسية مفيش غير الاسم
+        // الإنجليزي، فالتوضيح بين قوسين بيزوّد طول من غير فايدة
+        accountHolder: 'Account holder',
         accountNumber: 'Account number',
         iban: 'IBAN',
         swift: 'SWIFT / BIC',
@@ -459,6 +469,11 @@ export const resources = {
         dashboard: 'لوحتي',
         greeting: 'أهلاً، {{name}}',
         language: 'English',
+        brandMark: 'م',
+        menu: 'القائمة',
+        designs: 'تصاميم الدعوات',
+        support: 'كلّمنا على واتساب',
+        signedInAs: 'مسجّل بحساب',
       },
       hero: {
         badge: 'أكتر من {{count}} مستخدم جربوا الاستوديو',
@@ -598,6 +613,8 @@ export const resources = {
         tapToCopy: 'اضغط على أي خانة تتنسخ',
         copied: 'اتنسخ ✓',
         vodafoneNote: 'التحويل من أي محفظة فودافون كاش',
+        moreDetails: 'تفاصيل الحساب الكاملة',
+        lessDetails: 'اخفي التفاصيل الزيادة',
       },
       upsell: {
         keepFree: '✓ الدعوة دي هتفضل شغالة مجانًا زي ما هي، مش هتروح.',
@@ -658,6 +675,7 @@ export const resources = {
         bank: 'البنك',
         accountNameAr: 'اسم صاحب الحساب (عربي)',
         accountNameEn: 'اسم صاحب الحساب (إنجليزي)',
+        accountHolder: 'صاحب الحساب',
         accountNumber: 'رقم الحساب',
         iban: 'IBAN',
         swift: 'SWIFT / BIC',

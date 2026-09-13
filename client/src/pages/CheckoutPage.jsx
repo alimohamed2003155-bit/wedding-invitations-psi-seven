@@ -14,7 +14,7 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import {
-  ArrowRight, Check, Copy, Upload, Loader2,
+  ArrowRight, Check, Copy, Upload, Loader2, ChevronDown, ChevronUp,
   ShieldCheck, Clock, AlertCircle, Sparkles,
 } from 'lucide-react';
 import { VodafoneCashLogo, BankMark } from '../components/PayBrand.jsx';
@@ -107,6 +107,8 @@ export default function CheckoutPage() {
   const [orderReady, setOrderReady] = useState(false);
   // أنهي حاجة اتنسخت آخر مرة — عشان التأكيد يبان في مكانها بالظبط
   const [copied, setCopied] = useState('');
+  // تفاصيل الحساب الإضافية (IBAN وSWIFT والعنوان) — مطويّة افتراضيًا
+  const [moreBank, setMoreBank] = useState(false);
 
   function copy(value, key) {
     if (!value) return;
@@ -339,19 +341,45 @@ export default function CheckoutPage() {
                   {t('payment.bankTitle')}
                 </div>
 
-                {/* الخانات جنب بعض — عمودين حتى على الموبايل. الطويل
-                    (الأسماء، IBAN، العنوان) بياخد العرض كله عشان
-                    مايتقصّش */}
+                {/* التلاتة اللي بيتم التحويل بيهم فعلاً بس. الباقي
+                    (IBAN، SWIFT، العنوان، الاسم بالعربي) بيلزم في
+                    التحويلات الدولية بس، وعرضه كله مع بعض كان بيعمل
+                    حيطة أرقام العميل بيتوه فيها. */}
                 <div className="grid grid-cols-2 gap-2.5">
+                  <CopyTile label={t('payment.accountNumber')} value={b.accountNumber} wide />
                   <CopyTile label={t('payment.bank')} value={b.bankName} />
-                  <CopyTile label={t('payment.accountNumber')} value={b.accountNumber} />
-                  <CopyTile label={t('payment.accountNameAr')} value={b.accountNameAr} wide />
-                  <CopyTile label={t('payment.accountNameEn')} value={b.accountNameEn} wide />
-                  <CopyTile label={t('payment.iban')} value={b.iban} wide />
-                  <CopyTile label={t('payment.swift')} value={b.swift} />
-                  <CopyTile label={t('payment.address')} value={b.address} />
+                  <CopyTile label={t('payment.accountHolder')} value={b.accountNameEn} />
                 </div>
                 <p className="mt-2.5 text-center text-[11.5px] text-ink-dim">{t('checkout.tapToCopy')}</p>
+
+                {/* الباقي تحت زرار — موجود لما يحتاجه، ومش واقف في وشه */}
+                {(b.iban || b.swift || b.address || b.accountNameAr) && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setMoreBank((v) => !v)}
+                      aria-expanded={moreBank}
+                      className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-full border border-line py-2 text-[12px] font-bold text-ink-dim transition hover:border-ink/30 hover:text-ink"
+                    >
+                      {moreBank ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                      {moreBank ? t('checkout.lessDetails') : t('checkout.moreDetails')}
+                    </button>
+                    {moreBank && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-2.5 grid grid-cols-2 gap-2.5">
+                          <CopyTile label={t('payment.iban')} value={b.iban} wide />
+                          <CopyTile label={t('payment.accountNameAr')} value={b.accountNameAr} wide />
+                          <CopyTile label={t('payment.swift')} value={b.swift} />
+                          <CopyTile label={t('payment.address')} value={b.address} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </>
+                )}
 
                 {/* المبلغ مكرر هنا بالقصد: ده آخر حاجة بيشوفها قبل ما
                     يفتح تطبيق التحويل */}
